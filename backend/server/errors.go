@@ -62,13 +62,36 @@ func (e *APIError) prepare() {
 
 // Error code constants
 const (
+	ErrBadRequest          = 400
+	ErrForbidden           = 403
 	ErrInternalServerError = 500 // catch-all code for unknown errors
+
+	// Login/authorize error codes
+	ErrInvalidState     = 1001
+	ErrInvalidOAuthCode = 1002
+
+	// User-related error codes
+	ErrUserNotFound = 2001
 )
 
 var errCodeMessages = map[int]string{
+	ErrBadRequest:          "Bad request",
+	ErrForbidden:           "Forbidden",
 	ErrInternalServerError: "Internal server error",
+
+	ErrInvalidState:     "Invalid OAuth state",
+	ErrInvalidOAuthCode: "Invalid OAuth code",
+
+	ErrUserNotFound: "User not found",
 }
 
 var errCodeStatuses = map[int]int{
+	ErrBadRequest:          http.StatusBadRequest,
+	ErrForbidden:           http.StatusForbidden,
 	ErrInternalServerError: http.StatusInternalServerError,
+
+	ErrInvalidState:     http.StatusBadRequest,
+	ErrInvalidOAuthCode: http.StatusForbidden,
+
+	ErrUserNotFound: http.StatusNotFound,
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-chi/render"
 	"gitlab.com/1f320/pronouns/backend/server/auth"
 )
 
@@ -34,7 +35,12 @@ func MustAuth(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		_, ok := ClaimsFromContext(r.Context())
 		if !ok {
-
+			render.Status(r, errCodeStatuses[ErrForbidden])
+			render.JSON(w, r, APIError{
+				Code:    ErrForbidden,
+				Message: errCodeMessages[ErrForbidden],
+			})
+			return
 		}
 
 		next.ServeHTTP(w, r)

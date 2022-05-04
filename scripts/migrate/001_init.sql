@@ -12,7 +12,8 @@ create table users (
     avatar_url    text,
     links         text[],
 
-    discord text -- for Discord oauth
+    discord          text unique, -- for Discord oauth
+    discord_username text
 );
 
 create table user_fields (
