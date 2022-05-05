@@ -22,7 +22,8 @@ type User struct {
 	AvatarURL    *string
 	Links        []string
 
-	Discord *string
+	Discord         *string
+	DiscordUsername *string
 }
 
 // usernames must match this regex

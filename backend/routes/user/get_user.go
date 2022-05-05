@@ -20,6 +20,19 @@ type GetUserResponse struct {
 	Links       []string `json:"links"`
 }
 
+type GetMeResponse struct {
+	ID           xid.ID   `json:"id"`
+	Username     string   `json:"username"`
+	DisplayName  *string  `json:"display_name"`
+	Bio          *string  `json:"bio"`
+	AvatarSource *string  `json:"avatar_source"`
+	AvatarURL    *string  `json:"avatar_url"`
+	Links        []string `json:"links"`
+
+	Discord         *string `json:"discord"`
+	DiscordUsername *string `json:"discord_username"`
+}
+
 type PartialMember struct {
 	ID        xid.ID  `json:"id"`
 	Name      string  `json:"name"`
