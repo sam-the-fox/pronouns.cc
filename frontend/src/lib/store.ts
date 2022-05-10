@@ -1,20 +1,26 @@
 import axios from "axios";
-import { atom } from "recoil";
-import type { APIError, MeUser } from "./types";
+import { atom, useRecoilState, useRecoilValue } from "recoil";
+import { APIError, ErrorCode, MeUser } from "./types";
 
-export const userState = atom<MeUser | null>({
+export const userState = atom<MeUser>({
   key: "userState",
   default: getCurrentUser(),
 });
 
-async function getCurrentUser(): Promise<MeUser | null> {
+async function getCurrentUser() {
   const token = localStorage.getItem("pronouns-token");
   if (!token) return null;
 
   try {
     const resp = await axios.get<MeUser | APIError>("/api/v1/users/@me");
-    if ("id" in resp.data) return resp.data as MeUser;
-    return null;
+    if (resp.status === 200) {
+      return resp.data as MeUser;
+    }
+
+    // if we got a forbidden error, the token is invalid
+    if ((resp.data as APIError).code === ErrorCode.Forbidden) {
+      localStorage.removeItem("pronouns-token");
+    }
   } catch (e) {
     console.log("Error fetching /users/@me:", e);
   }

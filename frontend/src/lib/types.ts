@@ -10,6 +10,22 @@ export interface MeUser {
   discord_username: string | null;
 }
 
+export interface User {
+  id: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_source: string | null;
+  links: string[] | null;
+  members: PartialMember[];
+}
+
+export interface PartialMember {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
 export interface APIError {
   code: ErrorCode;
   message?: string;
