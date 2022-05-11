@@ -1,11 +1,5 @@
 export interface MeUser {
-  id: string;
-  username: string;
-  display_name: string | null;
-  bio: string | null;
   avatar_source: string | null;
-  avatar_url: string | null;
-  links: string[] | null;
   discord: string | null;
   discord_username: string | null;
 }
@@ -15,15 +9,25 @@ export interface User {
   username: string;
   display_name: string | null;
   bio: string | null;
-  avatar_source: string | null;
+  avatar_url: string | null;
   links: string[] | null;
   members: PartialMember[];
+  fields: Field[];
 }
 
 export interface PartialMember {
   id: string;
   name: string;
   avatar_url: string | null;
+}
+
+export interface Field {
+  name: string;
+  favourite: string[] | null;
+  okay: string[] | null;
+  jokingly: string[] | null;
+  friends_only: string[] | null;
+  avoid: string[] | null;
 }
 
 export interface APIError {
