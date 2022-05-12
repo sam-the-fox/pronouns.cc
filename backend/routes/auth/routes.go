@@ -6,6 +6,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"gitlab.com/1f320/pronouns/backend/log"
 	"gitlab.com/1f320/pronouns/backend/server"
 )
 
@@ -18,11 +19,11 @@ func Mount(srv *server.Server, r chi.Router) {
 
 	r.Route("/auth", func(r chi.Router) {
 		// generate csrf token, returns all supported OAuth provider URLs
-		r.Get("/urls", server.WrapHandler(s.oauthURLs))
+		r.Post("/urls", server.WrapHandler(s.oauthURLs))
 
 		r.Route("/discord", func(r chi.Router) {
 			// takes code + state, validates it, returns token OR discord signup ticket
-			r.Post("/callback", nil)
+			r.Post("/callback", server.WrapHandler(s.discordCallback))
 			// takes discord signup ticket to register account
 			r.Post("/signup", nil)
 		})
@@ -30,7 +31,7 @@ func Mount(srv *server.Server, r chi.Router) {
 }
 
 type oauthURLsRequest struct {
-	CallbackURL string `json:"callback_url"`
+	CallbackDomain string `json:"callback_domain"`
 }
 
 type oauthURLsResponse struct {
@@ -40,6 +41,8 @@ type oauthURLsResponse struct {
 func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 	req, err := Decode[oauthURLsRequest](r)
 	if err != nil {
+		log.Error(err)
+
 		return server.APIError{Code: server.ErrBadRequest}
 	}
 
@@ -51,7 +54,7 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 
 	// copy Discord config and set redirect url
 	discordCfg := discordOAuthConfig
-	discordCfg.RedirectURL = req.CallbackURL
+	discordCfg.RedirectURL = req.CallbackDomain + "/login/discord"
 
 	render.JSON(w, r, oauthURLsResponse{
 		Discord: discordCfg.AuthCodeURL(state),

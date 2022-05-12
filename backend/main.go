@@ -9,15 +9,10 @@ import (
 	"gitlab.com/1f320/pronouns/backend/log"
 	"gitlab.com/1f320/pronouns/backend/server"
 
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
 	port := ":" + os.Getenv("PORT")
 
 	s, err := server.New()

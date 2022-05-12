@@ -3,6 +3,8 @@ import "./App.css";
 import Container from "./lib/Container";
 import Navigation from "./lib/Navigation";
 import Home from "./pages/Home";
+import Discord from "./pages/login/Discord";
+import Login from "./pages/login/Login";
 import User from "./pages/User";
 
 function App() {
@@ -13,6 +15,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/u/:username" element={<User />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/login/discord" element={<Discord />} />
         </Routes>
       </Container>
     </>

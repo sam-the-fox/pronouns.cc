@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -24,8 +25,9 @@ var discordOAuthConfig = oauth2.Config{
 }
 
 type oauthCallbackRequest struct {
-	Code  string `json:"code"`
-	State string `json:"state"`
+	CallbackDomain string `json:"callback_domain"`
+	Code           string `json:"code"`
+	State          string `json:"state"`
 }
 
 type discordCallbackResponse struct {
@@ -55,7 +57,9 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrInvalidState}
 	}
 
-	token, err := discordOAuthConfig.Exchange(r.Context(), decoded.Code)
+	cfg := discordOAuthConfig
+	cfg.RedirectURL = decoded.CallbackDomain + "/login/discord"
+	token, err := cfg.Exchange(r.Context(), decoded.Code)
 	if err != nil {
 		log.Errorf("exchanging oauth code: %v", err)
 
@@ -79,6 +83,8 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Println(token)
 
 		render.JSON(w, r, discordCallbackResponse{
 			HasAccount: true,

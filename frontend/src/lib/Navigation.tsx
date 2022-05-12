@@ -1,15 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MoonStars, Sun, List } from "react-bootstrap-icons";
 
 import NavItem from "./NavItem";
 import Logo from "./logo";
+import { useRecoilState } from "recoil";
+import { userState } from "./store";
+import fetchAPI from "./fetch";
+import { MeUser } from "./types";
 
 function Navigation() {
+  const [user, setUser] = useRecoilState(userState);
+
+  useEffect(() => {
+    if (user) return;
+
+    fetchAPI<MeUser>("/users/@me").then(
+      (res) => setUser(res),
+      (err) => console.log("fetching /users/@me", err)
+    );
+  }, []);
+
   const [darkTheme, setDarkTheme] = useState<boolean>(
     localStorage.theme === "dark" ||
-    (!("theme" in localStorage) &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches)
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
 
   const [showMenu, setShowMenu] = useState(false);
@@ -28,6 +43,18 @@ function Navigation() {
     }
   };
 
+  const nav = user ? (
+    <>
+      <NavItem to="/me">@{user.username}</NavItem>
+      <NavItem to="/settings">Settings</NavItem>
+      <NavItem to="/logout">Log out</NavItem>
+    </>
+  ) : (
+    <>
+      <NavItem to="/login">Log in</NavItem>
+    </>
+  );
+
   return (
     <>
       <div className="bg-white/75 dark:bg-slate-800/75 w-full backdrop-blur border-slate-200 dark:border-slate-700 border-b">
@@ -39,14 +66,7 @@ function Navigation() {
               </Link>
               <div className="ml-auto flex items-center">
                 <nav className="hidden lg:flex">
-                  <ul className="flex space-x-4 font-bold">
-                    <NavItem to="/">Home</NavItem>
-                    <NavItem to="/">Link 2</NavItem>
-                    <NavItem to="/">Link 3</NavItem>
-                    <NavItem to="/">Link 4</NavItem>
-                    <NavItem to="/">Link 5</NavItem>
-                    <NavItem to="/login">Log in</NavItem>
-                  </ul>
+                  <ul className="flex space-x-4 font-bold">{nav}</ul>
                 </nav>
                 <div className="flex border-l border-slate-200 ml-4 pl-4 lg:ml-6 lg:pl-6 lg:mr-2 dark:border-slate-700 space-x-2 lg:space-x-4">
                   <div
@@ -65,8 +85,15 @@ function Navigation() {
                       <MoonStars size={24} className="hover:text-sky-500" />
                     )}
                   </div>
-                  <div onClick={() => setShowMenu(!showMenu)} title="Show menu" className="cursor-pointer flex lg:hidden">
-                    <List className="dark:hover:text-sky-400 hover:text-sky-500" size={24} />
+                  <div
+                    onClick={() => setShowMenu(!showMenu)}
+                    title="Show menu"
+                    className="cursor-pointer flex lg:hidden"
+                  >
+                    <List
+                      className="dark:hover:text-sky-400 hover:text-sky-500"
+                      size={24}
+                    />
                   </div>
                 </div>
               </div>
@@ -74,15 +101,12 @@ function Navigation() {
           </div>
         </div>
       </div>
-      <nav className={`lg:hidden p-4 border-slate-200 dark:border-slate-700 border-b ${showMenu ? "flex" : "hidden"}`}>
-        <ul className="flex flex-col space-y-4 font-bold">
-          <NavItem to="/">Home</NavItem>
-          <NavItem to="/">Link 2</NavItem>
-          <NavItem to="/">Link 3</NavItem>
-          <NavItem to="/">Link 4</NavItem>
-          <NavItem to="/">Link 5</NavItem>
-          <NavItem to="/login">Log in</NavItem>
-        </ul>
+      <nav
+        className={`lg:hidden p-4 border-slate-200 dark:border-slate-700 border-b ${
+          showMenu ? "flex" : "hidden"
+        }`}
+      >
+        <ul className="flex flex-col space-y-4 font-bold">{nav}</ul>
       </nav>
     </>
   );

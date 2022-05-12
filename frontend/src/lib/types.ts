@@ -1,4 +1,4 @@
-export interface MeUser {
+export interface MeUser extends User {
   avatar_source: string | null;
   discord: string | null;
   discord_username: string | null;
