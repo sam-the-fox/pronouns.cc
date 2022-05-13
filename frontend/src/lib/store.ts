@@ -27,3 +27,8 @@ async function getCurrentUser() {
 
   return null;
 }
+
+export function isMeUser(id: string): boolean {
+  const meUser = useRecoilValue(userState);
+  return meUser && meUser.id === id;
+}

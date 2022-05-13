@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowClockwise } from "react-bootstrap-icons";
 import ReactMarkdown from "react-markdown";
 import { Helmet } from "react-helmet";
 
-import type { APIError, User } from "../lib/types";
+import NavItem from "../lib/NavItem";
+import type { User } from "../lib/types";
 import fetchAPI from "../lib/fetch";
 import FieldCard from "../lib/FieldCard";
+import Card from "../lib/Card";
+import { userState } from "../lib/store";
+import { useRecoilValue } from "recoil";
 
 function UserPage() {
   const params = useParams();
 
   const [user, setUser] = useState<User>(null);
+  const meUser = useRecoilValue(userState);
 
   useEffect(() => {
     fetchAPI<User>(`/users/${params.username}`).then((res) => {
@@ -33,13 +38,25 @@ function UserPage() {
       <Helmet>
         <title>@{user.username} - pronouns.cc</title>
       </Helmet>
+      {meUser && meUser.id === user.id && (
+        <div className="lg:w-1/3 mx-auto bg-slate-100 dark:bg-slate-700 shadow rounded-md p-2">
+          <span>
+            You are currently viewing your{" "}
+            <span className="font-bold">public</span> profile.
+          </span>
+          <br />
+          <Link
+            to="/edit"
+            className="hover:underline text-sky-500 dark:text-sky-400"
+          >
+            Edit your profile
+          </Link>
+        </div>
+      )}
       <div className="container mx-auto">
-        <div className="flex flex-col lg:flex-row justify-center lg:justify-start items-center space-y-4 lg:space-y-0 lg:space-x-16 lg:items-start">
+        <div className="flex flex-col m-2 p-2 lg:flex-row justify-center lg:justify-start items-center space-y-4 lg:space-y-0 lg:space-x-16 lg:items-start border-b border-slate-200 dark:border-slate-700">
           {user.avatar_url && (
-            <img
-              className="max-w-max lg:max-w-lg rounded-full"
-              src={user.avatar_url}
-            />
+            <img className="max-w-xs rounded-full" src={user.avatar_url} />
           )}
           <div className="flex flex-col lg:mx-auto">
             {user.display_name && (
@@ -59,7 +76,7 @@ function UserPage() {
                 {user.bio}
               </ReactMarkdown>
             )}
-            {user.links.length !== 0 && (
+            {user.links.length !== 0 && user.fields.length === 0 && (
               <div className="flex flex-col mx-auto lg:ml-auto">
                 {user.links.map((link) => (
                   <a
@@ -78,6 +95,19 @@ function UserPage() {
           {user.fields.map((field) => (
             <FieldCard field={field}></FieldCard>
           ))}
+          {user.links.length !== 0 && (
+            <Card title="Links">
+              {user.links.map((link) => (
+                <a
+                  href={link}
+                  rel="nofollow noopener noreferrer me"
+                  className="hover:underline text-sky-500 dark:text-sky-400"
+                >
+                  {link}
+                </a>
+              ))}
+            </Card>
+          )}
         </div>
       </div>
     </>

@@ -67,5 +67,9 @@ export default function Discord() {
     navigate("/");
   }
 
+  if (user || state.isLoading) {
+    return <>Loading...</>;
+  }
+
   return <>wow such login</>;
 }

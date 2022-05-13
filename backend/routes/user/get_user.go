@@ -90,3 +90,27 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 	render.JSON(w, r, dbUserToResponse(u, fields))
 	return nil
 }
+
+func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		log.Errorf("Error getting user: %v", err)
+		return err
+	}
+
+	fields, err := s.DB.UserFields(ctx, u.ID)
+	if err != nil {
+		log.Errorf("Error getting user fields: %v", err)
+		return err
+	}
+
+	render.JSON(w, r, GetMeResponse{
+		GetUserResponse: dbUserToResponse(u, fields),
+		Discord:         u.Discord,
+		DiscordUsername: u.DiscordUsername,
+	})
+	return nil
+}

@@ -13,7 +13,7 @@ func Mount(srv *server.Server, r chi.Router) {
 	s := &Server{srv}
 
 	r.Route("/users", func(r chi.Router) {
-		r.With(server.MustAuth).Get("/@me", server.WrapHandler(nil))
+		r.With(server.MustAuth).Get("/@me", server.WrapHandler(s.getMeUser))
 
 		r.Get("/{userRef}", server.WrapHandler(s.getUser))
 	})
