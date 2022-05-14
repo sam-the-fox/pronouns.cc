@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
@@ -20,7 +19,6 @@ func (s *Server) maybeAuth(next http.Handler) http.Handler {
 
 		claims, err := s.Auth.Claims(token)
 		if err != nil {
-			fmt.Printf("%q: %q\n", "Authorization", token)
 			render.Status(r, errCodeStatuses[ErrForbidden])
 			render.JSON(w, r, APIError{
 				Code:    ErrForbidden,
