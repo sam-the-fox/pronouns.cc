@@ -9,9 +9,15 @@ import {
 import Card from "./Card";
 import type { Field } from "./types";
 
-export default function FieldCard({ field }: { field: Field }) {
+export default function FieldCard({
+  field,
+  draggable,
+}: {
+  field: Field;
+  draggable?: boolean;
+}) {
   return (
-    <Card title={field.name}>
+    <Card title={field.name} draggable={draggable}>
       {field.favourite.map((entry) => (
         <p className="text-lg font-bold">
           <HeartFill className="inline" /> {entry}

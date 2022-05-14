@@ -4,7 +4,6 @@ import { ArrowClockwise } from "react-bootstrap-icons";
 import ReactMarkdown from "react-markdown";
 import { Helmet } from "react-helmet";
 
-import NavItem from "../lib/NavItem";
 import type { User } from "../lib/types";
 import fetchAPI from "../lib/fetch";
 import FieldCard from "../lib/FieldCard";
