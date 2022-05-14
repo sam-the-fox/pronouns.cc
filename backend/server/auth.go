@@ -19,10 +19,10 @@ func (s *Server) maybeAuth(next http.Handler) http.Handler {
 
 		claims, err := s.Auth.Claims(token)
 		if err != nil {
-			render.Status(r, errCodeStatuses[ErrForbidden])
+			render.Status(r, errCodeStatuses[ErrInvalidToken])
 			render.JSON(w, r, APIError{
-				Code:    ErrForbidden,
-				Message: errCodeMessages[ErrForbidden],
+				Code:    ErrInvalidToken,
+				Message: errCodeMessages[ErrInvalidToken],
 			})
 			return
 		}
