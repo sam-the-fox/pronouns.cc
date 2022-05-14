@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"os"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/render"
-	"gitlab.com/1f320/pronouns/backend/db"
-	"gitlab.com/1f320/pronouns/backend/log"
-	"gitlab.com/1f320/pronouns/backend/server"
 	"golang.org/x/oauth2"
 )
 

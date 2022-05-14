@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 
-	"gitlab.com/1f320/pronouns/backend/log"
-	"gitlab.com/1f320/pronouns/backend/server"
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
 
 	_ "github.com/joho/godotenv/autoload"
 )

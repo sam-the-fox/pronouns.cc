@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
 	"github.com/go-chi/render"
-	"gitlab.com/1f320/pronouns/backend/server/auth"
 )
 
 // maybeAuth is a globally-used middleware.

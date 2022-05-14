@@ -1,10 +1,10 @@
 package main
 
 import (
+	"codeberg.org/u1f320/pronouns.cc/backend/routes/auth"
+	"codeberg.org/u1f320/pronouns.cc/backend/routes/user"
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
-	"gitlab.com/1f320/pronouns/backend/routes/auth"
-	"gitlab.com/1f320/pronouns/backend/routes/user"
-	"gitlab.com/1f320/pronouns/backend/server"
 )
 
 // mountRoutes mounts all API routes on the server's router.

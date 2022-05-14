@@ -3,10 +3,10 @@ package server
 import (
 	"os"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"gitlab.com/1f320/pronouns/backend/db"
-	"gitlab.com/1f320/pronouns/backend/server/auth"
 )
 
 // Revision is the git commit, filled at build time

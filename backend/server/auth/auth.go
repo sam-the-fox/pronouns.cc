@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/rs/xid"
-	"gitlab.com/1f320/pronouns/backend/log"
 )
 
 // Claims are the claims used in a token.

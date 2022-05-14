@@ -10,7 +10,7 @@ useful for plurality ([what?](https://morethanone.info/)) and kin, or even just 
 For now though, there's just this landing page <3  
 (And no, the "Log in" button doesn't do anything either.)
 
-Check out the (work in progress) source code on [GitLab](https://gitlab.com/1f320/pronouns)!`;
+Check out the (work in progress) source code on [Codeberg](https://codeberg.org/u1f320/pronouns.cc)!`;
 
 function Home() {
   return (

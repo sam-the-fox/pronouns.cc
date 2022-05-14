@@ -1,8 +1,8 @@
 package user
 
 import (
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
-	"gitlab.com/1f320/pronouns/backend/server"
 )
 
 type Server struct {

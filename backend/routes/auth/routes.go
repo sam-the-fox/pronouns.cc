@@ -3,11 +3,11 @@ package auth
 import (
 	"net/http"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
-	"gitlab.com/1f320/pronouns/backend/log"
-	"gitlab.com/1f320/pronouns/backend/server"
 )
 
 type Server struct {

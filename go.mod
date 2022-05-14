@@ -1,4 +1,4 @@
-module gitlab.com/1f320/pronouns
+module codeberg.org/u1f320/pronouns.cc
 
 go 1.18
 

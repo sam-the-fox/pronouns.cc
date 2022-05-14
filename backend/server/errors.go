@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"github.com/go-chi/render"
-	"gitlab.com/1f320/pronouns/backend/log"
 )
 
 // WrapHandler wraps a modified http.HandlerFunc into a stdlib-compatible one.
