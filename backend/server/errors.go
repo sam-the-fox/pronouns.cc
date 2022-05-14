@@ -69,6 +69,7 @@ const (
 	// Login/authorize error codes
 	ErrInvalidState     = 1001
 	ErrInvalidOAuthCode = 1002
+	ErrInvalidToken     = 1003 // a token was supplied, but it is invalid
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -81,6 +82,7 @@ var errCodeMessages = map[int]string{
 
 	ErrInvalidState:     "Invalid OAuth state",
 	ErrInvalidOAuthCode: "Invalid OAuth code",
+	ErrInvalidToken:     "Supplied token was invalid",
 
 	ErrUserNotFound: "User not found",
 }
@@ -92,6 +94,7 @@ var errCodeStatuses = map[int]int{
 
 	ErrInvalidState:     http.StatusBadRequest,
 	ErrInvalidOAuthCode: http.StatusForbidden,
+	ErrInvalidToken:     http.StatusUnauthorized,
 
 	ErrUserNotFound: http.StatusNotFound,
 }
