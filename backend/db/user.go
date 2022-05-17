@@ -27,7 +27,7 @@ type User struct {
 }
 
 // usernames must match this regex
-var usernameRegex = regexp.MustCompile(`[\w-.]{2,40}`)
+var usernameRegex = regexp.MustCompile(`^[\w-.]{2,40}$`)
 
 const (
 	ErrUserNotFound = errors.Sentinel("user not found")
@@ -135,4 +135,14 @@ func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
 	}
 
 	return u, nil
+}
+
+// UsernameTaken checks if the given username is already taken.
+func (db *DB) UsernameTaken(ctx context.Context, username string) (valid, taken bool, err error) {
+	if !usernameRegex.MatchString(username) {
+		return false, false, nil
+	}
+
+	err = db.QueryRow(ctx, "select exists (select id from users where username = $1)", username).Scan(&taken)
+	return true, taken, err
 }

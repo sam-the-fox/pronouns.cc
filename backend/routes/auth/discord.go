@@ -36,8 +36,9 @@ type discordCallbackResponse struct {
 	Token string   `json:"token,omitempty"`
 	User  *db.User `json:"user,omitempty"`
 
-	Discord string `json:"discord,omitempty"` // username, for UI purposes
-	Ticket  string `json:"ticket,omitempty"`
+	Discord       string `json:"discord,omitempty"` // username, for UI purposes
+	Ticket        string `json:"ticket,omitempty"`
+	RequireInvite bool   `json:"require_invite,omitempty"` // require an invite for signing up
 }
 
 func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
@@ -95,7 +96,20 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// no user found, so save a ticket
+	// no user found, so save a ticket + save their Discord info in Redis
+	ticket := RandBase64(32)
+	err = s.DB.SetJSON(ctx, "discord:"+ticket, du, "EX", "600")
+	if err != nil {
+		log.Errorf("setting Discord user for ticket %q: %v", ticket, err)
+		return err
+	}
+
+	render.JSON(w, r, discordCallbackResponse{
+		HasAccount:    false,
+		Discord:       du.String(),
+		Ticket:        ticket,
+		RequireInvite: s.RequireInvite,
+	})
 
 	return nil
 }

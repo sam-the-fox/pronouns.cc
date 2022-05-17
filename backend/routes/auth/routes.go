@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"os"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
@@ -12,12 +13,20 @@ import (
 
 type Server struct {
 	*server.Server
+
+	RequireInvite bool
 }
 
 func Mount(srv *server.Server, r chi.Router) {
-	s := &Server{srv}
+	s := &Server{
+		Server:        srv,
+		RequireInvite: os.Getenv("REQUIRE_INVITE") == "true",
+	}
 
 	r.Route("/auth", func(r chi.Router) {
+		// check if username is taken
+		r.Get("/username", server.WrapHandler(s.usernameTaken))
+
 		// generate csrf token, returns all supported OAuth provider URLs
 		r.Post("/urls", server.WrapHandler(s.oauthURLs))
 
@@ -58,6 +67,32 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 
 	render.JSON(w, r, oauthURLsResponse{
 		Discord: discordCfg.AuthCodeURL(state),
+	})
+	return nil
+}
+
+func (s *Server) usernameTaken(w http.ResponseWriter, r *http.Request) error {
+	type Response struct {
+		Valid bool `json:"valid"`
+		Taken bool `json:"taken"`
+	}
+
+	name := r.FormValue("username")
+	if name == "" {
+		render.JSON(w, r, Response{
+			Valid: false,
+		})
+		return nil
+	}
+
+	valid, taken, err := s.DB.UsernameTaken(r.Context(), name)
+	if err != nil {
+		return err
+	}
+
+	render.JSON(w, r, Response{
+		Valid: valid,
+		Taken: taken,
 	})
 	return nil
 }

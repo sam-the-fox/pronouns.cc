@@ -14,16 +14,9 @@ const numStates = "1000"
 
 // setCSRFState generates a random string to use as state, then stores that in Redis.
 func (s *Server) setCSRFState(ctx context.Context) (string, error) {
-	b := make([]byte, 32)
+	state := RandBase64(32)
 
-	_, err := rand.Read(b)
-	if err != nil {
-		panic(err)
-	}
-
-	state := base64.URLEncoding.EncodeToString(b)
-
-	err = s.DB.MultiCmd(ctx,
+	err := s.DB.MultiCmd(ctx,
 		radix.Cmd(nil, "LPUSH", "csrf", state),
 		radix.Cmd(nil, "LTRIM", "csrf", "0", numStates),
 	)
@@ -38,4 +31,15 @@ func (s *Server) validateCSRFState(ctx context.Context, state string) (matched b
 		return
 	}
 	return num > 0, nil
+}
+
+// RandBase64 returns a string of random bytes encoded in raw base 64.
+func RandBase64(size int) string {
+	b := make([]byte, size)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+
+	return base64.RawURLEncoding.EncodeToString(b)
 }

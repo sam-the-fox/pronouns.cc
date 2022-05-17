@@ -41,8 +41,9 @@ func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.Han
 type APIError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message,omitempty"`
+	Details string `json:"details,omitempty"`
 
-	// Status is
+	// Status is set as the HTTP status code.
 	Status int `json:"-"`
 }
 
@@ -64,6 +65,8 @@ func (e *APIError) prepare() {
 const (
 	ErrBadRequest          = 400
 	ErrForbidden           = 403
+	ErrNotFound            = 404
+	ErrMethodNotAllowed    = 405
 	ErrInternalServerError = 500 // catch-all code for unknown errors
 
 	// Login/authorize error codes
@@ -79,6 +82,8 @@ var errCodeMessages = map[int]string{
 	ErrBadRequest:          "Bad request",
 	ErrForbidden:           "Forbidden",
 	ErrInternalServerError: "Internal server error",
+	ErrNotFound:            "Not found",
+	ErrMethodNotAllowed:    "Method not allowed",
 
 	ErrInvalidState:     "Invalid OAuth state",
 	ErrInvalidOAuthCode: "Invalid OAuth code",
@@ -91,6 +96,8 @@ var errCodeStatuses = map[int]int{
 	ErrBadRequest:          http.StatusBadRequest,
 	ErrForbidden:           http.StatusForbidden,
 	ErrInternalServerError: http.StatusInternalServerError,
+	ErrNotFound:            http.StatusNotFound,
+	ErrMethodNotAllowed:    http.StatusMethodNotAllowed,
 
 	ErrInvalidState:     http.StatusBadRequest,
 	ErrInvalidOAuthCode: http.StatusForbidden,
