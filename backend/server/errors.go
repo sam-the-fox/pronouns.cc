@@ -43,6 +43,8 @@ type APIError struct {
 	Message string `json:"message,omitempty"`
 	Details string `json:"details,omitempty"`
 
+	RatelimitReset *int `json:"ratelimit_reset,omitempty"`
+
 	// Status is set as the HTTP status code.
 	Status int `json:"-"`
 }
@@ -67,6 +69,7 @@ const (
 	ErrForbidden           = 403
 	ErrNotFound            = 404
 	ErrMethodNotAllowed    = 405
+	ErrTooManyRequests     = 429
 	ErrInternalServerError = 500 // catch-all code for unknown errors
 
 	// Login/authorize error codes
@@ -83,6 +86,7 @@ var errCodeMessages = map[int]string{
 	ErrForbidden:           "Forbidden",
 	ErrInternalServerError: "Internal server error",
 	ErrNotFound:            "Not found",
+	ErrTooManyRequests:     "Rate limit reached",
 	ErrMethodNotAllowed:    "Method not allowed",
 
 	ErrInvalidState:     "Invalid OAuth state",
@@ -97,6 +101,7 @@ var errCodeStatuses = map[int]int{
 	ErrForbidden:           http.StatusForbidden,
 	ErrInternalServerError: http.StatusInternalServerError,
 	ErrNotFound:            http.StatusNotFound,
+	ErrTooManyRequests:     http.StatusTooManyRequests,
 	ErrMethodNotAllowed:    http.StatusMethodNotAllowed,
 
 	ErrInvalidState:     http.StatusBadRequest,

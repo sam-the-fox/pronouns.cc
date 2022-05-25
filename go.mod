@@ -8,6 +8,7 @@ require (
 	github.com/bwmarrin/discordgo v0.25.0
 	github.com/georgysavva/scany v0.3.0
 	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-chi/httprate v0.5.3
 	github.com/go-chi/render v1.0.1
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/jackc/pgconn v1.12.0
@@ -21,6 +22,7 @@ require (
 )
 
 require (
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/go-gorp/gorp/v3 v3.0.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
