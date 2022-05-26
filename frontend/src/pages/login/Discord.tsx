@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import fetchAPI from "../../lib/fetch";
+import Loading from "../../lib/Loading";
 import { userState } from "../../lib/store";
 import { MeUser } from "../../lib/types";
 
@@ -12,6 +13,7 @@ interface CallbackResponse {
 
   discord?: string;
   ticket?: string;
+  require_invite?: boolean;
 }
 
 export default function Discord() {
@@ -68,7 +70,7 @@ export default function Discord() {
   }
 
   if (user || state.isLoading) {
-    return <>Loading...</>;
+    return <Loading />;
   }
 
   return <>wow such login</>;

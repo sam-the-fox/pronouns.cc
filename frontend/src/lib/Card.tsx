@@ -1,8 +1,13 @@
-import React, { PropsWithChildren } from "react";
+import React, { ReactNode, PropsWithChildren } from "react";
 
-export type Props = PropsWithChildren<{ title: string; draggable?: boolean }>;
+export type Props = {
+  children?: ReactNode | undefined;
+  title: string;
+  draggable?: boolean;
+  footer?: ReactNode | undefined;
+};
 
-export default function Card({ title, draggable, children }: Props) {
+export default function Card({ title, draggable, children, footer }: Props) {
   return (
     <div className="bg-slate-100 dark:bg-slate-700 rounded-md shadow">
       <h1
@@ -13,6 +18,11 @@ export default function Card({ title, draggable, children }: Props) {
         {title}
       </h1>
       <div className="flex flex-col p-2">{children}</div>
+      {footer && (
+        <div className="p-2 border-t border-zinc-200 dark:border-slate-800">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

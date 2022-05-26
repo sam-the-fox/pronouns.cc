@@ -5,9 +5,23 @@ import {
   People,
   EmojiLaughing,
 } from "react-bootstrap-icons";
+import BlueLink from "./BlueLink";
 
 import Card from "./Card";
 import type { Field } from "./types";
+
+function linkPronoun(input: string) {
+  if (input.includes(" ") || input.split("/").length !== 5)
+    return <span>{input}</span>;
+
+  const [sub, obj, possDet, possPro, reflexive] = input.split("/");
+
+  return (
+    <BlueLink to={`/pronouns/${sub}/${obj}/${possDet}/${possPro}/${reflexive}`}>
+      {sub}/{obj}/{possDet}
+    </BlueLink>
+  );
+}
 
 export default function FieldCard({
   field,
@@ -20,7 +34,7 @@ export default function FieldCard({
     <Card title={field.name} draggable={draggable}>
       {field.favourite.map((entry) => (
         <p className="text-lg font-bold">
-          <HeartFill className="inline" /> {entry}
+          <HeartFill className="inline" /> {linkPronoun(entry)}
         </p>
       ))}
       {field.okay.length !== 0 && (

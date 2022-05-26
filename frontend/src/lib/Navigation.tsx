@@ -45,7 +45,7 @@ function Navigation() {
 
   const nav = user ? (
     <>
-      <NavItem to={`/u/${user.username}`}>@{user.username}</NavItem>
+      <NavItem to={`/@${user.username}`}>@{user.username}</NavItem>
       <NavItem to="/settings">Settings</NavItem>
       <NavItem to="/logout">Log out</NavItem>
     </>

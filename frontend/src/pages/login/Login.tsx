@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import fetchAPI from "../../lib/fetch";
+import Loading from "../../lib/Loading";
 import { userState } from "../../lib/store";
 
 interface URLsResponse {
@@ -38,7 +39,7 @@ export default function Login() {
   }, []);
 
   if (state.loading) {
-    return <>Loading...</>;
+    return <Loading />;
   } else if (state.error) {
     return <>Error: {`${state.error}`}</>;
   }

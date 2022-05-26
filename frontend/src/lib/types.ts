@@ -33,6 +33,7 @@ export interface Field {
 export interface APIError {
   code: ErrorCode;
   message?: string;
+  details?: string;
 }
 
 export enum ErrorCode {
@@ -44,4 +45,10 @@ export enum ErrorCode {
   InvalidOAuthCode = 1002,
 
   UserNotFound = 2001,
+}
+
+export interface SignupRequest {
+  username: string;
+  ticket: string;
+  invite_code?: string;
 }

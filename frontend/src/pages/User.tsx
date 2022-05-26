@@ -10,6 +10,7 @@ import FieldCard from "../lib/FieldCard";
 import Card from "../lib/Card";
 import { userState } from "../lib/store";
 import { useRecoilValue } from "recoil";
+import Loading from "../lib/Loading";
 
 function UserPage() {
   const params = useParams();
@@ -21,15 +22,10 @@ function UserPage() {
     fetchAPI<User>(`/users/${params.username}`).then((res) => {
       setUser(res);
     });
-  }, []);
+  }, [params.username]);
 
   if (user == null) {
-    return (
-      <>
-        <ArrowClockwise />
-        <span>Loading...</span>
-      </>
-    );
+    return <Loading />;
   }
 
   return (
@@ -57,7 +53,7 @@ function UserPage() {
           {user.avatar_url && (
             <img className="max-w-xs rounded-full" src={user.avatar_url} />
           )}
-          <div className="flex flex-col lg:mx-auto">
+          <div className="flex flex-col">
             {user.display_name && (
               <h1 className="text-2xl font-bold">{user.display_name}</h1>
             )}
@@ -75,10 +71,11 @@ function UserPage() {
                 {user.bio}
               </ReactMarkdown>
             )}
-            {user.links.length !== 0 && user.fields.length === 0 && (
+            {user.links?.length && user.fields?.length && (
               <div className="flex flex-col mx-auto lg:ml-auto">
-                {user.links.map((link) => (
+                {user.links.map((link, index) => (
                   <a
+                    key={index}
                     href={link}
                     rel="nofollow noopener noreferrer me"
                     className="hover:underline text-sky-500 dark:text-sky-400"
@@ -91,13 +88,14 @@ function UserPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
-          {user.fields.map((field) => (
-            <FieldCard field={field}></FieldCard>
+          {user.fields?.map((field, index) => (
+            <FieldCard key={index} field={field}></FieldCard>
           ))}
-          {user.links.length !== 0 && (
+          {user.links?.length && (
             <Card title="Links">
-              {user.links.map((link) => (
+              {user.links.map((link, index) => (
                 <a
+                  key={index}
                   href={link}
                   rel="nofollow noopener noreferrer me"
                   className="hover:underline text-sky-500 dark:text-sky-400"
