@@ -20,10 +20,6 @@ import Loading from "../lib/Loading";
 import Card from "../lib/Card";
 import TextInput from "../lib/TextInput";
 
-interface FieldWithID extends Field {
-  id: number;
-}
-
 interface EditField {
   id: number;
   name: string;
@@ -113,11 +109,26 @@ export default function EditMe() {
               field.name = e.target.value;
               setFields([...fields]);
             }}
-            onChangeFavourite={null}
-            onChangeOkay={null}
-            onChangeJokingly={null}
-            onChangeFriends={null}
-            onChangeAvoid={null}
+            onChangeFavourite={(e, entry: string) => {
+              field.pronouns[entry] = PronounChoice.favourite;
+              setFields([...fields]);
+            }}
+            onChangeOkay={(e, entry: string) => {
+              field.pronouns[entry] = PronounChoice.okay;
+              setFields([...fields]);
+            }}
+            onChangeJokingly={(e, entry: string) => {
+              field.pronouns[entry] = PronounChoice.jokingly;
+              setFields([...fields]);
+            }}
+            onChangeFriends={(e, entry: string) => {
+              field.pronouns[entry] = PronounChoice.friendsOnly;
+              setFields([...fields]);
+            }}
+            onChangeAvoid={(e, entry: string) => {
+              field.pronouns[entry] = PronounChoice.avoid;
+              setFields([...fields]);
+            }}
             onClickDelete={(_) => {
               const newFields = [...fields];
               newFields.splice(i, 1);
@@ -133,11 +144,14 @@ export default function EditMe() {
 type EditableCardProps = {
   field: EditField;
   onChangeName: React.ChangeEventHandler<HTMLInputElement>;
-  onChangeFavourite: any;
-  onChangeOkay: any;
-  onChangeJokingly: any;
-  onChangeFriends: any;
-  onChangeAvoid: any;
+  onChangeFavourite(
+    e: React.MouseEvent<HTMLButtonElement>,
+    entry: string
+  ): void;
+  onChangeOkay(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
+  onChangeJokingly(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
+  onChangeFriends(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
+  onChangeAvoid(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
   onClickDelete: React.MouseEventHandler<HTMLButtonElement>;
 };
 
@@ -167,6 +181,7 @@ function EditableCard(props: EditableCardProps) {
               <div className="rounded-md">
                 <button
                   type="button"
+                  onClick={(e) => props.onChangeFavourite(e, pronoun)}
                   className={`${
                     choice == PronounChoice.favourite
                       ? "bg-slate-500"
@@ -177,6 +192,7 @@ function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
+                  onClick={(e) => props.onChangeOkay(e, pronoun)}
                   className={`${
                     choice == PronounChoice.okay
                       ? "bg-slate-500"
@@ -187,6 +203,7 @@ function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
+                  onClick={(e) => props.onChangeJokingly(e, pronoun)}
                   className={`${
                     choice == PronounChoice.jokingly
                       ? "bg-slate-500"
@@ -197,6 +214,7 @@ function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
+                  onClick={(e) => props.onChangeFriends(e, pronoun)}
                   className={`${
                     choice == PronounChoice.friendsOnly
                       ? "bg-slate-500"
@@ -207,6 +225,7 @@ function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
+                  onClick={(e) => props.onChangeAvoid(e, pronoun)}
                   className={`${
                     choice == PronounChoice.avoid
                       ? "bg-slate-500"
