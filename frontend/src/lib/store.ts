@@ -1,5 +1,6 @@
 import axios from "axios";
 import { atom, useRecoilState, useRecoilValue } from "recoil";
+import fetchAPI from "./fetch";
 import { APIError, ErrorCode, MeUser } from "./types";
 
 export const userState = atom<MeUser>({
@@ -12,16 +13,12 @@ async function getCurrentUser() {
   if (!token) return null;
 
   try {
-    const resp = await axios.get<MeUser | APIError>("/api/v1/users/@me");
-    if (resp.status === 200) {
-      return resp.data as MeUser;
-    }
-
-    // if we got a forbidden error, the token is invalid
-    if ((resp.data as APIError).code === ErrorCode.Forbidden) {
+    return await fetchAPI<MeUser>("/users/@me");
+  } catch (e) {
+    if ((e as APIError).code === ErrorCode.Forbidden) {
       localStorage.removeItem("pronouns-token");
     }
-  } catch (e) {
+
     console.log("Error fetching /users/@me:", e);
   }
 
