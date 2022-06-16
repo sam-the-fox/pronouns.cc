@@ -38,6 +38,14 @@ const (
 	ErrUsernameTooLong  = errors.Sentinel("username is too long")
 )
 
+const (
+	MaxUsernameLength    = 40
+	MaxDisplayNameLength = 100
+	MaxUserBioLength     = 1000
+	MaxUserLinksLength   = 25
+	MaxLinkLength        = 256
+)
+
 // CreateUser creates a user with the given username.
 func (db *DB) CreateUser(ctx context.Context, username string) (u User, err error) {
 	// check if the username is valid
@@ -145,4 +153,50 @@ func (db *DB) UsernameTaken(ctx context.Context, username string) (valid, taken 
 
 	err = db.QueryRow(ctx, "select exists (select id from users where username = $1)", username).Scan(&taken)
 	return true, taken, err
+}
+
+func (db *DB) UpdateUser(
+	ctx context.Context,
+	tx pgx.Tx, id xid.ID,
+	displayName, bio *string,
+	links *[]string,
+) (u User, err error) {
+	if displayName == nil && bio == nil && links == nil {
+		return u, ErrNothingToUpdate
+	}
+
+	builder := sq.Update("users").Where("id = ?", id)
+	if displayName != nil {
+		if *displayName == "" {
+			builder = builder.Set("display_name", nil)
+		} else {
+			builder = builder.Set("display_name", *displayName)
+		}
+	}
+	if bio != nil {
+		if *bio == "" {
+			builder = builder.Set("bio", nil)
+		} else {
+			builder = builder.Set("bio", *bio)
+		}
+	}
+	if links != nil {
+		if len(*links) == 0 {
+			builder = builder.Set("links", nil)
+		} else {
+			builder = builder.Set("links", *links)
+		}
+	}
+
+	sql, args, err := builder.Suffix("RETURNING *").ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, tx, &u, sql, args...)
+	if err != nil {
+		return u, errors.Wrap(err, "executing sql")
+	}
+
+	return u, nil
 }

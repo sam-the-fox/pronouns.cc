@@ -91,13 +91,7 @@ func (db *DB) UserFields(ctx context.Context, id xid.ID) (fs []Field, err error)
 }
 
 // SetUserFields updates the fields for the given user.
-func (db *DB) SetUserFields(ctx context.Context, userID xid.ID, fields []Field) (err error) {
-	tx, err := db.Begin(ctx)
-	if err != nil {
-		return errors.Wrap(err, "building sql")
-	}
-	defer tx.Rollback(ctx)
-
+func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, fields []Field) (err error) {
 	sql, args, err := sq.Delete("user_fields").Where("user_id = ?", userID).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "building sql")
@@ -123,11 +117,6 @@ func (db *DB) SetUserFields(ctx context.Context, userID xid.ID, fields []Field) 
 		}))
 	if err != nil {
 		return errors.Wrap(err, "inserting new fields")
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		return errors.Wrap(err, "committing transaction")
 	}
 	return nil
 }

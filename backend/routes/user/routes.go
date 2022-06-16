@@ -17,7 +17,7 @@ func Mount(srv *server.Server, r chi.Router) {
 
 		r.With(server.MustAuth).Group(func(r chi.Router) {
 			r.Get("/@me", server.WrapHandler(s.getMeUser))
-			r.Patch("/@me/fields", server.WrapHandler(s.patchUserFields))
+			r.Patch("/@me", server.WrapHandler(s.patchUser))
 		})
 	})
 }

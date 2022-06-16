@@ -14,6 +14,8 @@ import (
 
 var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
+const ErrNothingToUpdate = errors.Sentinel("nothing to update")
+
 type DB struct {
 	*pgxpool.Pool
 
