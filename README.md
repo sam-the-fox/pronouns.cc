@@ -11,7 +11,11 @@ A work-in-progress site to share your pronouns and preferred terms.
 
 ## Development
 
-Note that
+When working on the frontend, run the API and then use `yarn dev` for hot reloading.
+
+Note that Vite does _not_ proxy the preview pages (`/@user` and `/@user/member`),
+and as such, the Go server must be used directly to test it. However, as the preview pages are
+rendered by the Go server, and doesn't share code with the frontend (except for CSS), I consider this an acceptable compromise.
 
 ## Building
 
