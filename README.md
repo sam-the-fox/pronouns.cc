@@ -9,6 +9,17 @@ A work-in-progress site to share your pronouns and preferred terms.
 - Temporary data is stored in Redis
 - The frontend is written in TypeScript with React, using [Vite](https://vitejs.dev/)
 
+## Development
+
+Note that
+
+## Building
+
+Run `make all`. This will build the frontend, then embed that in the backend.
+
+The resulting `pronouns` binary is a statically linked executable containing everything needed to run the website.  
+Note that it should still be run behind a reverse proxy for TLS.
+
 ## License
 
     Copyright (C) 2022  Sam <u1f320>

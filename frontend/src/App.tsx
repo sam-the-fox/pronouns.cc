@@ -1,4 +1,4 @@
-import { Routes, Route, useParams } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import Container from "./lib/Container";
 import Navigation from "./lib/Navigation";
@@ -15,8 +15,8 @@ function App() {
       <Container>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/@:username" element={<User />} />
-          <Route path="/@:username/:member" element={<User />} />
+          <Route path="/u/:username" element={<User />} />
+          <Route path="/u/:username/:member" element={<User />} />
           <Route path="/edit" element={<EditMe />} />
           <Route path="/edit/:member" element={<EditMe />} />
           <Route path="/login" element={<Login />} />

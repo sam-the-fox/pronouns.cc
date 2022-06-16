@@ -15,7 +15,10 @@ async function getCurrentUser() {
   try {
     return await fetchAPI<MeUser>("/users/@me");
   } catch (e) {
-    if ((e as APIError).code === ErrorCode.Forbidden) {
+    if (
+      (e as APIError).code === ErrorCode.Forbidden ||
+      (e as APIError).code === ErrorCode.InvalidToken
+    ) {
       localStorage.removeItem("pronouns-token");
     }
 

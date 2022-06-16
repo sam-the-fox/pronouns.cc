@@ -55,7 +55,7 @@ export default function Discord() {
         console.log("token:", resp.token);
         localStorage.setItem("pronouns-token", resp.token);
 
-        if (resp.user) setUser(resp.user as MeUser);
+        setUser(resp.user);
       },
       (err) => {
         console.log(err);

@@ -7,7 +7,7 @@ import Logo from "./logo";
 import { useRecoilState } from "recoil";
 import { userState } from "./store";
 import fetchAPI from "./fetch";
-import { MeUser } from "./types";
+import { APIError, ErrorCode, MeUser } from "./types";
 
 function Navigation() {
   const [user, setUser] = useRecoilState(userState);
@@ -17,7 +17,15 @@ function Navigation() {
 
     fetchAPI<MeUser>("/users/@me").then(
       (res) => setUser(res),
-      (err) => console.log("fetching /users/@me", err)
+      (err) => {
+        console.log("fetching /users/@me", err);
+        if (
+          (err as APIError).code == ErrorCode.InvalidToken ||
+          (err as APIError).code == ErrorCode.Forbidden
+        ) {
+          localStorage.removeItem("pronouns-token");
+        }
+      }
     );
   }, []);
 
@@ -45,7 +53,7 @@ function Navigation() {
 
   const nav = user ? (
     <>
-      <NavItem to={`/@${user.username}`}>@{user.username}</NavItem>
+      <NavItem to={`/u/${user.username}`}>@{user.username}</NavItem>
       <NavItem to="/settings">Settings</NavItem>
       <NavItem to="/logout">Log out</NavItem>
     </>

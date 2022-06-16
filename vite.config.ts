@@ -11,7 +11,6 @@ export default defineConfig({
         // assumes port 8080 in .env for development
         target: "http://localhost:8080",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },

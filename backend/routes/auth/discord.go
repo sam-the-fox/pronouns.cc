@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -85,13 +84,13 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		fmt.Println(token)
-
 		render.JSON(w, r, discordCallbackResponse{
 			HasAccount: true,
 			Token:      token,
 			User:       &u,
 		})
+		return nil
+
 	} else if err != db.ErrUserNotFound { // internal error
 		return err
 	}

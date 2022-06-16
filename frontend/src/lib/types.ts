@@ -43,6 +43,7 @@ export enum ErrorCode {
 
   InvalidState = 1001,
   InvalidOAuthCode = 1002,
+  InvalidToken = 1003,
 
   UserNotFound = 2001,
 }

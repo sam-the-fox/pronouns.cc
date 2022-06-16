@@ -6,10 +6,18 @@ export default async function fetchAPI<T>(
   method = "GET",
   body = null
 ) {
+  let headers = {};
+  const token = localStorage.getItem("pronouns-token");
+  if (token) {
+    headers = {
+      Authorization: token,
+    };
+  }
+
   const resp = await fetch(`/api/v1${path}`, {
     method,
     headers: {
-      Authorization: localStorage.getItem("pronouns-token"),
+      ...headers,
       "Content-Type": "application/json",
     },
     body: body ? JSON.stringify(body) : null,
