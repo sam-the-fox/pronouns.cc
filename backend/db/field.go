@@ -104,9 +104,10 @@ func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, field
 
 	_, err = tx.CopyFrom(ctx,
 		pgx.Identifier{"user_fields"},
-		[]string{"name", "favourite", "okay", "jokingly", "friends_only", "avoid"},
+		[]string{"user_id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid"},
 		pgx.CopyFromSlice(len(fields), func(i int) ([]any, error) {
 			return []any{
+				userID,
 				fields[i].Name,
 				fields[i].Favourite,
 				fields[i].Okay,
