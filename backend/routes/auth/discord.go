@@ -32,8 +32,8 @@ type oauthCallbackRequest struct {
 type discordCallbackResponse struct {
 	HasAccount bool `json:"has_account"` // if true, Token and User will be set. if false, Ticket and Discord will be set
 
-	Token string   `json:"token,omitempty"`
-	User  *db.User `json:"user,omitempty"`
+	Token string        `json:"token,omitempty"`
+	User  *userResponse `json:"user,omitempty"`
 
 	Discord       string `json:"discord,omitempty"` // username, for UI purposes
 	Ticket        string `json:"ticket,omitempty"`
@@ -87,8 +87,9 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		render.JSON(w, r, discordCallbackResponse{
 			HasAccount: true,
 			Token:      token,
-			User:       &u,
+			User:       dbUserToUserResponse(u),
 		})
+
 		return nil
 
 	} else if err != db.ErrUserNotFound { // internal error

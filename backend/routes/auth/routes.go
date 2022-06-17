@@ -4,17 +4,44 @@ import (
 	"net/http"
 	"os"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/rs/xid"
 )
 
 type Server struct {
 	*server.Server
 
 	RequireInvite bool
+}
+
+type userResponse struct {
+	ID          xid.ID   `json:"id"`
+	Username    string   `json:"username"`
+	DisplayName *string  `json:"display_name"`
+	Bio         *string  `json:"bio"`
+	AvatarURL   *string  `json:"avatar_url"`
+	Links       []string `json:"links"`
+
+	Discord         *string `json:"discord"`
+	DiscordUsername *string `json:"discord_username"`
+}
+
+func dbUserToUserResponse(u db.User) *userResponse {
+	return &userResponse{
+		ID:              u.ID,
+		Username:        u.Username,
+		DisplayName:     u.DisplayName,
+		Bio:             u.Bio,
+		AvatarURL:       u.AvatarURL,
+		Links:           u.Links,
+		Discord:         u.Discord,
+		DiscordUsername: u.DiscordUsername,
+	}
 }
 
 func Mount(srv *server.Server, r chi.Router) {
