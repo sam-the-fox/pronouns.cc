@@ -71,20 +71,22 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	// max 25 fields
-	if len(*req.Fields) > db.MaxFields {
-		return server.APIError{
-			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Too many fields (max %d, current %d)", db.MaxFields, len(*req.Fields)),
-		}
-	}
-
-	// validate all fields
-	for i, field := range *req.Fields {
-		if s := field.Validate(); s != "" {
+	if (req.Fields) != nil {
+		// max 25 fields
+		if len(*req.Fields) > db.MaxFields {
 			return server.APIError{
 				Code:    server.ErrBadRequest,
-				Details: fmt.Sprintf("field %d: %s", i, s),
+				Details: fmt.Sprintf("Too many fields (max %d, current %d)", db.MaxFields, len(*req.Fields)),
+			}
+		}
+
+		// validate all fields
+		for i, field := range *req.Fields {
+			if s := field.Validate(); s != "" {
+				return server.APIError{
+					Code:    server.ErrBadRequest,
+					Details: fmt.Sprintf("field %d: %s", i, s),
+				}
 			}
 		}
 	}
