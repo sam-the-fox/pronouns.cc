@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +11,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"codeberg.org/u1f320/pronouns.cc/frontend"
+	"emperror.dev/errors"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -56,40 +57,39 @@ func main() {
 func setupFrontend(r chi.Router, s *server.Server) {
 	r.Use(middleware.Recoverer)
 
-	r.Get("/@{user}", a)
-	r.Get("/@{user}/{member}", a)
+	r.Get("/@{user}", nil)
+	r.Get("/@{user}/{member}", nil)
 
 	r.Mount("/api", s.Router)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			data []byte
-			err  error
-		)
+		data, err := frontend.Data.ReadFile("dist" + r.URL.Path)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				data, err = frontend.Data.ReadFile("dist/index.html")
+				if err != nil && !errors.Is(err, fs.ErrNotExist) {
+					log.Errorf("serving frontend file: %v", err)
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					return
+				}
+
+				http.Error(w, "Not found", http.StatusNotFound)
+				return
+			}
+
+			log.Errorf("serving frontend file: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 
 		if strings.HasSuffix(r.URL.Path, ".js") {
-			data, err = frontend.Data.ReadFile("dist" + r.URL.Path)
 			w.Header().Add("content-type", "application/javascript")
 		} else if strings.HasSuffix(r.URL.Path, ".css") {
-			data, err = frontend.Data.ReadFile("dist" + r.URL.Path)
 			w.Header().Add("content-type", "text/css")
-		} else if strings.HasSuffix(r.URL.Path, ".map") {
-			data, err = frontend.Data.ReadFile("dist" + r.URL.Path)
 		} else {
-			data, err = frontend.Data.ReadFile("dist/index.html")
 			w.Header().Add("content-type", "text/html")
-		}
-		if err != nil {
-			panic(err)
 		}
 
 		w.Write(data)
 	})
-}
-
-func a(w http.ResponseWriter, r *http.Request) {
-	user := chi.URLParam(r, "user")
-	member := chi.URLParam(r, "member")
-
-	fmt.Fprintf(w, "user: %v, member: %v", user, member)
 }

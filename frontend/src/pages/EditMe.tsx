@@ -12,13 +12,13 @@ import {
   People,
   Trash3,
 } from "react-bootstrap-icons";
-import CreatableSelect from "react-select/creatable";
 
 import { userState } from "../lib/store";
-import { Field } from "../lib/types";
 import Loading from "../lib/Loading";
 import Card from "../lib/Card";
 import TextInput from "../lib/TextInput";
+import fetchAPI from "../lib/fetch";
+import { MeUser, Field } from "../lib/types";
 
 interface EditField {
   id: number;
@@ -46,6 +46,51 @@ function fieldsEqual(arr1: EditField[], arr2: EditField[]) {
   );
 }
 
+async function updateUser(args: {
+  displayName: string;
+  bio: string;
+  fields: EditField[];
+}) {
+  const newFields = args.fields.map((editField) => {
+    const field: Field = {
+      name: editField.name,
+      favourite: [],
+      okay: [],
+      jokingly: [],
+      friends_only: [],
+      avoid: [],
+    };
+
+    Object.keys(editField).forEach((pronoun) => {
+      switch (editField.pronouns[pronoun]) {
+        case PronounChoice.favourite:
+          field.favourite?.push(pronoun);
+          break;
+        case PronounChoice.okay:
+          field.okay?.push(pronoun);
+          break;
+        case PronounChoice.jokingly:
+          field.jokingly?.push(pronoun);
+          break;
+        case PronounChoice.friendsOnly:
+          field.friends_only?.push(pronoun);
+          break;
+        case PronounChoice.avoid:
+          field.avoid?.push(pronoun);
+          break;
+      }
+    });
+
+    return field;
+  });
+
+  return await fetchAPI<MeUser>("/users/@me", "PATCH", {
+    display_name: args.displayName,
+    bio: args.bio,
+    fields: newFields,
+  });
+}
+
 export default function EditMe() {
   const navigate = useNavigate();
 
@@ -69,19 +114,19 @@ export default function EditMe() {
       pronouns: {},
     };
 
-    f.favourite.forEach((val) => {
+    f.favourite?.forEach((val) => {
       field.pronouns[val] = PronounChoice.favourite;
     });
-    f.okay.forEach((val) => {
+    f.okay?.forEach((val) => {
       field.pronouns[val] = PronounChoice.okay;
     });
-    f.jokingly.forEach((val) => {
+    f.jokingly?.forEach((val) => {
       field.pronouns[val] = PronounChoice.jokingly;
     });
-    f.friends_only.forEach((val) => {
+    f.friends_only?.forEach((val) => {
       field.pronouns[val] = PronounChoice.friendsOnly;
     });
-    f.avoid.forEach((val) => {
+    f.avoid?.forEach((val) => {
       field.pronouns[val] = PronounChoice.avoid;
     });
 

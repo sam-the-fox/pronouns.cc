@@ -4,7 +4,7 @@ import type { APIError } from "./types";
 export default async function fetchAPI<T>(
   path: string,
   method = "GET",
-  body = null
+  body: any = null
 ) {
   let headers = {};
   const token = localStorage.getItem("pronouns-token");
