@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { MoonStars, Sun, List } from "react-bootstrap-icons";
 
+import Link from "next/link";
 import NavItem from "./NavItem";
 import Logo from "./logo";
 import { useRecoilState } from "recoil";
-import { userState } from "./store";
-import fetchAPI from "./fetch";
-import { APIError, ErrorCode, MeUser } from "./types";
+import { userState } from "../lib/state";
+import fetchAPI from "../lib/fetch";
+import { APIError, ErrorCode, MeUser } from "../lib/types";
 
-function Navigation() {
+export default function Navigation() {
   const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
@@ -27,21 +27,24 @@ function Navigation() {
         }
       }
     );
-  }, []);
+  }, [user, setUser]);
 
-  const [darkTheme, setDarkTheme] = useState<boolean>(
-    localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-  );
-
+  const [darkTheme, setDarkTheme] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState(false);
 
-  if (darkTheme) {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
+  useEffect(() => {
+    setDarkTheme(
+      localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+
+    if (darkTheme) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkTheme]);
 
   const storeTheme = (useDarkTheme: boolean | null) => {
     if (useDarkTheme === null) {
@@ -53,13 +56,13 @@ function Navigation() {
 
   const nav = user ? (
     <>
-      <NavItem to={`/u/${user.username}`}>@{user.username}</NavItem>
-      <NavItem to="/settings">Settings</NavItem>
-      <NavItem to="/logout">Log out</NavItem>
+      <NavItem href={`/u/${user.username}`}>@{user.username}</NavItem>
+      <NavItem href="/settings">Settings</NavItem>
+      <NavItem href="/logout">Log out</NavItem>
     </>
   ) : (
     <>
-      <NavItem to="/login">Log in</NavItem>
+      <NavItem href="/login">Log in</NavItem>
     </>
   );
 
@@ -69,7 +72,7 @@ function Navigation() {
         <div className="max-w-8xl mx-auto">
           <div className="py-4 mx-4">
             <div className="flex items-center">
-              <Link to="/">
+              <Link href="/">
                 <Logo />
               </Link>
               <div className="ml-auto flex items-center">
@@ -119,5 +122,3 @@ function Navigation() {
     </>
   );
 }
-
-export default Navigation;

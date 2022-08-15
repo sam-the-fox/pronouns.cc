@@ -1,4 +1,3 @@
-import axios from "axios";
 import type { APIError } from "./types";
 
 export default async function fetchAPI<T>(
