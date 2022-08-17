@@ -72,8 +72,10 @@ export default function Navigation() {
         <div className="max-w-8xl mx-auto">
           <div className="py-4 mx-4">
             <div className="flex items-center">
-              <Link href="/">
-                <Logo />
+              <Link href="/" passHref>
+                <a>
+                  <Logo />
+                </a>
               </Link>
               <div className="ml-auto flex items-center">
                 <nav className="hidden lg:flex">

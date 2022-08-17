@@ -1,19 +1,23 @@
 import type { APIError } from "./types";
 
+const apiBase = process.env.API_BASE ?? "http://localhost:8080";
+
 export default async function fetchAPI<T>(
   path: string,
   method = "GET",
   body: any = null
 ) {
   let headers = {};
-  const token = localStorage.getItem("pronouns-token");
+  const token =
+    typeof localStorage !== "undefined" &&
+    localStorage.getItem("pronouns-token");
   if (token) {
     headers = {
       Authorization: token,
     };
   }
 
-  const resp = await fetch(`/api/v1${path}`, {
+  const resp = await fetch(`${apiBase}/v1${path}`, {
     method,
     headers: {
       ...headers,
