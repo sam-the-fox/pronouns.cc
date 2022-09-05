@@ -5,6 +5,7 @@ import { User } from "../../../lib/types";
 import FieldCard from "../../../components/FieldCard";
 import Card from "../../../components/Card";
 import ReactMarkdown from "react-markdown";
+import Image from "next/image";
 
 interface Props {
   user: User;
@@ -19,7 +20,11 @@ export default function Index({ user }: Props) {
       <div className="container mx-auto">
         <div className="flex flex-col m-2 p-2 lg:flex-row justify-center lg:justify-start items-center space-y-4 lg:space-y-0 lg:space-x-16 lg:items-start border-b border-slate-200 dark:border-slate-700">
           {user.avatar_url && (
-            <img className="max-w-xs rounded-full" src={user.avatar_url} />
+            <Image
+              className="max-w-xs rounded-full"
+              src={user.avatar_url}
+              alt={`@${user.username}'s avatar`}
+            />
           )}
           <div className="flex flex-col">
             {user.display_name && (
