@@ -16,6 +16,21 @@ create table users (
     discord_username text
 );
 
+create table user_names (
+    user_id text      not null references users (id) on delete cascade,
+    id      bigserial primary key, -- ID is used for sorting; when order changes, existing rows are deleted and new ones are created
+    name    text      not null,
+    status  int       not null
+)
+
+create table user_pronouns (
+    user_id      text      not null references users (id) on delete cascade,
+    id           bigserial primary key,
+    display_text text, -- if unset, falls back to first 2 parts of pronouns
+    pronouns     text      not null,
+    status       int       not null
+);
+
 create table user_fields (
     user_id text      not null references users (id) on delete cascade,
     id      bigserial primary key,
@@ -36,6 +51,21 @@ create table members (
 
     avatar_url text,
     links      text
+);
+
+create table member_names (
+    member_id text      not null references members (id) on delete cascade,
+    id      bigserial primary key, -- ID is used for sorting; when order changes, existing rows are deleted and new ones are created
+    name    text      not null,
+    status  int       not null
+)
+
+create table member_pronouns (
+    member_id    text      not null references members (id) on delete cascade,
+    id           bigserial primary key,
+    display_text text, -- if unset, falls back to first 2 parts of pronouns
+    pronouns     text      not null,
+    status       int       not null
 );
 
 create table member_fields (
