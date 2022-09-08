@@ -18,6 +18,8 @@ type GetUserResponse struct {
 	Bio         *string         `json:"bio"`
 	AvatarURL   *string         `json:"avatar_url"`
 	Links       []string        `json:"links"`
+	Names       []db.Name       `json:"names"`
+	Pronouns    []db.Pronoun    `json:"pronouns"`
 	Members     []PartialMember `json:"members"`
 	Fields      []db.Field      `json:"fields"`
 }
@@ -35,7 +37,7 @@ type PartialMember struct {
 	AvatarURL *string `json:"avatar_url"`
 }
 
-func dbUserToResponse(u db.User, fields []db.Field) GetUserResponse {
+func dbUserToResponse(u db.User, fields []db.Field, names []db.Name, pronouns []db.Pronoun) GetUserResponse {
 	return GetUserResponse{
 		ID:          u.ID,
 		Username:    u.Username,
@@ -43,6 +45,8 @@ func dbUserToResponse(u db.User, fields []db.Field) GetUserResponse {
 		Bio:         u.Bio,
 		AvatarURL:   u.AvatarURL,
 		Links:       u.Links,
+		Names:       names,
+		Pronouns:    pronouns,
 		Fields:      fields,
 	}
 }
@@ -61,7 +65,19 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 				return err
 			}
 
-			render.JSON(w, r, dbUserToResponse(u, fields))
+			names, err := s.DB.UserNames(ctx, u.ID)
+			if err != nil {
+				log.Errorf("getting user names: %v", err)
+				return err
+			}
+
+			pronouns, err := s.DB.UserPronouns(ctx, u.ID)
+			if err != nil {
+				log.Errorf("getting user pronouns: %v", err)
+				return err
+			}
+
+			render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns))
 			return nil
 		} else if err != db.ErrUserNotFound {
 			log.Errorf("Error getting user by ID: %v", err)
@@ -81,13 +97,25 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	names, err := s.DB.UserNames(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user names: %v", err)
+		return err
+	}
+
+	pronouns, err := s.DB.UserPronouns(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user pronouns: %v", err)
+		return err
+	}
+
 	fields, err := s.DB.UserFields(ctx, u.ID)
 	if err != nil {
 		log.Errorf("Error getting user fields: %v", err)
 		return err
 	}
 
-	render.JSON(w, r, dbUserToResponse(u, fields))
+	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns))
 	return nil
 }
 
@@ -101,6 +129,18 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	names, err := s.DB.UserNames(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user names: %v", err)
+		return err
+	}
+
+	pronouns, err := s.DB.UserPronouns(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user pronouns: %v", err)
+		return err
+	}
+
 	fields, err := s.DB.UserFields(ctx, u.ID)
 	if err != nil {
 		log.Errorf("Error getting user fields: %v", err)
@@ -108,7 +148,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse: dbUserToResponse(u, fields),
+		GetUserResponse: dbUserToResponse(u, fields, names, pronouns),
 		Discord:         u.Discord,
 		DiscordUsername: u.DiscordUsername,
 	})

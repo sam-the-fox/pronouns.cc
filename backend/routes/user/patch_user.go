@@ -12,13 +12,16 @@ import (
 )
 
 type PatchUserRequest struct {
-	DisplayName *string     `json:"display_name"`
-	Bio         *string     `json:"bio"`
-	Links       *[]string   `json:"links"`
-	Fields      *[]db.Field `json:"fields"`
+	DisplayName *string       `json:"display_name"`
+	Bio         *string       `json:"bio"`
+	Links       *[]string     `json:"links"`
+	Names       *[]db.Name    `json:"names"`
+	Pronouns    *[]db.Pronoun `json:"pronouns"`
+	Fields      *[]db.Field   `json:"fields"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
+// TODO: could this be refactored to be less repetitive? names, pronouns, and fields are all validated in the same way
 func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
@@ -71,24 +74,16 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if (req.Fields) != nil {
-		// max 25 fields
-		if len(*req.Fields) > db.MaxFields {
-			return server.APIError{
-				Code:    server.ErrBadRequest,
-				Details: fmt.Sprintf("Too many fields (max %d, current %d)", db.MaxFields, len(*req.Fields)),
-			}
-		}
+	if err := validateSlicePtr("name", req.Names); err != nil {
+		return err
+	}
 
-		// validate all fields
-		for i, field := range *req.Fields {
-			if s := field.Validate(); s != "" {
-				return server.APIError{
-					Code:    server.ErrBadRequest,
-					Details: fmt.Sprintf("field %d: %s", i, s),
-				}
-			}
-		}
+	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
+		return err
+	}
+
+	if err := validateSlicePtr("field", req.Fields); err != nil {
+		return err
 	}
 
 	// start transaction
@@ -105,7 +100,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var fields []db.Field
+	var (
+		names    []db.Name
+		pronouns []db.Pronoun
+		fields   []db.Field
+	)
+
 	if req.Fields != nil {
 		err = s.DB.SetUserFields(ctx, tx, claims.UserID, *req.Fields)
 		if err != nil {
@@ -127,6 +127,38 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated user back on success
-	render.JSON(w, r, dbUserToResponse(u, fields))
+	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns))
+	return nil
+}
+
+type validator interface {
+	Validate() string
+}
+
+// validateSlicePtr validates a slice of validators.
+// If the slice is nil, a nil error is returned (assuming that the field is not required)
+func validateSlicePtr[T validator](typ string, slice *[]T) error {
+	if slice == nil {
+		return nil
+	}
+
+	// max 25 fields
+	if len(*slice) > db.MaxFields {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: fmt.Sprintf("Too many %ss (max %d, current %d)", typ, db.MaxFields, len(*slice)),
+		}
+	}
+
+	// validate all fields
+	for i, pronouns := range *slice {
+		if s := pronouns.Validate(); s != "" {
+			return server.APIError{
+				Code:    server.ErrBadRequest,
+				Details: fmt.Sprintf("%s %d: %s", typ, i, s),
+			}
+		}
+	}
+
 	return nil
 }
