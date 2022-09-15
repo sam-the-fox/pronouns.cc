@@ -34,7 +34,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// validate that *something* is set
-	if req.DisplayName == nil && req.Bio == nil && req.Links == nil && req.Fields == nil {
+	if req.DisplayName == nil &&
+		req.Bio == nil &&
+		req.Links == nil &&
+		req.Fields == nil &&
+		req.Names == nil &&
+		req.Pronouns == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -106,12 +111,43 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		fields   []db.Field
 	)
 
+	if req.Names != nil {
+		err = s.DB.SetUserNames(ctx, tx, claims.UserID, *req.Names)
+		if err != nil {
+			log.Errorf("setting names for user %v: %v", claims.UserID, err)
+			return err
+		}
+		names = *req.Names
+	} else {
+		names, err = s.DB.UserNames(ctx, claims.UserID)
+		if err != nil {
+			log.Errorf("getting names for user %v: %v", claims.UserID, err)
+			return err
+		}
+	}
+
+	if req.Pronouns != nil {
+		err = s.DB.SetUserPronouns(ctx, tx, claims.UserID, *req.Pronouns)
+		if err != nil {
+			log.Errorf("setting pronouns for user %v: %v", claims.UserID, err)
+			return err
+		}
+		pronouns = *req.Pronouns
+	} else {
+		pronouns, err = s.DB.UserPronouns(ctx, claims.UserID)
+		if err != nil {
+			log.Errorf("getting fields for user %v: %v", claims.UserID, err)
+			return err
+		}
+	}
+
 	if req.Fields != nil {
 		err = s.DB.SetUserFields(ctx, tx, claims.UserID, *req.Fields)
 		if err != nil {
 			log.Errorf("setting fields for user %v: %v", claims.UserID, err)
 			return err
 		}
+		fields = *req.Fields
 	} else {
 		fields, err = s.DB.UserFields(ctx, claims.UserID)
 		if err != nil {
