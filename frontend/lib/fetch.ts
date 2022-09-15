@@ -1,6 +1,6 @@
 import type { APIError } from "./types";
 
-const apiBase = process.env.API_BASE ?? "http://localhost:8080";
+const apiBase = process.env.API_BASE ?? "/api";
 
 export default async function fetchAPI<T>(
   path: string,

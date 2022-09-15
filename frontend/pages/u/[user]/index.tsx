@@ -6,23 +6,45 @@ import FieldCard from "../../../components/FieldCard";
 import Card from "../../../components/Card";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
+import { userState } from "../../../lib/state";
+import { useRecoilValue } from "recoil";
+import Link from "next/link";
 
 interface Props {
   user: User;
 }
 
 export default function Index({ user }: Props) {
+  const isMeUser = useRecoilValue(userState)?.id === user.id;
+
   return (
     <>
       <Head>
         <title key="title">@{user.username} - pronouns.cc</title>
       </Head>
+      {isMeUser && (
+        <div className="lg:w-1/3 mx-auto bg-slate-100 dark:bg-slate-700 shadow rounded-md p-2">
+          <span>
+            You are currently viewing your{" "}
+            <span className="font-bold">public</span> profile.
+          </span>
+          <br />
+          <Link
+            href="/edit/profile"
+            className="hover:underline text-sky-500 dark:text-sky-400"
+          >
+            Edit your profile
+          </Link>
+        </div>
+      )}
       <div className="container mx-auto">
         <div className="flex flex-col m-2 p-2 lg:flex-row justify-center lg:justify-start items-center space-y-4 lg:space-y-0 lg:space-x-16 lg:items-start border-b border-slate-200 dark:border-slate-700">
           {user.avatar_url && (
-            <Image
+            <img
               className="max-w-xs rounded-full"
               src={user.avatar_url}
+              //width="20rem"
+              //height="20rem"
               alt={`@${user.username}'s avatar`}
             />
           )}
