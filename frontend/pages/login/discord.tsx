@@ -19,10 +19,10 @@ interface CallbackResponse {
 interface State {
   hasAccount: boolean;
   isLoading: boolean;
-  token?: string;
-  user?: MeUser;
-  discord?: string;
-  ticket?: string;
+  token: string | null;
+  user: MeUser | null;
+  discord: string | null;
+  ticket: string | null;
   error?: any;
 }
 
@@ -62,13 +62,23 @@ export const getServerSideProps: GetServerSideProps<State> = async (
       props: {
         hasAccount: resp.has_account,
         isLoading: false,
-        token: resp.token,
-        user: resp.user,
+        token: resp.token || null,
+        user: resp.user || null,
         discord: resp.discord || null,
         ticket: resp.ticket || null,
       },
     };
-  } catch (e) {
-    return { props: { error: e } };
+  } catch (e: any) {
+    return {
+      props: {
+        hasAccount: false,
+        isLoading: false,
+        error: e,
+        token: null,
+        user: null,
+        discord: null,
+        ticket: null,
+      },
+    };
   }
 };
