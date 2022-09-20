@@ -18,9 +18,8 @@ type User struct {
 	DisplayName *string
 	Bio         *string
 
-	AvatarSource *string
-	AvatarURLs   []string `db:"avatar_urls"`
-	Links        []string
+	AvatarURLs []string `db:"avatar_urls"`
+	Links      []string
 
 	Discord         *string
 	DiscordUsername *string

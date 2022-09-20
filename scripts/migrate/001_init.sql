@@ -8,9 +8,8 @@ create table users (
     display_name text,
     bio          text,
 
-    avatar_source text,
-    avatar_urls   text[],
-    links         text[],
+    avatar_urls text[],
+    links       text[],
 
     discord          text unique, -- for Discord oauth
     discord_username text
@@ -36,11 +35,11 @@ create table user_fields (
     id      bigserial primary key,
     name    text      not null,
 
-    favourite    text[] not null default array[]::text[],
-    okay         text[] not null default array[]::text[],
-    jokingly     text[] not null default array[]::text[],
-    friends_only text[] not null default array[]::text[],
-    avoid        text[] not null default array[]::text[]
+    favourite    text[],
+    okay         text[],
+    jokingly     text[],
+    friends_only text[],
+    avoid        text[]
 );
 
 create table members (
@@ -49,8 +48,8 @@ create table members (
     name    text not null,
     bio     text,
 
-    avatar_url text,
-    links      text[]
+    avatar_urls text[],
+    links       text[]
 );
 
 create table member_names (
@@ -73,9 +72,9 @@ create table member_fields (
     id        bigserial primary key,
     name      text      not null,
 
-    favourite    text[] not null default array[]::text[],
-    okay         text[] not null default array[]::text[],
-    jokingly     text[] not null default array[]::text[],
-    friends_only text[] not null default array[]::text[],
-    avoid        text[] not null default array[]::text[]
+    favourite    text[],
+    okay         text[],
+    jokingly     text[],
+    friends_only text[],
+    avoid        text[]
 );

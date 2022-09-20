@@ -10,12 +10,12 @@ import (
 )
 
 type Member struct {
-	ID        xid.ID
-	UserID    xid.ID
-	Name      string
-	Bio       *string
-	AvatarURL *string
-	Links     []string
+	ID         xid.ID
+	UserID     xid.ID
+	Name       string
+	Bio        *string
+	AvatarURLs []string `db:"avatar_urls"`
+	Links      []string
 }
 
 const ErrMemberNotFound = errors.Sentinel("member not found")
