@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -9,6 +10,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 
+	"github.com/go-chi/render"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -19,6 +21,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating server: %v", err)
 	}
+
+	// set render.Decode to a custom one that checks content length
+	render.Decode = decode
 
 	// mount api routes
 	mountRoutes(s)
@@ -43,4 +48,30 @@ func main() {
 	case err := <-e:
 		log.Fatalf("Error running server: %v", err)
 	}
+}
+
+const MaxContentLength = 2 * 1024 * 1024
+
+// decode is a custom render.Decode function that makes sure the request doesn't exceed 2 megabytes.
+func decode(r *http.Request, v any) error {
+	if r.ContentLength > MaxContentLength {
+		return server.APIError{
+			Code: server.ErrRequestTooBig,
+		}
+	}
+
+	// this is copied from render.Decode to replace r.Body with an io.LimitedReader
+	var err error
+	lr := io.LimitReader(r.Body, MaxContentLength)
+
+	switch render.GetRequestContentType(r) {
+	case render.ContentTypeJSON:
+		err = render.DecodeJSON(lr, v)
+	default:
+		err = server.APIError{
+			Code: server.ErrBadRequest,
+		}
+	}
+
+	return err
 }

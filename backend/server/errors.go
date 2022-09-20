@@ -79,6 +79,13 @@ const (
 
 	// User-related error codes
 	ErrUserNotFound = 2001
+
+	// Member-related error codes
+	ErrMemberNotFound     = 3001
+	ErrMemberLimitReached = 3002
+
+	// General request error codes
+	ErrRequestTooBig = 4001
 )
 
 var errCodeMessages = map[int]string{
@@ -94,6 +101,11 @@ var errCodeMessages = map[int]string{
 	ErrInvalidToken:     "Supplied token was invalid",
 
 	ErrUserNotFound: "User not found",
+
+	ErrMemberNotFound:     "Member not found",
+	ErrMemberLimitReached: "Member limit reached",
+
+	ErrRequestTooBig: "Request too big (max 2 MB)",
 }
 
 var errCodeStatuses = map[int]int{
@@ -109,4 +121,9 @@ var errCodeStatuses = map[int]int{
 	ErrInvalidToken:     http.StatusUnauthorized,
 
 	ErrUserNotFound: http.StatusNotFound,
+
+	ErrMemberNotFound:     http.StatusNotFound,
+	ErrMemberLimitReached: http.StatusBadRequest,
+
+	ErrRequestTooBig: http.StatusBadRequest,
 }

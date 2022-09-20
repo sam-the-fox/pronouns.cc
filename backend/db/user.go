@@ -156,7 +156,7 @@ func (db *DB) UpdateUser(
 	links *[]string,
 	avatarURLs []string,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil {
+	if displayName == nil && bio == nil && links == nil && avatarURLs == nil {
 		return u, ErrNothingToUpdate
 	}
 

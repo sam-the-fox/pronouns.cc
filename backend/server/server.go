@@ -25,7 +25,7 @@ type Server struct {
 }
 
 func New() (*Server, error) {
-	db, err := db.New(os.Getenv("DATABASE_URL"))
+	db, err := db.New()
 	if err != nil {
 		return nil, err
 	}
