@@ -121,3 +121,51 @@ func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, field
 	}
 	return nil
 }
+
+// MemberFields returns the fields associated with the given member ID.
+func (db *DB) MemberFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
+	sql, args, err := sq.
+		Select("id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid").
+		From("member_fields").Where("member_id = ?", id).OrderBy("id ASC").ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Select(ctx, db, &fs, sql, args...)
+	if err != nil {
+		return nil, errors.Cause(err)
+	}
+	return fs, nil
+}
+
+// SetMemberFields updates the fields for the given member.
+func (db *DB) SetMemberFields(ctx context.Context, tx pgx.Tx, memberID xid.ID, fields []Field) (err error) {
+	sql, args, err := sq.Delete("member_fields").Where("member_id = ?", memberID).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "deleting existing fields")
+	}
+
+	_, err = tx.CopyFrom(ctx,
+		pgx.Identifier{"member_fields"},
+		[]string{"member_id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid"},
+		pgx.CopyFromSlice(len(fields), func(i int) ([]any, error) {
+			return []any{
+				memberID,
+				fields[i].Name,
+				fields[i].Favourite,
+				fields[i].Okay,
+				fields[i].Jokingly,
+				fields[i].FriendsOnly,
+				fields[i].Avoid,
+			}, nil
+		}))
+	if err != nil {
+		return errors.Wrap(err, "inserting new fields")
+	}
+	return nil
+}

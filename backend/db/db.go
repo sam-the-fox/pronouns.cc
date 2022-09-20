@@ -10,6 +10,8 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mediocregopher/radix/v4"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
@@ -20,22 +22,36 @@ type DB struct {
 	*pgxpool.Pool
 
 	Redis radix.Client
+
+	minio       *minio.Client
+	minioBucket string
 }
 
-func New(dsn string) (*DB, error) {
-	pool, err := pgxpool.Connect(context.Background(), dsn)
+func New() (*DB, error) {
+	pool, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "creating postgres client")
 	}
 
 	redis, err := (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "creating redis client")
+	}
+
+	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
+		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY_ID"), os.Getenv("MINIO_ACCESS_KEY_SECRET"), ""),
+		Secure: os.Getenv("MINIO_SSL") == "true",
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "creating minio client")
 	}
 
 	db := &DB{
 		Pool:  pool,
 		Redis: redis,
+
+		minio:       minioClient,
+		minioBucket: os.Getenv("MINIO_BUCKET"),
 	}
 
 	return db, nil

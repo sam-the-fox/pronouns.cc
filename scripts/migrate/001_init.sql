@@ -9,7 +9,7 @@ create table users (
     bio          text,
 
     avatar_source text,
-    avatar_url    text,
+    avatar_urls   text[],
     links         text[],
 
     discord          text unique, -- for Discord oauth
@@ -21,7 +21,7 @@ create table user_names (
     id      bigserial primary key, -- ID is used for sorting; when order changes, existing rows are deleted and new ones are created
     name    text      not null,
     status  int       not null
-)
+);
 
 create table user_pronouns (
     user_id      text      not null references users (id) on delete cascade,
@@ -50,7 +50,7 @@ create table members (
     bio     text,
 
     avatar_url text,
-    links      text
+    links      text[]
 );
 
 create table member_names (
@@ -58,7 +58,7 @@ create table member_names (
     id      bigserial primary key, -- ID is used for sorting; when order changes, existing rows are deleted and new ones are created
     name    text      not null,
     status  int       not null
-)
+);
 
 create table member_pronouns (
     member_id    text      not null references members (id) on delete cascade,

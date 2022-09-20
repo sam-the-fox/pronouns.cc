@@ -16,7 +16,7 @@ type GetUserResponse struct {
 	Username    string          `json:"username"`
 	DisplayName *string         `json:"display_name"`
 	Bio         *string         `json:"bio"`
-	AvatarURL   *string         `json:"avatar_url"`
+	AvatarURLs  []string        `json:"avatar_urls"`
 	Links       []string        `json:"links"`
 	Names       []db.Name       `json:"names"`
 	Pronouns    []db.Pronoun    `json:"pronouns"`
@@ -43,7 +43,7 @@ func dbUserToResponse(u db.User, fields []db.Field, names []db.Name, pronouns []
 		Username:    u.Username,
 		DisplayName: u.DisplayName,
 		Bio:         u.Bio,
-		AvatarURL:   u.AvatarURL,
+		AvatarURLs:  u.AvatarURLs,
 		Links:       u.Links,
 		Names:       names,
 		Pronouns:    pronouns,

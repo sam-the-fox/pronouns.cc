@@ -24,7 +24,7 @@ type userResponse struct {
 	Username    string   `json:"username"`
 	DisplayName *string  `json:"display_name"`
 	Bio         *string  `json:"bio"`
-	AvatarURL   *string  `json:"avatar_url"`
+	AvatarURLs  []string `json:"avatar_urls"`
 	Links       []string `json:"links"`
 
 	Discord         *string `json:"discord"`
@@ -37,7 +37,7 @@ func dbUserToUserResponse(u db.User) *userResponse {
 		Username:        u.Username,
 		DisplayName:     u.DisplayName,
 		Bio:             u.Bio,
-		AvatarURL:       u.AvatarURL,
+		AvatarURLs:      u.AvatarURLs,
 		Links:           u.Links,
 		Discord:         u.Discord,
 		DiscordUsername: u.DiscordUsername,

@@ -170,3 +170,87 @@ func (db *DB) SetUserPronouns(ctx context.Context, tx pgx.Tx, userID xid.ID, nam
 	}
 	return nil
 }
+
+func (db *DB) MemberNames(ctx context.Context, memberID xid.ID) (ns []Name, err error) {
+	sql, args, err := sq.Select("id", "name", "status").From("member_names").Where("member_id = ?", memberID).OrderBy("id").ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Select(ctx, db, &ns, sql, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing query")
+	}
+	return ns, nil
+}
+
+func (db *DB) MemberPronouns(ctx context.Context, memberID xid.ID) (ps []Pronoun, err error) {
+	sql, args, err := sq.
+		Select("id", "display_text", "pronouns", "status").
+		From("member_pronouns").Where("member_id = ?", memberID).
+		OrderBy("id").ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Select(ctx, db, &ps, sql, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing query")
+	}
+	return ps, nil
+}
+
+func (db *DB) SetMemberNames(ctx context.Context, tx pgx.Tx, memberID xid.ID, names []Name) (err error) {
+	sql, args, err := sq.Delete("member_names").Where("member_id = ?", memberID).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "deleting existing names")
+	}
+
+	_, err = tx.CopyFrom(ctx,
+		pgx.Identifier{"member_names"},
+		[]string{"member_id", "name", "status"},
+		pgx.CopyFromSlice(len(names), func(i int) ([]any, error) {
+			return []any{
+				memberID,
+				names[i].Name,
+				names[i].Status,
+			}, nil
+		}))
+	if err != nil {
+		return errors.Wrap(err, "inserting new names")
+	}
+	return nil
+}
+
+func (db *DB) SetMemberPronouns(ctx context.Context, tx pgx.Tx, memberID xid.ID, names []Pronoun) (err error) {
+	sql, args, err := sq.Delete("member_pronouns").Where("member_id = ?", memberID).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "deleting existing pronouns")
+	}
+
+	_, err = tx.CopyFrom(ctx,
+		pgx.Identifier{"member_pronouns"},
+		[]string{"member_id", "pronouns", "display_text", "status"},
+		pgx.CopyFromSlice(len(names), func(i int) ([]any, error) {
+			return []any{
+				memberID,
+				names[i].Pronouns,
+				names[i].DisplayText,
+				names[i].Status,
+			}, nil
+		}))
+	if err != nil {
+		return errors.Wrap(err, "inserting new pronouns")
+	}
+	return nil
+}

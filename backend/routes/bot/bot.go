@@ -97,8 +97,8 @@ func (bot *Bot) userPronouns(w http.ResponseWriter, r *http.Request, ev *discord
 	}
 
 	avatarURL := du.AvatarURL("")
-	if u.AvatarURL != nil {
-		avatarURL = *u.AvatarURL
+	if len(u.AvatarURLs) > 0 {
+		avatarURL = u.AvatarURLs[0]
 	}
 	name := u.Username
 	if u.DisplayName != nil {

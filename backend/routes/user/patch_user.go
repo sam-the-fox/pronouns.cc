@@ -18,6 +18,7 @@ type PatchUserRequest struct {
 	Names       *[]db.Name    `json:"names"`
 	Pronouns    *[]db.Pronoun `json:"pronouns"`
 	Fields      *[]db.Field   `json:"fields"`
+	Avatar      *string       `json:"avatar"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
@@ -39,7 +40,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		req.Links == nil &&
 		req.Fields == nil &&
 		req.Names == nil &&
-		req.Pronouns == nil {
+		req.Pronouns == nil &&
+		req.Avatar == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -91,6 +93,35 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// update avatar
+	var avatarURLs []string = nil
+	if req.Avatar != nil {
+		webp, jpg, err := s.DB.ConvertAvatar(*req.Avatar)
+		if err != nil {
+			if err == db.ErrInvalidDataURI {
+				return server.APIError{
+					Code:    server.ErrBadRequest,
+					Details: "invalid avatar data URI",
+				}
+			} else if err == db.ErrInvalidContentType {
+				return server.APIError{
+					Code:    server.ErrBadRequest,
+					Details: "invalid avatar content type",
+				}
+			}
+
+			log.Errorf("converting user avatar: %v", err)
+			return err
+		}
+
+		webpURL, jpgURL, err := s.DB.WriteUserAvatar(ctx, claims.UserID, webp, jpg)
+		if err != nil {
+			log.Errorf("uploading user avatar: %v", err)
+			return err
+		}
+		avatarURLs = []string{webpURL, jpgURL}
+	}
+
 	// start transaction
 	tx, err := s.DB.Begin(ctx)
 	if err != nil {
@@ -99,7 +130,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	u, err := s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links)
+	u, err := s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links, avatarURLs)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err
@@ -173,23 +204,28 @@ type validator interface {
 
 // validateSlicePtr validates a slice of validators.
 // If the slice is nil, a nil error is returned (assuming that the field is not required)
-func validateSlicePtr[T validator](typ string, slice *[]T) error {
+func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 	if slice == nil {
 		return nil
 	}
 
+	max := db.MaxFields
+	if typ != "field" {
+		max = db.FieldEntriesLimit
+	}
+
 	// max 25 fields
-	if len(*slice) > db.MaxFields {
-		return server.APIError{
+	if len(*slice) > max {
+		return &server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Too many %ss (max %d, current %d)", typ, db.MaxFields, len(*slice)),
+			Details: fmt.Sprintf("Too many %ss (max %d, current %d)", typ, max, len(*slice)),
 		}
 	}
 
 	// validate all fields
 	for i, pronouns := range *slice {
 		if s := pronouns.Validate(); s != "" {
-			return server.APIError{
+			return &server.APIError{
 				Code:    server.ErrBadRequest,
 				Details: fmt.Sprintf("%s %d: %s", typ, i, s),
 			}

@@ -19,7 +19,7 @@ type User struct {
 	Bio         *string
 
 	AvatarSource *string
-	AvatarURL    *string
+	AvatarURLs   []string `db:"avatar_urls"`
 	Links        []string
 
 	Discord         *string
@@ -103,12 +103,6 @@ func (u *User) UpdateFromDiscord(ctx context.Context, db pgxscan.Querier, du *di
 		Where("id = ?", u.ID).
 		Suffix("RETURNING *")
 
-	if u.AvatarSource == nil || *u.AvatarSource == "discord" {
-		builder = builder.
-			Set("avatar_source", "discord").
-			Set("avatar_url", du.AvatarURL("1024"))
-	}
-
 	sql, args, err := builder.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "building sql")
@@ -160,6 +154,7 @@ func (db *DB) UpdateUser(
 	tx pgx.Tx, id xid.ID,
 	displayName, bio *string,
 	links *[]string,
+	avatarURLs []string,
 ) (u User, err error) {
 	if displayName == nil && bio == nil && links == nil {
 		return u, ErrNothingToUpdate
@@ -185,6 +180,14 @@ func (db *DB) UpdateUser(
 			builder = builder.Set("links", nil)
 		} else {
 			builder = builder.Set("links", *links)
+		}
+	}
+
+	if avatarURLs != nil {
+		if len(avatarURLs) == 0 {
+			builder = builder.Set("avatar_urls", nil)
+		} else {
+			builder = builder.Set("avatar_urls", avatarURLs)
 		}
 	}
 
