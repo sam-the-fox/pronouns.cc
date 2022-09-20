@@ -9,6 +9,7 @@ import Image from "next/image";
 import { userState } from "../../../lib/state";
 import { useRecoilValue } from "recoil";
 import Link from "next/link";
+import FallbackImage from "../../../components/FallbackImage";
 
 interface Props {
   user: User;
@@ -39,13 +40,18 @@ export default function Index({ user }: Props) {
       )}
       <div className="container mx-auto">
         <div className="flex flex-col m-2 p-2 lg:flex-row justify-center lg:justify-start items-center space-y-4 lg:space-y-0 lg:space-x-16 lg:items-start border-b border-slate-200 dark:border-slate-700">
-          {user.avatar_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+          {user.avatar_urls && user.avatar_urls.length !== 0 && (
+            <FallbackImage
               className="max-w-xs rounded-full"
-              src={user.avatar_url}
+              urls={user.avatar_urls}
               alt={`@${user.username}'s avatar`}
             />
+            // eslint-disable-next-line @next/next/no-img-element
+            // <img
+            //   className="max-w-xs rounded-full"
+            //   src={user.avatar_url}
+            //   alt={`@${user.username}'s avatar`}
+            // />
           )}
           <div className="flex flex-col">
             {user.display_name && (

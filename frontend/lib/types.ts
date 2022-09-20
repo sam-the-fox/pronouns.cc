@@ -1,5 +1,4 @@
 export interface MeUser extends User {
-  avatar_source: string | null;
   discord: string | null;
   discord_username: string | null;
 }
@@ -9,7 +8,7 @@ export interface User {
   username: string;
   display_name: string | null;
   bio: string | null;
-  avatar_url: string | null;
+  avatar_urls: string[] | null;
   links: string[] | null;
   members: PartialMember[];
   fields: Field[];
@@ -19,6 +18,17 @@ export interface PartialMember {
   id: string;
   name: string;
   avatar_url: string | null;
+}
+
+export interface Name {
+  name: string;
+  status: WordStatus;
+}
+
+export interface Pronoun {
+  display_text?: string;
+  pronouns: string;
+  status: WordStatus;
 }
 
 export interface Field {
@@ -34,6 +44,14 @@ export interface APIError {
   code: ErrorCode;
   message?: string;
   details?: string;
+}
+
+export enum WordStatus {
+  Favourite = 1,
+  Okay = 2,
+  Jokingly = 3,
+  FriendsOnly = 4,
+  Avoid = 5,
 }
 
 export enum ErrorCode {

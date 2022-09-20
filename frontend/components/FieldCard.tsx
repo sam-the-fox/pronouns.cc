@@ -39,22 +39,22 @@ export default function FieldCard({
           <HeartFill className="inline" /> {linkPronoun(entry)}
         </p>
       ))}
-      {field.okay?.length !== 0 && (
+      {field.okay && field.okay.length !== 0 && (
         <p>
           <HandThumbsUp className="inline" /> {field.okay!.join(", ")}
         </p>
       )}
-      {field.jokingly?.length !== 0 && (
+      {field.jokingly && field.jokingly.length !== 0 && (
         <p>
           <EmojiLaughing className="inline" /> {field.jokingly!.join(", ")}
         </p>
       )}
-      {field.friends_only?.length !== 0 && (
+      {field.friends_only && field.friends_only.length !== 0 && (
         <p>
           <People className="inline" /> {field.friends_only!.join(", ")}
         </p>
       )}
-      {field.avoid?.length !== 0 && (
+      {field.avoid && field.avoid.length !== 0 && (
         <p className="text-slate-600 dark:text-slate-400">
           <HandThumbsDown className="inline" /> {field.avoid!.join(", ")}
         </p>
