@@ -52,6 +52,8 @@ create table members (
     links       text[]
 );
 
+create unique index members_user_name_idx on members (user_id, lower(name));
+
 create table member_names (
     member_id text      not null references members (id) on delete cascade,
     id      bigserial primary key, -- ID is used for sorting; when order changes, existing rows are deleted and new ones are created

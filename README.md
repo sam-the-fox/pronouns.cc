@@ -1,6 +1,6 @@
 # pronouns.cc
 
-A work-in-progress site to share your pronouns and preferred terms.
+A work-in-progress site to share your names, pronouns, and other preferred terms.
 
 ## Stack
 
@@ -8,6 +8,7 @@ A work-in-progress site to share your pronouns and preferred terms.
 - Persistent data is stored in PostgreSQL
 - Temporary data is stored in Redis
 - The frontend is written in TypeScript with React, using [Next](https://nextjs.org/) for server-side rendering
+- Avatars are stored in S3-compatible storage ([MinIO](https://github.com/minio/minio) for development)
 
 ## Development
 

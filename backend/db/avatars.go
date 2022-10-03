@@ -164,3 +164,27 @@ func (db *DB) WriteUserAvatar(ctx context.Context,
 
 	return webpInfo.Location, jpegInfo.Location, nil
 }
+
+func (db *DB) WriteMemberAvatar(ctx context.Context,
+	memberID xid.ID, webp io.Reader, jpeg io.Reader,
+) (
+	webpLocation string,
+	jpegLocation string,
+	err error,
+) {
+	webpInfo, err := db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".webp", webp, -1, minio.PutObjectOptions{
+		ContentType: "image/webp",
+	})
+	if err != nil {
+		return "", "", errors.Wrap(err, "uploading webp avatar")
+	}
+
+	jpegInfo, err := db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
+		ContentType: "image/jpeg",
+	})
+	if err != nil {
+		return "", "", errors.Wrap(err, "uploading jpeg avatar")
+	}
+
+	return webpInfo.Location, jpegInfo.Location, nil
+}

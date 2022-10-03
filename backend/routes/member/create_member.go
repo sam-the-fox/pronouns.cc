@@ -1,26 +1,44 @@
 package member
 
 import (
-	"context"
+	"fmt"
 	"net/http"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"emperror.dev/errors"
 	"github.com/go-chi/render"
 )
 
 type CreateMemberRequest struct {
-	Name      string       `json:"name"`
-	Bio       *string      `json:"bio"`
-	AvatarURL *string      `json:"avatar_url"`
-	Links     []string     `json:"links"`
-	Names     []db.Name    `json:"names"`
-	Pronouns  []db.Pronoun `json:"pronouns"`
-	Fields    []db.Field   `json:"fields"`
+	Name     string       `json:"name"`
+	Bio      string       `json:"bio"`
+	Avatar   string       `json:"avatar"`
+	Links    []string     `json:"links"`
+	Names    []db.Name    `json:"names"`
+	Pronouns []db.Pronoun `json:"pronouns"`
+	Fields   []db.Field   `json:"fields"`
 }
 
 func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
+	memberCount, err := s.DB.MemberCount(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting member count")
+	}
+	if memberCount > db.MaxMemberCount {
+		return server.APIError{
+			Code: server.ErrMemberLimitReached,
+		}
+	}
 
 	var cmr CreateMemberRequest
 	err = render.Decode(r, &cmr)
@@ -32,8 +50,127 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		return server.APIError{Code: server.ErrBadRequest}
 	}
 
-	ctx = context.WithValue(ctx, render.StatusCtxKey, 204)
-	render.NoContent(w, r)
+	// validate everything
+	if cmr.Name == "" {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: "name may not be empty",
+		}
+	}
+
+	if err := validateSlicePtr("name", &cmr.Names); err != nil {
+		return err
+	}
+
+	if err := validateSlicePtr("pronoun", &cmr.Pronouns); err != nil {
+		return err
+	}
+
+	if err := validateSlicePtr("field", &cmr.Fields); err != nil {
+		return err
+	}
+
+	tx, err := s.DB.Begin(ctx)
+	if err != nil {
+		return errors.Wrap(err, "starting transaction")
+	}
+	defer tx.Rollback(ctx)
+
+	m, err := s.DB.CreateMember(ctx, tx, claims.UserID, cmr.Name, cmr.Bio, cmr.Links)
+	if err != nil {
+		return err
+	}
+
+	// set names, pronouns, fields
+	err = s.DB.SetMemberNames(ctx, tx, claims.UserID, cmr.Names)
+	if err != nil {
+		log.Errorf("setting names for user %v: %v", claims.UserID, err)
+		return err
+	}
+	err = s.DB.SetMemberPronouns(ctx, tx, claims.UserID, cmr.Pronouns)
+	if err != nil {
+		log.Errorf("setting pronouns for user %v: %v", claims.UserID, err)
+		return err
+	}
+	err = s.DB.SetMemberFields(ctx, tx, claims.UserID, cmr.Fields)
+	if err != nil {
+		log.Errorf("setting fields for user %v: %v", claims.UserID, err)
+		return err
+	}
+
+	if cmr.Avatar != "" {
+		webp, jpg, err := s.DB.ConvertAvatar(cmr.Avatar)
+		if err != nil {
+			if err == db.ErrInvalidDataURI {
+				return server.APIError{
+					Code:    server.ErrBadRequest,
+					Details: "invalid avatar data URI",
+				}
+			} else if err == db.ErrInvalidContentType {
+				return server.APIError{
+					Code:    server.ErrBadRequest,
+					Details: "invalid avatar content type",
+				}
+			}
+
+			log.Errorf("converting member avatar: %v", err)
+			return err
+		}
+
+		webpURL, jpgURL, err := s.DB.WriteMemberAvatar(ctx, m.ID, webp, jpg)
+		if err != nil {
+			log.Errorf("uploading member avatar: %v", err)
+			return err
+		}
+
+		err = tx.QueryRow(ctx, "UPDATE members SET avatar_urls = $1 WHERE id = $2", []string{webpURL, jpgURL}, m.ID).Scan(&m.AvatarURLs)
+		if err != nil {
+			return errors.Wrap(err, "setting avatar urls in db")
+		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return errors.Wrap(err, "committing transaction")
+	}
+
+	render.JSON(w, r, dbMemberToMember(u, m, cmr.Names, cmr.Pronouns, cmr.Fields))
+	return nil
+}
+
+type validator interface {
+	Validate() string
+}
+
+// validateSlicePtr validates a slice of validators.
+// If the slice is nil, a nil error is returned (assuming that the field is not required)
+func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
+	if slice == nil {
+		return nil
+	}
+
+	max := db.MaxFields
+	if typ != "field" {
+		max = db.FieldEntriesLimit
+	}
+
+	// max 25 fields
+	if len(*slice) > max {
+		return &server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: fmt.Sprintf("Too many %ss (max %d, current %d)", typ, max, len(*slice)),
+		}
+	}
+
+	// validate all fields
+	for i, pronouns := range *slice {
+		if s := pronouns.Validate(); s != "" {
+			return &server.APIError{
+				Code:    server.ErrBadRequest,
+				Details: fmt.Sprintf("%s %d: %s", typ, i, s),
+			}
+		}
+	}
 
 	return nil
 }
