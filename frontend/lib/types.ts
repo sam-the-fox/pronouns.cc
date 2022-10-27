@@ -11,13 +11,25 @@ export interface User {
   avatar_urls: string[] | null;
   links: string[] | null;
   members: PartialMember[];
+  names: Name[];
+  pronouns: Pronoun[];
   fields: Field[];
 }
 
 export interface PartialMember {
   id: string;
   name: string;
-  avatar_url: string | null;
+  avatar_urls: string[] | null;
+}
+
+export interface Member extends PartialMember {
+  bio: string | null;
+  links: string[] | null;
+  id: string;
+  name: string;
+  avatar_urls: string[] | null;
+
+  user?: PartialUser;
 }
 
 export interface Name {
@@ -70,4 +82,11 @@ export interface SignupRequest {
   username: string;
   ticket: string;
   invite_code?: string;
+}
+
+export interface PartialUser {
+  id: string;
+  username: string;
+  display_name: string | null;
+  avatar_urls: string[] | null;
 }
