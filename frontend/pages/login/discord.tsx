@@ -1,6 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { GetServerSideProps } from "next";
 import { useRecoilState } from "recoil";
 import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
@@ -26,59 +25,62 @@ interface State {
   error?: any;
 }
 
-export default function Discord(props: State) {
+export default function Discord() {
   const router = useRouter();
 
   const [user, setUser] = useRecoilState(userState);
+  const [state, setState] = useState<State>({
+    hasAccount: false,
+    isLoading: false,
+    token: null,
+    user: null,
+    discord: null,
+    ticket: null,
+    error: null,
+  });
 
   useEffect(() => {
-    // we got a token + user, save it and return to the home page
-    if (props.token) {
-      localStorage.setItem("pronouns-token", props.token);
-      setUser(props.user!);
+    if (!router.query.code || !router.query.state) { return; }
 
-      router.push("/");
-    }
-  }, [props.token, props.user, setUser, router]);
-
-  return <>wow such login</>;
-}
-
-export const getServerSideProps: GetServerSideProps<State> = async (
-  context
-) => {
-  try {
-    const resp = await fetchAPI<CallbackResponse>(
+    fetchAPI<CallbackResponse>(
       "/auth/discord/callback",
       "POST",
       {
-        callback_domain: process.env.DOMAIN,
-        code: context.query.code,
-        state: context.query.state,
+        callback_domain: window.location.origin,
+        code: router.query.code,
+        state: router.query.state,
       }
-    );
-
-    return {
-      props: {
+    ).then(resp => {
+      setState({
         hasAccount: resp.has_account,
         isLoading: false,
         token: resp.token || null,
         user: resp.user || null,
         discord: resp.discord || null,
         ticket: resp.ticket || null,
-      },
-    };
-  } catch (e: any) {
-    return {
-      props: {
-        hasAccount: false,
-        isLoading: false,
-        error: e,
-        token: null,
-        user: null,
-        discord: null,
-        ticket: null,
-      },
-    };
-  }
-};
+      })
+    }).catch(e => {
+      return {
+        props: {
+          hasAccount: false,
+          isLoading: false,
+          error: e,
+          token: null,
+          user: null,
+          discord: null,
+          ticket: null,
+        },
+      };
+    })
+
+    // we got a token + user, save it and return to the home page
+    if (state.token) {
+      window.localStorage.setItem("pronouns-token", state.token);
+      setUser(state.user!);
+
+      router.push("/");
+    }
+  }, [state.token, state.user, setState, router]);
+
+  return <>wow such login</>;
+}

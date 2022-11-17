@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@sentry/nextjs": "^7.13.0",
+    "@types/lodash": "^4.14.189",
+    "lodash": "^4.17.21",
     "next": "12.2.2",
     "react": "18.2.0",
     "react-bootstrap-icons": "^1.8.4",
