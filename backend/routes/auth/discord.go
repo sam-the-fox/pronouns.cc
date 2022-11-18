@@ -7,8 +7,10 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/render"
+	"github.com/mediocregopher/radix/v4"
 	"golang.org/x/oauth2"
 )
 
@@ -37,7 +39,7 @@ type discordCallbackResponse struct {
 
 	Discord       string `json:"discord,omitempty"` // username, for UI purposes
 	Ticket        string `json:"ticket,omitempty"`
-	RequireInvite bool   `json:"require_invite,omitempty"` // require an invite for signing up
+	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
 }
 
 func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
@@ -111,6 +113,108 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		RequireInvite: s.RequireInvite,
 	})
 
+	return nil
+}
+
+type signupRequest struct {
+	Ticket     string `json:"ticket"`
+	Username   string `json:"username"`
+	InviteCode string `json:"invite_code"`
+}
+
+type signupResponse struct {
+	User  userResponse `json:"user"`
+	Token string       `json:"token"`
+}
+
+func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	req, err := Decode[signupRequest](r)
+	if err != nil {
+		return server.APIError{Code: server.ErrBadRequest}
+	}
+
+	if s.RequireInvite && req.InviteCode == "" {
+		return server.APIError{Code: server.ErrInviteRequired}
+	}
+
+	valid, taken, err := s.DB.UsernameTaken(ctx, req.Username)
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return server.APIError{Code: server.ErrInvalidUsername}
+	}
+	if taken {
+		return server.APIError{Code: server.ErrUsernameTaken}
+	}
+
+	tx, err := s.DB.Begin(ctx)
+	if err != nil {
+		return errors.Wrap(err, "beginning transaction")
+	}
+	defer tx.Rollback(ctx)
+
+	var du discordgo.User
+	err = s.DB.GetJSON(ctx, "discord:"+req.Ticket, &du)
+	if err != nil {
+		log.Errorf("getting discord user for ticket: %v", err)
+
+		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	u, err := s.DB.CreateUser(ctx, tx, req.Username)
+	if err != nil {
+		return errors.Wrap(err, "creating user")
+	}
+
+	err = u.UpdateFromDiscord(ctx, tx, &du)
+	if err != nil {
+		if errors.Cause(err) == db.ErrUsernameTaken {
+			return server.APIError{Code: server.ErrUsernameTaken}
+		}
+
+		return errors.Wrap(err, "updating user from discord")
+	}
+
+	if s.RequireInvite {
+		// TODO: check invites, invalidate invite when done
+		inviteValid := true
+
+		if !inviteValid {
+			err = tx.Rollback(ctx)
+			if err != nil {
+				return errors.Wrap(err, "rolling back transaction")
+			}
+
+			return server.APIError{Code: server.ErrInviteRequired}
+		}
+	}
+
+	// delete sign up ticket
+	err = s.DB.Redis.Do(ctx, radix.Cmd(nil, "DEL", "discord:"+req.Ticket))
+	if err != nil {
+		return errors.Wrap(err, "deleting signup ticket")
+	}
+
+	// commit transaction
+	err = tx.Commit(ctx)
+	if err != nil {
+		return errors.Wrap(err, "committing transaction")
+	}
+
+	// create token
+	token, err := s.Auth.CreateToken(u.ID)
+	if err != nil {
+		return errors.Wrap(err, "creating token")
+	}
+
+	// return user
+	render.JSON(w, r, signupResponse{
+		User:  *dbUserToUserResponse(u),
+		Token: token,
+	})
 	return nil
 }
 

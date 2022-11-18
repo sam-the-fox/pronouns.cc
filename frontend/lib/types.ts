@@ -84,6 +84,11 @@ export interface SignupRequest {
   invite_code?: string;
 }
 
+export interface SignupResponse {
+  user: MeUser;
+  token: string;
+}
+
 export interface PartialUser {
   id: string;
   username: string;

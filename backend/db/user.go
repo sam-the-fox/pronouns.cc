@@ -46,7 +46,7 @@ const (
 )
 
 // CreateUser creates a user with the given username.
-func (db *DB) CreateUser(ctx context.Context, username string) (u User, err error) {
+func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u User, err error) {
 	// check if the username is valid
 	// if not, return an error depending on what failed
 	if !usernameRegex.MatchString(username) {
@@ -64,7 +64,7 @@ func (db *DB) CreateUser(ctx context.Context, username string) (u User, err erro
 		return u, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	err = pgxscan.Get(ctx, tx, &u, sql, args...)
 	if err != nil {
 		if v, ok := errors.Cause(err).(*pgconn.PgError); ok {
 			if v.Code == "23505" { // unique constraint violation

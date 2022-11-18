@@ -61,7 +61,7 @@ func Mount(srv *server.Server, r chi.Router) {
 			// takes code + state, validates it, returns token OR discord signup ticket
 			r.Post("/callback", server.WrapHandler(s.discordCallback))
 			// takes discord signup ticket to register account
-			r.Post("/signup", nil)
+			r.Post("/signup", server.WrapHandler(s.discordSignup))
 		})
 	})
 }

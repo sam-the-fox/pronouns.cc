@@ -76,6 +76,10 @@ const (
 	ErrInvalidState     = 1001
 	ErrInvalidOAuthCode = 1002
 	ErrInvalidToken     = 1003 // a token was supplied, but it is invalid
+	ErrInviteRequired   = 1004
+	ErrInvalidTicket    = 1005 // invalid signup ticket
+	ErrInvalidUsername  = 1006 // invalid username (when signing up)
+	ErrUsernameTaken    = 1007 // username taken (when signing up)
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -99,6 +103,10 @@ var errCodeMessages = map[int]string{
 	ErrInvalidState:     "Invalid OAuth state",
 	ErrInvalidOAuthCode: "Invalid OAuth code",
 	ErrInvalidToken:     "Supplied token was invalid",
+	ErrInviteRequired:   "A valid invite code is required",
+	ErrInvalidTicket:    "Invalid signup ticket",
+	ErrInvalidUsername:  "Invalid username",
+	ErrUsernameTaken:    "Username is already taken",
 
 	ErrUserNotFound: "User not found",
 
