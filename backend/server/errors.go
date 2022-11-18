@@ -127,6 +127,10 @@ var errCodeStatuses = map[int]int{
 	ErrInvalidState:     http.StatusBadRequest,
 	ErrInvalidOAuthCode: http.StatusForbidden,
 	ErrInvalidToken:     http.StatusUnauthorized,
+	ErrInviteRequired:   http.StatusBadRequest,
+	ErrInvalidTicket:    http.StatusBadRequest,
+	ErrInvalidUsername:  http.StatusBadRequest,
+	ErrUsernameTaken:    http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 

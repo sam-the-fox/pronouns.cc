@@ -97,6 +97,8 @@ export default function Discord() {
 
       setUser(resp.user);
       localStorage.setItem("pronouns-token", resp.token);
+
+      router.push("/");
     } catch (e) {
       setState({ ...state, error: e });
     }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"emperror.dev/errors"
@@ -97,7 +98,10 @@ func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err er
 }
 
 func (u *User) UpdateFromDiscord(ctx context.Context, db pgxscan.Querier, du *discordgo.User) error {
+	fmt.Println(du.ID, du.String())
+
 	builder := sq.Update("users").
+		Set("discord", du.ID).
 		Set("discord_username", du.String()).
 		Where("id = ?", u.ID).
 		Suffix("RETURNING *")

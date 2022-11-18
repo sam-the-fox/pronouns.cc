@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -156,7 +157,7 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	var du discordgo.User
+	du := new(discordgo.User)
 	err = s.DB.GetJSON(ctx, "discord:"+req.Ticket, &du)
 	if err != nil {
 		log.Errorf("getting discord user for ticket: %v", err)
@@ -164,12 +165,14 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrInvalidTicket}
 	}
 
+	fmt.Println(du.String())
+
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)
 	if err != nil {
 		return errors.Wrap(err, "creating user")
 	}
 
-	err = u.UpdateFromDiscord(ctx, tx, &du)
+	err = u.UpdateFromDiscord(ctx, tx, du)
 	if err != nil {
 		if errors.Cause(err) == db.ErrUsernameTaken {
 			return server.APIError{Code: server.ErrUsernameTaken}
