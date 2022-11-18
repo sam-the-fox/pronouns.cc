@@ -11,7 +11,13 @@ import { useRecoilValue } from "recoil";
 import Link from "next/link";
 import FallbackImage from "../../../components/FallbackImage";
 import { ReactNode } from "react";
-import { EmojiLaughing, HandThumbsDown, HandThumbsUp, HeartFill, People } from "react-bootstrap-icons";
+import {
+  EmojiLaughing,
+  HandThumbsDown,
+  HandThumbsUp,
+  HeartFill,
+  People,
+} from "react-bootstrap-icons";
 
 interface Props {
   user: User;
@@ -54,10 +60,11 @@ export default function Index({ user }: Props) {
               <h1 className="text-2xl font-bold">{user.display_name}</h1>
             )}
             <h3
-              className={`${user.display_name
-                ? "text-xl italic text-slate-600 dark:text-slate-400"
-                : "text-2xl font-bold"
-                }`}
+              className={`${
+                user.display_name
+                  ? "text-xl italic text-slate-600 dark:text-slate-400"
+                  : "text-2xl font-bold"
+              }`}
             >
               @{user.username}
             </h3>
@@ -82,12 +89,20 @@ export default function Index({ user }: Props) {
             )}
           </div>
         </div>
-        {user.names?.length > 0 && <div className="border-b border-slate-200 dark:border-slate-700">
-          {user.names.map((name, index) => <NameEntry name={name} key={index} />)}
-        </div>}
-        {user.pronouns?.length > 0 && <div className="border-b border-slate-200 dark:border-slate-700">
-          {user.pronouns.map((pronoun, index) => <PronounEntry pronoun={pronoun} key={index} />)}
-        </div>}
+        {user.names?.length > 0 && (
+          <div className="border-b border-slate-200 dark:border-slate-700">
+            {user.names.map((name, index) => (
+              <NameEntry name={name} key={index} />
+            ))}
+          </div>
+        )}
+        {user.pronouns?.length > 0 && (
+          <div className="border-b border-slate-200 dark:border-slate-700">
+            {user.pronouns.map((pronoun, index) => (
+              <PronounEntry pronoun={pronoun} key={index} />
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
           {user.fields?.map((field, index) => (
             <FieldCard key={index} field={field}></FieldCard>
@@ -112,30 +127,44 @@ const entryIcon = (status: WordStatus) => {
       icon = <EmojiLaughing className="inline" />;
       break;
     case WordStatus.FriendsOnly:
-      icon = <People className="inline" />
+      icon = <People className="inline" />;
       break;
     case WordStatus.Avoid:
-      icon = <HandThumbsDown className="inline" />
+      icon = <HandThumbsDown className="inline" />;
       break;
   }
 
   return icon;
-}
+};
 
 function NameEntry(props: { name: Name }) {
   const { name } = props;
 
-  return <p className={`text-lg ${name.status === WordStatus.Favourite && "font-bold"}`}>
-    {entryIcon(name.status)} {name.name}
-  </p>
+  return (
+    <p
+      className={`text-lg ${
+        name.status === WordStatus.Favourite && "font-bold"
+      }`}
+    >
+      {entryIcon(name.status)} {name.name}
+    </p>
+  );
 }
 
 function PronounEntry(props: { pronoun: Pronoun }) {
   const { pronoun } = props;
 
-  return <p className={`text-lg ${pronoun.status === WordStatus.Favourite && "font-bold"}`}>
-    {entryIcon(pronoun.status)} {pronoun.display_text ?? pronoun.pronouns.split("/").slice(0, 2).join("/")}
-  </p>
+  return (
+    <p
+      className={`text-lg ${
+        pronoun.status === WordStatus.Favourite && "font-bold"
+      }`}
+    >
+      {entryIcon(pronoun.status)}{" "}
+      {pronoun.display_text ??
+        pronoun.pronouns.split("/").slice(0, 2).join("/")}
+    </p>
+  );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

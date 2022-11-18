@@ -5,6 +5,9 @@ import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
 import { APIError, MeUser, SignupResponse } from "../../lib/types";
 import TextInput from "../../components/TextInput";
+import Loading from "../../components/Loading";
+import { stat } from "fs";
+import Button, { ButtonStyle } from "../../components/Button";
 
 interface CallbackResponse {
   has_account: boolean;
@@ -41,41 +44,47 @@ export default function Discord() {
     error: null,
     requireInvite: false,
   });
-  const [formData, setFormData] = useState<{ username: string, invite: string }>({ username: "", invite: "" });
+  const [formData, setFormData] = useState<{
+    username: string;
+    invite: string;
+  }>({ username: "", invite: "" });
 
   useEffect(() => {
-    if (!router.query.code || !router.query.state) { return; }
+    if (!router.query.code || !router.query.state) {
+      return;
+    }
+    if (state.ticket || state.token) {
+      return;
+    }
 
-    fetchAPI<CallbackResponse>(
-      "/auth/discord/callback",
-      "POST",
-      {
-        callback_domain: window.location.origin,
-        code: router.query.code,
-        state: router.query.state,
-      }
-    ).then(resp => {
-      setState({
-        hasAccount: resp.has_account,
-        isLoading: false,
-        token: resp.token || null,
-        user: resp.user || null,
-        discord: resp.discord || null,
-        ticket: resp.ticket || null,
-        requireInvite: resp.require_invite,
-      })
-    }).catch(e => {
-      setState({
-        hasAccount: false,
-        isLoading: false,
-        error: e,
-        token: null,
-        user: null,
-        discord: null,
-        ticket: null,
-        requireInvite: false,
-      });
+    fetchAPI<CallbackResponse>("/auth/discord/callback", "POST", {
+      callback_domain: window.location.origin,
+      code: router.query.code,
+      state: router.query.state,
     })
+      .then((resp) => {
+        setState({
+          hasAccount: resp.has_account,
+          isLoading: false,
+          token: resp.token || null,
+          user: resp.user || null,
+          discord: resp.discord || null,
+          ticket: resp.ticket || null,
+          requireInvite: resp.require_invite,
+        });
+      })
+      .catch((e) => {
+        setState({
+          hasAccount: false,
+          isLoading: false,
+          error: e,
+          token: null,
+          user: null,
+          discord: null,
+          ticket: null,
+          requireInvite: false,
+        });
+      });
 
     // we got a token + user, save it and return to the home page
     if (state.token) {
@@ -86,14 +95,29 @@ export default function Discord() {
     }
   }, [state.token, state.user, setState, router]);
 
+  if (!state.ticket && !state.error) {
+    return <Loading />;
+  } else if (state.error) {
+    return (
+      <div className="bg-red-600 dark:bg-red-700 p-2 rounded-md">
+        <p>Error: {state.error.message ?? state.error}</p>
+        <p>Try again?</p>
+      </div>
+    );
+  }
+
   // user needs to create an account
   const signup = async () => {
     try {
-      const resp = await fetchAPI<SignupResponse>("/auth/discord/signup", "POST", {
-        ticket: state.ticket,
-        username: formData.username,
-        invite_code: formData.invite,
-      });
+      const resp = await fetchAPI<SignupResponse>(
+        "/auth/discord/signup",
+        "POST",
+        {
+          ticket: state.ticket,
+          username: formData.username,
+          invite_code: formData.invite,
+        }
+      );
 
       setUser(resp.user);
       localStorage.setItem("pronouns-token", resp.token);
@@ -104,33 +128,46 @@ export default function Discord() {
     }
   };
 
-  return <>
-    <h1 className="font-bold text-lg">Get started</h1>
-    <p>You{"'"}ve logged in with Discord as <strong className="font-bold">{state.discord}</strong>.</p>
+  return (
+    <>
+      <h1 className="font-bold text-lg">Get started</h1>
+      <p>
+        You{"'"}ve logged in with Discord as{" "}
+        <strong className="font-bold">{state.discord}</strong>.
+      </p>
 
-    {state.error && (
-      <div className="bg-red-600 dark:bg-red-700 p-2 rounded-md">
-        <p>Error: {state.error.message ?? state.error}</p>
-        <p>Try again?</p>
-      </div>
-    )}
+      {state.error && (
+        <div className="bg-red-600 dark:bg-red-700 p-2 rounded-md">
+          <p>Error: {state.error.message ?? state.error}</p>
+          <p>Try again?</p>
+        </div>
+      )}
 
-    <label>
-      <span className="font-bold">Username</span>
-      <TextInput value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
-    </label>
-    {state.requireInvite && (
       <label>
-        <span className="font-bold">Invite code</span>
-        <TextInput value={formData.invite} onChange={(e) => setFormData({ ...formData, invite: e.target.value })} />
+        <span className="font-bold">Username</span>
+        <TextInput
+          contrastBackground
+          value={formData.username}
+          onChange={(e) =>
+            setFormData({ ...formData, username: e.target.value })
+          }
+        />
       </label>
-    )}
-    <button
-      type="button"
-      onClick={() => signup()}
-      className="bg-green-600 dark:bg-green-700 hover:bg-green-700 hover:dark:bg-green-800 p-2 rounded-md"
-    >
-      <span className="font-bold">Create account</span>
-    </button>
-  </>;
+      {state.requireInvite && (
+        <label>
+          <span className="font-bold">Invite code</span>
+          <TextInput
+            contrastBackground
+            value={formData.invite}
+            onChange={(e) =>
+              setFormData({ ...formData, invite: e.target.value })
+            }
+          />
+        </label>
+      )}
+      <Button style={ButtonStyle.success} onClick={() => signup()}>
+        Create account
+      </Button>
+    </>
+  );
 }
