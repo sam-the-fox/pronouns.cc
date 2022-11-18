@@ -8,6 +8,7 @@ import TextInput from "../../components/TextInput";
 import Loading from "../../components/Loading";
 import { stat } from "fs";
 import Button, { ButtonStyle } from "../../components/Button";
+import Notice from "../../components/Notice";
 
 interface CallbackResponse {
   has_account: boolean;
@@ -97,12 +98,12 @@ export default function Discord() {
 
   if (!state.ticket && !state.error) {
     return <Loading />;
-  } else if (state.error) {
+  } else if (!state.ticket && state.error) {
     return (
-      <div className="bg-red-600 dark:bg-red-700 p-2 rounded-md">
-        <p>Error: {state.error.message ?? state.error}</p>
+      <Notice style={ButtonStyle.danger} header="Login error">
+        <p>{state.error.message ?? state.error}</p>
         <p>Try again?</p>
-      </div>
+      </Notice>
     );
   }
 
@@ -137,10 +138,10 @@ export default function Discord() {
       </p>
 
       {state.error && (
-        <div className="bg-red-600 dark:bg-red-700 p-2 rounded-md">
-          <p>Error: {state.error.message ?? state.error}</p>
+        <Notice style={ButtonStyle.danger} header="Create account error">
+          <p>{state.error.message ?? state.error}</p>
           <p>Try again?</p>
-        </div>
+        </Notice>
       )}
 
       <label>
