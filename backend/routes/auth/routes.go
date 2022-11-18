@@ -63,6 +63,10 @@ func Mount(srv *server.Server, r chi.Router) {
 			// takes discord signup ticket to register account
 			r.Post("/signup", server.WrapHandler(s.discordSignup))
 		})
+
+		// invite routes
+		r.With(server.MustAuth).Get("/invites", server.WrapHandler(s.getInvites))
+		r.With(server.MustAuth).Post("/invites", server.WrapHandler(s.createInvite))
 	})
 }
 

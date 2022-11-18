@@ -12,7 +12,9 @@ create table users (
     links       text[],
 
     discord          text unique, -- for Discord oauth
-    discord_username text
+    discord_username text,
+
+    max_invites int default 10
 );
 
 create table user_names (
@@ -79,4 +81,11 @@ create table member_fields (
     jokingly     text[],
     friends_only text[],
     avoid        text[]
+);
+
+create table invites (
+    user_id text      not null references users (id) on delete cascade,
+    code    text      primary key,
+    created timestamp not null default (current_timestamp at time zone 'utc'),
+    used    boolean not null default false
 );

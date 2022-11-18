@@ -24,6 +24,8 @@ type User struct {
 
 	Discord         *string
 	DiscordUsername *string
+
+	MaxInvites int
 }
 
 // usernames must match this regex

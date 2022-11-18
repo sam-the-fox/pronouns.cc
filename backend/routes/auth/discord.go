@@ -182,16 +182,17 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if s.RequireInvite {
-		// TODO: check invites, invalidate invite when done
-		inviteValid := true
+		valid, used, err := s.DB.InvalidateInvite(ctx, tx, req.InviteCode)
+		if err != nil {
+			return errors.Wrap(err, "checking and invalidating invite")
+		}
 
-		if !inviteValid {
-			err = tx.Rollback(ctx)
-			if err != nil {
-				return errors.Wrap(err, "rolling back transaction")
-			}
-
+		if !valid {
 			return server.APIError{Code: server.ErrInviteRequired}
+		}
+
+		if used {
+			return server.APIError{Code: server.ErrInviteAlreadyUsed}
 		}
 	}
 
