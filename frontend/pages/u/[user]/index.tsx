@@ -18,6 +18,7 @@ import {
   HeartFill,
   People,
 } from "react-bootstrap-icons";
+import BlueLink from "../../../components/BlueLink";
 
 interface Props {
   user: User;
@@ -38,12 +39,7 @@ export default function Index({ user }: Props) {
             <span className="font-bold">public</span> profile.
           </span>
           <br />
-          <Link
-            href="/edit/profile"
-            className="hover:underline text-sky-500 dark:text-sky-400"
-          >
-            Edit your profile
-          </Link>
+          <BlueLink to="/edit/profile">Edit your profile</BlueLink>
         </div>
       )}
       <div className="container mx-auto">

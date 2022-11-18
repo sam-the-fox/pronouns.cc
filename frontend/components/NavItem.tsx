@@ -9,11 +9,10 @@ export interface Props {
 
 export default function NavItem(props: Props) {
   const ret = (
-    <Link
-      className="hover:text-sky-500 dark:hover:text-sky-400"
-      href={props.href}
-    >
-      {props.children}
+    <Link href={props.href}>
+      <a className="hover:text-sky-500 dark:hover:text-sky-400">
+        {props.children}
+      </a>
     </Link>
   );
 
