@@ -8,10 +8,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@sentry/nextjs": "^7.13.0",
+    "@sentry/nextjs": "^7.20.0",
     "@types/lodash": "^4.14.189",
     "lodash": "^4.17.21",
-    "next": "12.2.2",
+    "next": "13.0.4",
     "react": "18.2.0",
     "react-bootstrap-icons": "^1.8.4",
     "react-dom": "18.2.0",
@@ -30,7 +30,7 @@
     "@types/sortablejs": "^1.13.0",
     "autoprefixer": "^10.4.7",
     "eslint": "8.19.0",
-    "eslint-config-next": "12.2.2",
+    "eslint-config-next": "13.0.4",
     "postcss": "^8.4.14",
     "prettier": "2.7.1",
     "tailwindcss": "^3.1.6",

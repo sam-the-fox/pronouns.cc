@@ -7,10 +7,8 @@ export type Props = {
 
 export default function BlueLink({ to, children }: Props) {
   return (
-    <Link href={to}>
-      <a className="hover:underline text-sky-500 dark:text-sky-400">
-        {children}
-      </a>
+    <Link href={to} className="hover:underline text-sky-500 dark:text-sky-400">
+      {children}
     </Link>
   );
 }
