@@ -18,20 +18,9 @@ import {
 export default function Index() {
   const [user, setUser] = useRecoilState(userState);
   const router = useRouter();
-
-  useEffect(() => {
-    if (!user) {
-      router.push("/");
-    }
-  }, [user]);
-
-  if (!user) {
-    return <Loading />;
-  }
-
   const [state, setState] = useState(cloneDeep(user));
 
-  const originalOrder = state.fields
+  const originalOrder = state?.fields
     ? state.fields.map((f, i) => {
         const field: EditField = {
           id: i,
@@ -60,6 +49,17 @@ export default function Index() {
     : [];
 
   const [fields, setFields] = useState(cloneDeep(originalOrder));
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/");
+    }
+  }, [user]);
+
+  if (!user) {
+    return <Loading />;
+  }
+
   const fieldsUpdated = !fieldsEqual(fields, originalOrder);
 
   return (

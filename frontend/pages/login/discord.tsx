@@ -3,10 +3,9 @@ import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
-import { APIError, MeUser, SignupResponse } from "../../lib/types";
+import { MeUser, SignupResponse } from "../../lib/types";
 import TextInput from "../../components/TextInput";
 import Loading from "../../components/Loading";
-import { stat } from "fs";
 import Button, { ButtonStyle } from "../../components/Button";
 import Notice from "../../components/Notice";
 
@@ -54,7 +53,7 @@ export default function Discord() {
     if (!router.query.code || !router.query.state) {
       return;
     }
-    if (state.ticket || state.token) {
+    if (!state.ticket && !state.token) {
       return;
     }
 
@@ -130,13 +129,7 @@ export default function Discord() {
   };
 
   return (
-    <>
-      <h1 className="font-bold text-lg">Get started</h1>
-      <p>
-        You{"'"}ve logged in with Discord as{" "}
-        <strong className="font-bold">{state.discord}</strong>.
-      </p>
-
+    <div>
       {state.error && (
         <Notice style={ButtonStyle.danger} header="Create account error">
           <p>{state.error.message ?? state.error}</p>
@@ -144,31 +137,62 @@ export default function Discord() {
         </Notice>
       )}
 
-      <label>
-        <span className="font-bold">Username</span>
-        <TextInput
-          contrastBackground
-          value={formData.username}
-          onChange={(e) =>
-            setFormData({ ...formData, username: e.target.value })
-          }
-        />
-      </label>
-      {state.requireInvite && (
-        <label>
-          <span className="font-bold">Invite code</span>
+      <div className="border-slate-200 dark:border-slate-700 border rounded max-w-xl">
+        <div className="border-b border-slate-200 dark:border-slate-700 p-2">
+          <h1 className="font-bold text-xl">Get started</h1>
+        </div>
+        <div className="px-2 pt-2">
+          <p>
+            Just one more thing!
+            <br />
+            <strong className="font-bold">{state.discord}</strong>, you need to
+            choose a username
+            {state.requireInvite && " and fill in an invite code"} before you
+            create an account!
+          </p>
+        </div>
+        <label className="block px-2 pb-3 pt-2">
+          <span className="block font-bold p-2 text-slate-800 dark:text-slate-200">
+            Username
+          </span>
           <TextInput
             contrastBackground
-            value={formData.invite}
+            value={formData.username}
             onChange={(e) =>
-              setFormData({ ...formData, invite: e.target.value })
+              setFormData({ ...formData, username: e.target.value })
             }
           />
         </label>
-      )}
-      <Button style={ButtonStyle.success} onClick={() => signup()}>
-        Create account
-      </Button>
-    </>
+        {state.requireInvite && (
+          <label className="block px-2 pb-3 pt-2">
+            <span className="block p-2 text-slate-800 dark:text-slate-200">
+              Invite code <span className="font-bold">Invite code</span>
+              <span className="font-italic">
+                (an existing user can give you this!)
+              </span>
+            </span>
+            <TextInput
+              contrastBackground
+              value={formData.invite}
+              onChange={(e) =>
+                setFormData({ ...formData, invite: e.target.value })
+              }
+            />
+          </label>
+        )}
+        <div className="bg-slate-100 dark:bg-slate-700 border-t border-slate-200 dark:border-slate-700">
+          <span className="block p-3">
+            <Button style={ButtonStyle.success} onClick={() => signup()}>
+              Create account
+            </Button>
+          </span>
+          <span className="block px-3 pb-3">
+            <span className="font-bold">Note:</span> by clicking &quot;Create
+            account&quot;, you agree to the terms of service and the privacy
+            policy.
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
