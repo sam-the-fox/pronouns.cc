@@ -63,7 +63,7 @@ func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (
 }
 
 func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err error) {
-	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).ToSql()
+	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).OrderBy("name", "id").ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "building sql")
 	}
