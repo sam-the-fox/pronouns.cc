@@ -4,12 +4,14 @@ import {
   HandThumbsUp,
   Heart,
   People,
+  Plus,
   Trash3,
 } from "react-bootstrap-icons";
 
 import Card from "./Card";
 import TextInput from "./TextInput";
 import Button, { ButtonStyle } from "./Button";
+import { useState } from "react";
 
 export interface EditField {
   id: number;
@@ -28,6 +30,8 @@ export enum PronounChoice {
 type EditableCardProps = {
   field: EditField;
   onChangeName: React.ChangeEventHandler<HTMLInputElement>;
+  onChangePronoun: React.ChangeEventHandler<HTMLInputElement>;
+  onAddPronoun(pronoun: string): void;
   onChangeFavourite(
     e: React.MouseEvent<HTMLButtonElement>,
     entry: string
@@ -40,6 +44,8 @@ type EditableCardProps = {
 };
 
 export function EditableCard(props: EditableCardProps) {
+  const [input, setInput] = useState("");
+
   const footer = (
     <div className="flex justify-between">
       <TextInput value={props.field.name} onChange={props.onChangeName} />
@@ -55,8 +61,12 @@ export function EditableCard(props: EditableCardProps) {
         {Object.keys(props.field.pronouns).map((pronoun, index) => {
           const choice = props.field.pronouns[pronoun];
           return (
-            <li className="flex justify-between my-1" key={index}>
-              <div>{pronoun}</div>
+            <li className="flex justify-between my-1 items-center" key={index}>
+              <TextInput
+                value={pronoun}
+                prevValue={pronoun}
+                onChange={props.onChangePronoun}
+              />
               <div className="rounded-md">
                 <button
                   type="button"
@@ -123,6 +133,18 @@ export function EditableCard(props: EditableCardProps) {
             </li>
           );
         })}
+        <li className="flex justify-between my-1 items-center">
+          <TextInput value={input} onChange={(e) => setInput(e.target.value)} />
+          <Button
+            style={ButtonStyle.success}
+            onClick={() => {
+              props.onAddPronoun(input);
+              setInput("");
+            }}
+          >
+            <Plus aria-hidden className="inline" /> Add
+          </Button>
+        </li>
       </ul>
     </Card>
   );

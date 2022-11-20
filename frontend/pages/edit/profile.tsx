@@ -1,13 +1,12 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import Loading from "../../components/Loading";
 import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
 import { MeUser, Field } from "../../lib/types";
 import cloneDeep from "lodash/cloneDeep";
 import { ReactSortable } from "react-sortablejs";
-import Card from "../../components/Card";
 
 import {
   EditableCard,
@@ -15,8 +14,11 @@ import {
   PronounChoice,
 } from "../../components/Editable";
 
+import Button, { ButtonStyle } from "../../components/Button";
+import { Plus, Save, Trash } from "react-bootstrap-icons";
+
 export default function Index() {
-  const [user, setUser] = useRecoilState(userState);
+  const user = useRecoilValue(userState);
   const router = useRouter();
   const [state, setState] = useState(cloneDeep(user));
 
@@ -49,6 +51,16 @@ export default function Index() {
     : [];
 
   const [fields, setFields] = useState(cloneDeep(originalOrder));
+  const resetFields = () => {
+    setFields(cloneDeep(originalOrder));
+  };
+  const addField = () => {
+    if (fields.length >= 25) return;
+
+    const lastId = fields[fields.length - 1]?.id ?? 0;
+
+    setFields([...fields, { id: lastId + 1, name: "", pronouns: {} }]);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -61,11 +73,53 @@ export default function Index() {
   }
 
   const fieldsUpdated = !fieldsEqual(fields, originalOrder);
+  const isEdited = fieldsUpdated;
 
   return (
     <div className="container mx-auto">
+      <h1 className="p-2 border-b border-slate-300 dark:border-slate-600 flex items-center justify-between">
+        <span className="text-3xl">Editing your profile</span>
+        {isEdited && (
+          <Button
+            style={ButtonStyle.success}
+            onClick={() =>
+              updateUser({
+                displayName: state!.display_name,
+                bio: state!.bio,
+                fields,
+              })
+            }
+          >
+            <Save aria-hidden className="inline" /> Save changes
+          </Button>
+        )}
+      </h1>
+
       <div>{`fieldsUpdated: ${fieldsUpdated}`}</div>
-      {/* @ts-ignore: This component isn't updated to have a "children" prop yet, but it accepts it just fine. */}
+      <h3 className="p-2 border-b border-slate-300 dark:border-slate-600 flex items-center justify-between">
+        <span className="text-xl">Fields</span>
+        <div className="inline">
+          <Button
+            noRound
+            style={ButtonStyle.success}
+            onClick={() => addField()}
+          >
+            {" "}
+            <Plus aria-hidden className="inline" />
+            Add field
+          </Button>
+          {fieldsUpdated && (
+            <Button
+              noRound
+              style={ButtonStyle.danger}
+              onClick={() => resetFields()}
+            >
+              <Trash aria-hidden className="inline" />
+              Reset fields
+            </Button>
+          )}
+        </div>
+      </h3>
       <ReactSortable
         handle=".handle"
         list={fields}
@@ -76,6 +130,22 @@ export default function Index() {
           <EditableCard
             key={i}
             field={field}
+            onChangePronoun={(e) => {
+              const prev =
+                e.target.attributes.getNamedItem("data-prev-value")?.value;
+              if (!prev || !e.target.value) return;
+
+              const choice = field.pronouns[prev];
+              delete field.pronouns[prev];
+
+              field.pronouns[e.target.value] = choice;
+
+              setFields([...fields]);
+            }}
+            onAddPronoun={(pronoun) => {
+              field.pronouns[pronoun] = PronounChoice.okay;
+              setFields([...fields]);
+            }}
             onChangeName={(e) => {
               field.name = e.target.value;
               setFields([...fields]);
@@ -125,8 +195,8 @@ function fieldsEqual(arr1: EditField[], arr2: EditField[]) {
 }
 
 async function updateUser(args: {
-  displayName: string;
-  bio: string;
+  displayName: string | null;
+  bio: string | null;
   fields: EditField[];
 }) {
   const newFields = args.fields.map((editField) => {
@@ -139,22 +209,22 @@ async function updateUser(args: {
       avoid: [],
     };
 
-    Object.keys(editField).forEach((pronoun) => {
+    Object.keys(editField.pronouns).forEach((pronoun) => {
       switch (editField.pronouns[pronoun]) {
         case PronounChoice.favourite:
-          field.favourite?.push(pronoun);
+          field.favourite!.push(pronoun);
           break;
         case PronounChoice.okay:
-          field.okay?.push(pronoun);
+          field.okay!.push(pronoun);
           break;
         case PronounChoice.jokingly:
-          field.jokingly?.push(pronoun);
+          field.jokingly!.push(pronoun);
           break;
         case PronounChoice.friendsOnly:
-          field.friends_only?.push(pronoun);
+          field.friends_only!.push(pronoun);
           break;
         case PronounChoice.avoid:
-          field.avoid?.push(pronoun);
+          field.avoid!.push(pronoun);
           break;
       }
     });
@@ -163,8 +233,8 @@ async function updateUser(args: {
   });
 
   return await fetchAPI<MeUser>("/users/@me", "PATCH", {
-    display_name: args.displayName,
-    bio: args.bio,
+    display_name: args.displayName ?? null,
+    bio: args.bio ?? null,
     fields: newFields,
   });
 }
