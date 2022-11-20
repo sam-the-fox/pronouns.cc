@@ -50,13 +50,20 @@ export default function Discord() {
   }>({ username: "", invite: "" });
 
   useEffect(() => {
-    if (!router.query.code || !router.query.state) {
-      return;
-    }
-    if (!state.ticket && !state.token) {
+    if (state.isLoading || !router.query.code || !router.query.state) {
       return;
     }
 
+    // we got a token + user, save it and return to the home page
+    if (state.token) {
+      window.localStorage.setItem("pronouns-token", state.token);
+      setUser(state.user!);
+
+      router.push("/");
+      return;
+    }
+
+    setState({ ...state, isLoading: true });
     fetchAPI<CallbackResponse>("/auth/discord/callback", "POST", {
       callback_domain: window.location.origin,
       code: router.query.code,
@@ -86,16 +93,12 @@ export default function Discord() {
         });
       });
 
-    // we got a token + user, save it and return to the home page
-    if (state.token) {
-      window.localStorage.setItem("pronouns-token", state.token);
-      setUser(state.user!);
-
-      router.push("/");
+    if (!state.ticket && !state.token) {
+      return;
     }
-  }, [state.token, state.user, setState, router]);
+  }, [router.query.code, router.query.state, state.token]);
 
-  if (!state.ticket && !state.error) {
+  if (state.isLoading || (!state.ticket && !state.error)) {
     return <Loading />;
   } else if (!state.ticket && state.error) {
     return (
