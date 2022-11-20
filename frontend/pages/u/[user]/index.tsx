@@ -32,9 +32,7 @@ interface Props {
 export default function Index({ user, partialMembers }: Props) {
   return (
     <>
-      <Head>
-        <title key="title">{`@${user.username} - pronouns.cc`}</title>
-      </Head>
+      <UserHead user={user} />
       <IsOwnPageNotice user={user} />
       <div className="container mx-auto pb-[20vh]">
         <div
@@ -80,6 +78,68 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { notFound: true };
   }
 };
+
+function UserHead({ user }: { user: User }) {
+  let description = "";
+  if (
+    user.names?.filter((name) => name.status === WordStatus.Favourite)
+      ?.length &&
+    user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
+      ?.length
+  ) {
+    description = `@${user.username} goes by ${user.names
+      .filter((name) => name.status === WordStatus.Favourite)
+      .join(", ")} and uses ${user.pronouns
+      .filter((pronoun) => pronoun.status === WordStatus.Favourite)
+      .join(", ")} pronouns.`;
+  } else if (
+    user.names?.filter((name) => name.status === WordStatus.Favourite)?.length
+  ) {
+    description = `@${user.username} goes by ${user.names
+      .filter((name) => name.status === WordStatus.Favourite)
+      .join(", ")}.`;
+  } else if (
+    user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
+      ?.length
+  ) {
+    description = `@${user.username} uses ${user.pronouns
+      .filter((pronoun) => pronoun.status === WordStatus.Favourite)
+      .join(", ")} pronouns.`;
+  }
+
+  if (user.bio && user.bio !== "") {
+    description += `\n\n${user.bio.slice(0, 500)}`;
+    description.trim();
+  }
+
+  return (
+    <Head>
+      <title key="title">{`@${user.username} - pronouns.cc`}</title>
+
+      <meta key="sitename" property="og:site_name" content="pronouns.cc" />
+      <meta
+        key="title"
+        property="og:title"
+        content={
+          user.display_name
+            ? `${user.display_name} (@${user.username})`
+            : `@${user.username}`
+        }
+      />
+      {user.avatar_urls && user.avatar_urls.length > 0 ? (
+        <meta key="image" property="og:image" content={user.avatar_urls[0]} />
+      ) : (
+        <></>
+      )}
+      <meta key="description" property="og:description" content={description} />
+      <meta
+        key="url"
+        property="og:url"
+        content={`${process.env.DOMAIN}/u/${user.username}`}
+      />
+    </Head>
+  );
+}
 
 function IsOwnPageNotice({ user }: { user: User }) {
   const isThisMyPage = useRecoilValue(userState)?.id === user.id;
