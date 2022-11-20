@@ -30,7 +30,7 @@ export default function Index({ user }: Props) {
   return (
     <>
       <Head>
-        <title key="title">@{user.username} - pronouns.cc</title>
+        <title key='title'>{`@${user.username} - pronouns.cc`}</title>
       </Head>
       {isMeUser && (
         <div className="lg:w-1/3 mx-auto bg-slate-100 dark:bg-slate-700 shadow rounded-md p-2">
