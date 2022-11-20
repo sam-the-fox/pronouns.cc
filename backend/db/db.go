@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -33,9 +34,14 @@ func New() (*DB, error) {
 		return nil, errors.Wrap(err, "creating postgres client")
 	}
 
-	redis, err := (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
-	if err != nil {
-		return nil, errors.Wrap(err, "creating redis client")
+	var redis radix.Client
+	if os.Getenv("REDIS") != "" {
+		redis, err = (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
+		if err != nil {
+			return nil, errors.Wrap(err, "creating redis client")
+		}
+	} else {
+		log.Warn("$REDIS was empty! ANY FUNCTIONALITY using redis will CRASH the server")
 	}
 
 	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
