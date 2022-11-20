@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -164,8 +163,6 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 
 		return server.APIError{Code: server.ErrInvalidTicket}
 	}
-
-	fmt.Println(du.String())
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)
 	if err != nil {
