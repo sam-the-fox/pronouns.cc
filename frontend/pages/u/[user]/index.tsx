@@ -32,6 +32,9 @@ interface Props {
 export default function Index({ user, partialMembers }: Props) {
   return (
     <>
+      <Head>
+        <title key="title">{`@${user.username} - pronouns.cc`}</title>
+      </Head>
       <UserHead user={user} />
       <IsOwnPageNotice user={user} />
       <div className="container mx-auto pb-[20vh]">
@@ -89,14 +92,21 @@ function UserHead({ user }: { user: User }) {
   ) {
     description = `@${user.username} goes by ${user.names
       .filter((name) => name.status === WordStatus.Favourite)
+      .map((name) => name.name)
       .join(", ")} and uses ${user.pronouns
       .filter((pronoun) => pronoun.status === WordStatus.Favourite)
+      .map(
+        (pronoun) =>
+          pronoun.display_text ??
+          pronoun.pronouns.split("/").slice(0, 2).join("/")
+      )
       .join(", ")} pronouns.`;
   } else if (
     user.names?.filter((name) => name.status === WordStatus.Favourite)?.length
   ) {
     description = `@${user.username} goes by ${user.names
       .filter((name) => name.status === WordStatus.Favourite)
+      .map((name) => name.name)
       .join(", ")}.`;
   } else if (
     user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
@@ -104,21 +114,24 @@ function UserHead({ user }: { user: User }) {
   ) {
     description = `@${user.username} uses ${user.pronouns
       .filter((pronoun) => pronoun.status === WordStatus.Favourite)
+      .map(
+        (pronoun) =>
+          pronoun.display_text ??
+          pronoun.pronouns.split("/").slice(0, 2).join("/")
+      )
       .join(", ")} pronouns.`;
+  } else if (user.bio && user.bio !== "") {
+    description = user.bio.slice(0, 500);
   }
 
-  if (user.bio && user.bio !== "") {
-    description += `\n\n${user.bio.slice(0, 500)}`;
-    description.trim();
-  }
+  const domain =
+    typeof window !== "undefined" ? window.location.origin : process.env.DOMAIN;
 
   return (
     <Head>
-      <title key="title">{`@${user.username} - pronouns.cc`}</title>
-
-      <meta key="sitename" property="og:site_name" content="pronouns.cc" />
+      <meta key="og:sitename" property="og:site_name" content="pronouns.cc" />
       <meta
-        key="title"
+        key="og:title"
         property="og:title"
         content={
           user.display_name
@@ -127,15 +140,23 @@ function UserHead({ user }: { user: User }) {
         }
       />
       {user.avatar_urls && user.avatar_urls.length > 0 ? (
-        <meta key="image" property="og:image" content={user.avatar_urls[0]} />
+        <meta
+          key="og:image"
+          property="og:image"
+          content={user.avatar_urls[0]}
+        />
       ) : (
         <></>
       )}
-      <meta key="description" property="og:description" content={description} />
       <meta
-        key="url"
+        key="og:description"
+        property="og:description"
+        content={description}
+      />
+      <meta
+        key="og:url"
         property="og:url"
-        content={`${process.env.DOMAIN}/u/${user.username}`}
+        content={`${domain}/u/${user.username}`}
       />
     </Head>
   );
