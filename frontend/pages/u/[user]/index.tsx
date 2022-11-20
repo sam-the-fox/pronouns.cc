@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import fetchAPI from "../../../lib/fetch";
-import { Field, Name, Pronoun, User, WordStatus } from "../../../lib/types";
+import { Field, Name, PartialMember, Pronoun, User, WordStatus } from "../../../lib/types";
 import ReactMarkdown from "react-markdown";
 import { userState } from "../../../lib/state";
 import { useRecoilValue } from "recoil";
@@ -19,16 +19,17 @@ import Card from "../../../components/Card";
 
 interface Props {
   user: User;
+  partialMembers: PartialMember[];
 }
 
-export default function Index({ user }: Props) {
+export default function Index({ user, partialMembers }: Props) {
   return (
     <>
       <Head>
         <title key='title'>{`@${user.username} - pronouns.cc`}</title>
       </Head>
       <IsOwnPageNotice user={user} />
-      <div className="container mx-auto">
+      <div className="container mx-auto pb-[20vh]">
         <div className="
           m-2 p-2
           flex flex-col lg:flex-row
@@ -44,19 +45,27 @@ export default function Index({ user }: Props) {
         <LabelList source={user.names} />
         <LabelList source={user.pronouns} />
         <FieldCardGrid fields={user.fields} />
+        <MemberList user={user} partialMembers={partialMembers} />
       </div>
     </>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const username = context.params!.user;
   try {
-    const user = await fetchAPI<User>(`/users/${context.params!.user}`);
-
-    return { props: { user } };
+    const [userResponse, partialMembersResponse] = await Promise.allSettled([
+      fetchAPI<User>(`/users/${username}`),
+      fetchAPI<PartialMember[]>(`/users/${username}/members`)
+    ]);
+    if (userResponse.status === 'rejected')
+      throw new Error('Could not fetch user');
+    const user = userResponse.value;
+    const partialMembers = partialMembersResponse.status === 'fulfilled'
+      ? partialMembersResponse.value : [];
+    return { props: { user, partialMembers } };
   } catch (e) {
     console.log(e);
-
     return { notFound: true };
   }
 };
@@ -71,6 +80,32 @@ function IsOwnPageNotice({ user }: { user: User }) {
         <BlueLink to="/edit/profile">Edit your profile</BlueLink>
       </div>
     ) : <></>
+  );
+}
+
+function MemberList({
+  user,
+  partialMembers,
+  className
+}: {
+  user: User,
+  partialMembers: PartialMember[],
+  className?: string
+}) {
+  console.log(partialMembers);
+  return (
+    <div className={`mx-auto flex-col items-center ${className || ''}`}>
+      <h1 className='text-2xl'>Members</h1>
+      <ul>
+        {partialMembers.map(partialMember =>
+          <li className='before:[content:"-_"]' key={partialMember.id}>
+            <BlueLink to={`/u/${user.username}/${partialMember.name}`}>
+              <span>{partialMember.display_name ?? partialMember.name}</span>
+            </BlueLink>
+          </li>
+        )}
+      </ul>
+    </div>
   );
 }
 
