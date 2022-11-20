@@ -90,6 +90,7 @@ const (
 	// Member-related error codes
 	ErrMemberNotFound     = 3001
 	ErrMemberLimitReached = 3002
+	ErrMemberNameInUse    = 3003
 
 	// General request error codes
 	ErrRequestTooBig = 4001
@@ -118,6 +119,7 @@ var errCodeMessages = map[int]string{
 
 	ErrMemberNotFound:     "Member not found",
 	ErrMemberLimitReached: "Member limit reached",
+	ErrMemberNameInUse:    "Member name already in use",
 
 	ErrRequestTooBig: "Request too big (max 2 MB)",
 }
@@ -145,6 +147,7 @@ var errCodeStatuses = map[int]int{
 
 	ErrMemberNotFound:     http.StatusNotFound,
 	ErrMemberLimitReached: http.StatusBadRequest,
+	ErrMemberNameInUse:    http.StatusBadRequest,
 
 	ErrRequestTooBig: http.StatusBadRequest,
 }

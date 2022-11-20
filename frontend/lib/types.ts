@@ -19,6 +19,7 @@ export interface User {
 export interface PartialMember {
   id: string;
   name: string;
+  display_name: string | null;
   avatar_urls: string[] | null;
 }
 

@@ -12,11 +12,12 @@ import (
 )
 
 type GetMemberResponse struct {
-	ID         xid.ID   `json:"id"`
-	Name       string   `json:"name"`
-	Bio        *string  `json:"bio"`
-	AvatarURLs []string `json:"avatar_urls"`
-	Links      []string `json:"links"`
+	ID          xid.ID   `json:"id"`
+	Name        string   `json:"name"`
+	DisplayName *string  `json:"display_name"`
+	Bio         *string  `json:"bio"`
+	AvatarURLs  []string `json:"avatar_urls"`
+	Links       []string `json:"links"`
 
 	Names    []db.Name    `json:"names"`
 	Pronouns []db.Pronoun `json:"pronouns"`
@@ -27,11 +28,12 @@ type GetMemberResponse struct {
 
 func dbMemberToMember(u db.User, m db.Member, names []db.Name, pronouns []db.Pronoun, fields []db.Field) GetMemberResponse {
 	return GetMemberResponse{
-		ID:         m.ID,
-		Name:       m.Name,
-		Bio:        m.Bio,
-		AvatarURLs: m.AvatarURLs,
-		Links:      m.Links,
+		ID:          m.ID,
+		Name:        m.Name,
+		DisplayName: m.DisplayName,
+		Bio:         m.Bio,
+		AvatarURLs:  m.AvatarURLs,
+		Links:       m.Links,
 
 		Names:    names,
 		Pronouns: pronouns,

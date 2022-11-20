@@ -12,13 +12,14 @@ import (
 )
 
 type CreateMemberRequest struct {
-	Name     string       `json:"name"`
-	Bio      string       `json:"bio"`
-	Avatar   string       `json:"avatar"`
-	Links    []string     `json:"links"`
-	Names    []db.Name    `json:"names"`
-	Pronouns []db.Pronoun `json:"pronouns"`
-	Fields   []db.Field   `json:"fields"`
+	Name        string       `json:"name"`
+	DisplayName *string      `json:"display_name"`
+	Bio         string       `json:"bio"`
+	Avatar      string       `json:"avatar"`
+	Links       []string     `json:"links"`
+	Names       []db.Name    `json:"names"`
+	Pronouns    []db.Pronoun `json:"pronouns"`
+	Fields      []db.Field   `json:"fields"`
 }
 
 func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error) {
@@ -54,7 +55,12 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	if cmr.Name == "" {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: "name may not be empty",
+			Details: "Name may not be empty",
+		}
+	} else if len(cmr.Name) > 100 {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: "Name may not be longer than 100 characters",
 		}
 	}
 
@@ -76,25 +82,29 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	}
 	defer tx.Rollback(ctx)
 
-	m, err := s.DB.CreateMember(ctx, tx, claims.UserID, cmr.Name, cmr.Bio, cmr.Links)
+	m, err := s.DB.CreateMember(ctx, tx, claims.UserID, cmr.Name, cmr.DisplayName, cmr.Bio, cmr.Links)
 	if err != nil {
+		if errors.Cause(err) == db.ErrMemberNameInUse {
+			return server.APIError{Code: server.ErrMemberNameInUse}
+		}
+
 		return err
 	}
 
 	// set names, pronouns, fields
-	err = s.DB.SetMemberNames(ctx, tx, claims.UserID, cmr.Names)
+	err = s.DB.SetMemberNames(ctx, tx, m.ID, cmr.Names)
 	if err != nil {
-		log.Errorf("setting names for user %v: %v", claims.UserID, err)
+		log.Errorf("setting names for member %v: %v", m.ID, err)
 		return err
 	}
-	err = s.DB.SetMemberPronouns(ctx, tx, claims.UserID, cmr.Pronouns)
+	err = s.DB.SetMemberPronouns(ctx, tx, m.ID, cmr.Pronouns)
 	if err != nil {
-		log.Errorf("setting pronouns for user %v: %v", claims.UserID, err)
+		log.Errorf("setting pronouns for member %v: %v", m.ID, err)
 		return err
 	}
-	err = s.DB.SetMemberFields(ctx, tx, claims.UserID, cmr.Fields)
+	err = s.DB.SetMemberFields(ctx, tx, m.ID, cmr.Fields)
 	if err != nil {
-		log.Errorf("setting fields for user %v: %v", claims.UserID, err)
+		log.Errorf("setting fields for member %v: %v", m.ID, err)
 		return err
 	}
 

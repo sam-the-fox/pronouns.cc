@@ -11,11 +11,12 @@ import (
 )
 
 type memberListResponse struct {
-	ID         xid.ID   `json:"id"`
-	Name       string   `json:"name"`
-	Bio        *string  `json:"bio"`
-	AvatarURLs []string `json:"avatar_urls"`
-	Links      []string `json:"links"`
+	ID          xid.ID   `json:"id"`
+	Name        string   `json:"name"`
+	DisplayName *string  `json:"display_name"`
+	Bio         *string  `json:"bio"`
+	AvatarURLs  []string `json:"avatar_urls"`
+	Links       []string `json:"links"`
 }
 
 func membersToMemberList(ms []db.Member) []memberListResponse {

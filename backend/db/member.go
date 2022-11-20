@@ -13,12 +13,13 @@ import (
 const MaxMemberCount = 500
 
 type Member struct {
-	ID         xid.ID
-	UserID     xid.ID
-	Name       string
-	Bio        *string
-	AvatarURLs []string `db:"avatar_urls"`
-	Links      []string
+	ID          xid.ID
+	UserID      xid.ID
+	Name        string
+	DisplayName *string
+	Bio         *string
+	AvatarURLs  []string `db:"avatar_urls"`
+	Links       []string
 }
 
 const (
@@ -79,10 +80,10 @@ func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err 
 }
 
 // CreateMember creates a member.
-func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name, bio string, links []string) (m Member, err error) {
+func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name string, displayName *string, bio string, links []string) (m Member, err error) {
 	sql, args, err := sq.Insert("members").
-		Columns("user_id", "id", "name", "bio", "links").
-		Values(userID, xid.New(), name, bio, links).
+		Columns("user_id", "id", "name", "display_name", "bio", "links").
+		Values(userID, xid.New(), name, displayName, bio, links).
 		Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
