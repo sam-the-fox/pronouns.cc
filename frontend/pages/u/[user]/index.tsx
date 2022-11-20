@@ -199,7 +199,7 @@ function LabelStatusIcon({ status }: { status: WordStatus }) {
 }
 
 function LabelsLine({ labels }: { labels: Name[] | Pronoun[] }) {
-  if (labels.length === 0) return <></>;
+  if (!labels?.length) return <></>;
   const status = labels[0].status;
   const text = labels
     .map((label) =>
@@ -227,7 +227,7 @@ function LabelLine({ label }: { label: Name | Pronoun }) {
 
 function FieldCardGrid({ fields }: { fields: Field[] }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
+    <div className="flex flex-col md:flex-row gap-4 py-2 [&>*]:flex-1">
       {fields?.map((field, index) => (
         <FieldCard field={field} key={index} />
       ))}
