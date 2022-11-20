@@ -8,6 +8,7 @@ import TextInput from "../../components/TextInput";
 import Loading from "../../components/Loading";
 import Button, { ButtonStyle } from "../../components/Button";
 import Notice from "../../components/Notice";
+import BlueLink from "../../components/BlueLink";
 
 interface CallbackResponse {
   has_account: boolean;
@@ -191,8 +192,9 @@ export default function Discord() {
           </span>
           <span className="block px-3 pb-3">
             <span className="font-bold">Note:</span> by clicking &quot;Create
-            account&quot;, you agree to the terms of service and the privacy
-            policy.
+            account&quot;, you agree to the{" "}
+            <BlueLink to="/page/tos">terms of service</BlueLink> and the{" "}
+            <BlueLink to="/page/privacy">privacy policy</BlueLink>.
           </span>
         </div>
       </div>
