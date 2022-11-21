@@ -41,7 +41,7 @@ export default function PersonPage({ person }: { person: Person }) {
         <LabelList content={person.names ?? []} />
         <LabelList content={person.pronouns ?? []} />
         <FieldCardGrid fields={person.fields ?? []} />
-        {"user" in person && <MemberList user={person as any as User} />}
+        {!("user" in person) && <MemberList user={person as any as User} />}
       </div>
     </>
   );
