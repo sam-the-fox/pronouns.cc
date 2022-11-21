@@ -13,7 +13,7 @@ import (
 
 type GetUserResponse struct {
 	ID          xid.ID          `json:"id"`
-	Username    string          `json:"username"`
+	Username    string          `json:"name"`
 	DisplayName *string         `json:"display_name"`
 	Bio         *string         `json:"bio"`
 	AvatarURLs  []string        `json:"avatar_urls"`

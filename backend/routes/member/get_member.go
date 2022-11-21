@@ -50,7 +50,7 @@ func dbMemberToMember(u db.User, m db.Member, names []db.Name, pronouns []db.Pro
 
 type PartialUser struct {
 	ID          xid.ID   `json:"id"`
-	Username    string   `json:"username"`
+	Username    string   `json:"name"`
 	DisplayName *string  `json:"display_name"`
 	AvatarURLs  []string `json:"avatar_urls"`
 }
