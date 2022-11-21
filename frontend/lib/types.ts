@@ -16,7 +16,7 @@ export interface Person extends PartialPerson {
 }
 
 export interface Member extends Person {
-  user?: PartialUser;
+  user: PartialUser;
 }
 
 export interface User extends Person {
