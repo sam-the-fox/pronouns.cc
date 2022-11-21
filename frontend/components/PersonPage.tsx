@@ -1,5 +1,14 @@
 import Head from "next/head";
-import { Field, Member, Name, PartialPerson, Person, Pronoun, User, WordStatus } from "../lib/types";
+import {
+  Field,
+  Member,
+  Name,
+  PartialPerson,
+  Person,
+  Pronoun,
+  User,
+  WordStatus,
+} from "../lib/types";
 import ReactMarkdown from "react-markdown";
 import { userState } from "../lib/state";
 import { useRecoilValue } from "recoil";
@@ -41,10 +50,13 @@ export default function PersonPage({ person }: { person: Person }) {
         <LabelList content={person.names ?? []} />
         <LabelList content={person.pronouns ?? []} />
         <FieldCardGrid fields={person.fields ?? []} />
-        {"user" in person
-          ? <BlueLink to={personURL(person.user)}>{`< ${person.user.display_name}`}</BlueLink>
-          : <MemberList user={person as any as User} />
-        }
+        {"user" in person ? (
+          <BlueLink to={personURL(person.user)}>{`< ${
+            person.user.display_name ?? person.user.name
+          }`}</BlueLink>
+        ) : (
+          <MemberList user={person as any as User} />
+        )}
       </div>
     </>
   );
@@ -203,7 +215,9 @@ function PersonInfo({ person }: { person: Person }) {
   return (
     <div className="flex flex-col">
       {/* name */}
-      <h1 className="text-2xl font-bold">{display_name === null ? name : display_name}</h1>
+      <h1 className="text-2xl font-bold">
+        {display_name === null ? name : display_name}
+      </h1>
       {/* handle */}
       <h3 className="text-xl font-light text-slate-600 dark:text-slate-400">
         {personFullHandle(person)}

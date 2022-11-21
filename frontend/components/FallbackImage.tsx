@@ -23,9 +23,11 @@ export default function FallbackImage({ urls, alt, className }: Props) {
           } else {
             contentType = "application/octet-stream";
           }
-          return <source key={key} srcSet={url} type={contentType} />;
+          return (
+            <source width={200} key={key} srcSet={url} type={contentType} />
+          );
         })}
-      <img src={fallbackUrl} alt={alt} className={className} />
+      <img width={200} src={fallbackUrl} alt={alt} className={className} />
     </picture>
   );
 }
