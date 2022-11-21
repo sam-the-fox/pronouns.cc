@@ -56,7 +56,7 @@ export default function Navigation() {
 
   const nav = user ? (
     <>
-      <NavItem href={`/u/${user.username}`}>@{user.username}</NavItem>
+      <NavItem href={`/u/${user.name}`}>@{user.name}</NavItem>
       <NavItem href="/settings">Settings</NavItem>
       <NavItem href="/logout">Log out</NavItem>
     </>
