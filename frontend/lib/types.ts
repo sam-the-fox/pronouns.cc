@@ -1,41 +1,31 @@
+export interface PartialPerson {
+  id: string;
+  name: string;
+  display_name: string | null;
+  avatar_urls: string[] | null;
+}
+export type PartialUser = PartialPerson;
+export type PartialMember = PartialPerson;
+
+export interface Person extends PartialPerson {
+  bio: string | null;
+  links: string[] | null;
+  names: Name[];
+  pronouns: Pronoun[];
+  fields: Field[];
+}
+
+export interface Member extends Person {
+  user?: PartialUser;
+}
+
+export interface User extends Person {
+  members: PartialMember[];
+}
+
 export interface MeUser extends User {
   discord: string | null;
   discord_username: string | null;
-}
-
-export interface User {
-  id: string;
-  username: string;
-  display_name: string | null;
-  bio: string | null;
-  avatar_urls: string[] | null;
-  links: string[] | null;
-  members: PartialMember[];
-  names: Name[];
-  pronouns: Pronoun[];
-  fields: Field[];
-}
-
-export interface PartialMember {
-  id: string;
-  name: string;
-  display_name: string | null;
-  avatar_urls: string[] | null;
-}
-
-export interface Member extends PartialMember {
-  bio: string | null;
-  links: string[] | null;
-  id: string;
-  display_name: string | null;
-  name: string;
-  avatar_urls: string[] | null;
-
-  names: Name[];
-  pronouns: Pronoun[];
-  fields: Field[];
-
-  user?: PartialUser;
 }
 
 export interface Name {
@@ -108,11 +98,4 @@ export interface SignupRequest {
 export interface SignupResponse {
   user: MeUser;
   token: string;
-}
-
-export interface PartialUser {
-  id: string;
-  username: string;
-  display_name: string | null;
-  avatar_urls: string[] | null;
 }

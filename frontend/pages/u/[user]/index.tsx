@@ -33,7 +33,7 @@ export default function Index({ user, partialMembers }: Props) {
   return (
     <>
       <Head>
-        <title key="title">{`@${user.username} - pronouns.cc`}</title>
+        <title key="title">{`@${user.name} - pronouns.cc`}</title>
       </Head>
       <UserHead user={user} />
       <IsOwnPageNotice user={user} />
@@ -62,11 +62,11 @@ export default function Index({ user, partialMembers }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const username = context.params!.user;
+  const name = context.params!.user;
   try {
     const [userResponse, partialMembersResponse] = await Promise.allSettled([
-      fetchAPI<User>(`/users/${username}`),
-      fetchAPI<PartialMember[]>(`/users/${username}/members`),
+      fetchAPI<User>(`/users/${name}`),
+      fetchAPI<PartialMember[]>(`/users/${name}/members`),
     ]);
     if (userResponse.status === "rejected")
       throw new Error("Could not fetch user");
@@ -90,7 +90,7 @@ function UserHead({ user }: { user: User }) {
     user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
       ?.length
   ) {
-    description = `@${user.username} goes by ${user.names
+    description = `@${user.name} goes by ${user.names
       .filter((name) => name.status === WordStatus.Favourite)
       .map((name) => name.name)
       .join(", ")} and uses ${user.pronouns
@@ -104,7 +104,7 @@ function UserHead({ user }: { user: User }) {
   } else if (
     user.names?.filter((name) => name.status === WordStatus.Favourite)?.length
   ) {
-    description = `@${user.username} goes by ${user.names
+    description = `@${user.name} goes by ${user.names
       .filter((name) => name.status === WordStatus.Favourite)
       .map((name) => name.name)
       .join(", ")}.`;
@@ -112,7 +112,7 @@ function UserHead({ user }: { user: User }) {
     user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
       ?.length
   ) {
-    description = `@${user.username} uses ${user.pronouns
+    description = `@${user.name} uses ${user.pronouns
       .filter((pronoun) => pronoun.status === WordStatus.Favourite)
       .map(
         (pronoun) =>
@@ -135,8 +135,8 @@ function UserHead({ user }: { user: User }) {
         property="og:title"
         content={
           user.display_name
-            ? `${user.display_name} (@${user.username})`
-            : `@${user.username}`
+            ? `${user.display_name} (@${user.name})`
+            : `@${user.name}`
         }
       />
       {user.avatar_urls && user.avatar_urls.length > 0 ? (
@@ -156,7 +156,7 @@ function UserHead({ user }: { user: User }) {
       <meta
         key="og:url"
         property="og:url"
-        content={`${domain}/u/${user.username}`}
+        content={`${domain}/u/${user.name}`}
       />
     </Head>
   );
@@ -191,7 +191,7 @@ function MemberList({
       <ul>
         {partialMembers.map((partialMember) => (
           <li className='before:[content:"-_"]' key={partialMember.id}>
-            <BlueLink to={`/u/${user.username}/${partialMember.name}`}>
+            <BlueLink to={`/u/${user.name}/${partialMember.name}`}>
               <span>{partialMember.display_name ?? partialMember.name}</span>
             </BlueLink>
           </li>
@@ -206,7 +206,7 @@ function UserAvatar({ user }: { user: User }) {
     <FallbackImage
       className="max-w-xs rounded-full"
       urls={user.avatar_urls}
-      alt={`@${user.username}'s avatar`}
+      alt={`@${user.name}'s avatar`}
     />
   ) : (
     <></>
@@ -214,12 +214,12 @@ function UserAvatar({ user }: { user: User }) {
 }
 
 function UserInfo({ user }: { user: User }) {
-  const { display_name, username, bio, links } = user;
+  const { display_name, name, bio, links } = user;
   return (
     <div className="flex flex-col">
       {/* display name */}
       {display_name && <h1 className="text-2xl font-bold">{display_name}</h1>}
-      {/* username */}
+      {/* name */}
       <h3
         className={`${
           display_name
@@ -227,7 +227,7 @@ function UserInfo({ user }: { user: User }) {
             : "text-2xl font-bold"
         }`}
       >
-        @{username}
+        @{name}
       </h3>
       {/* bio */}
       {bio && (
