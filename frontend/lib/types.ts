@@ -10,9 +10,9 @@ export type PartialMember = PartialPerson;
 interface _Person extends PartialPerson {
   bio: string | null;
   links: string[] | null;
-  names: Name[];
-  pronouns: Pronoun[];
-  fields: Field[];
+  names: Name[] | null;
+  pronouns: Pronoun[] | null;
+  fields: Field[] | null;
 }
 
 export interface Member extends _Person {
@@ -20,7 +20,7 @@ export interface Member extends _Person {
 }
 
 export interface User extends _Person {
-  members: PartialMember[];
+  members: PartialMember[] | null;
 }
 
 export type Person = Member | User;

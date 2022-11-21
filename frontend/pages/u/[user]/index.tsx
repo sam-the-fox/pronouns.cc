@@ -82,9 +82,9 @@ function PersonPage({ person }: { person: Person }) {
           <PersonAvatar person={person} />
           <PersonInfo person={person} />
         </div>
-        <LabelList content={person.names} />
-        <LabelList content={person.pronouns} />
-        <FieldCardGrid fields={person.fields} />
+        <LabelList content={person.names ?? []} />
+        <LabelList content={person.pronouns ?? []} />
+        <FieldCardGrid fields={person.fields ?? []} />
         { 'user' in person && (
           <MemberList user={person as any as User} />
         )}
@@ -218,7 +218,7 @@ function MemberList({
     <div className={`mx-auto flex-col items-center ${className || ""}`}>
       <h1 className="text-2xl">Members</h1>
       <ul>
-        {partialMembers.map((partialMember) => (
+        {partialMembers?.map((partialMember) => (
           <li className='before:[content:"-_"]' key={partialMember.id}>
             <BlueLink to={`/u/${user.name}/${partialMember.name}`}>
               <span>{partialMember.display_name ?? partialMember.name}</span>
