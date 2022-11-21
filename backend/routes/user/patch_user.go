@@ -194,7 +194,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated user back on success
-	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns))
+	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns, nil))
 	return nil
 }
 

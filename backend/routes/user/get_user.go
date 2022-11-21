@@ -32,13 +32,14 @@ type GetMeResponse struct {
 }
 
 type PartialMember struct {
-	ID        xid.ID  `json:"id"`
-	Name      string  `json:"name"`
-	AvatarURL *string `json:"avatar_url"`
+	ID          xid.ID   `json:"id"`
+	Name        string   `json:"name"`
+	DisplayName *string  `json:"display_name"`
+	AvatarURLs  []string `json:"avatar_urls"`
 }
 
-func dbUserToResponse(u db.User, fields []db.Field, names []db.Name, pronouns []db.Pronoun) GetUserResponse {
-	return GetUserResponse{
+func dbUserToResponse(u db.User, fields []db.Field, names []db.Name, pronouns []db.Pronoun, members []db.Member) GetUserResponse {
+	resp := GetUserResponse{
 		ID:          u.ID,
 		Username:    u.Username,
 		DisplayName: u.DisplayName,
@@ -49,6 +50,18 @@ func dbUserToResponse(u db.User, fields []db.Field, names []db.Name, pronouns []
 		Pronouns:    pronouns,
 		Fields:      fields,
 	}
+
+	resp.Members = make([]PartialMember, len(members))
+	for i := range members {
+		resp.Members[i] = PartialMember{
+			ID:          members[i].ID,
+			Name:        members[i].Name,
+			DisplayName: members[i].DisplayName,
+			AvatarURLs:  members[i].AvatarURLs,
+		}
+	}
+
+	return resp
 }
 
 func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
@@ -77,7 +90,13 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 				return err
 			}
 
-			render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns))
+			members, err := s.DB.UserMembers(ctx, u.ID)
+			if err != nil {
+				log.Errorf("Error getting user members: %v", err)
+				return err
+			}
+
+			render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns, members))
 			return nil
 		} else if err != db.ErrUserNotFound {
 			log.Errorf("Error getting user by ID: %v", err)
@@ -115,7 +134,13 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns))
+	members, err := s.DB.UserMembers(ctx, u.ID)
+	if err != nil {
+		log.Errorf("Error getting user members: %v", err)
+		return err
+	}
+
+	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns, members))
 	return nil
 }
 
@@ -147,8 +172,14 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	members, err := s.DB.UserMembers(ctx, u.ID)
+	if err != nil {
+		log.Errorf("Error getting user members: %v", err)
+		return err
+	}
+
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse: dbUserToResponse(u, fields, names, pronouns),
+		GetUserResponse: dbUserToResponse(u, fields, names, pronouns, members),
 		Discord:         u.Discord,
 		DiscordUsername: u.DiscordUsername,
 	})
