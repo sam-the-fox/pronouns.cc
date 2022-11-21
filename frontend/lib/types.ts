@@ -27,8 +27,13 @@ export interface Member extends PartialMember {
   bio: string | null;
   links: string[] | null;
   id: string;
+  display_name: string | null;
   name: string;
   avatar_urls: string[] | null;
+
+  names: Name[];
+  pronouns: Pronoun[];
+  fields: Field[];
 
   user?: PartialUser;
 }
