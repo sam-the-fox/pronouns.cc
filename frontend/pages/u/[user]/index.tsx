@@ -3,8 +3,11 @@ import Head from "next/head";
 import fetchAPI from "../../../lib/fetch";
 import {
   Field,
+  Member,
   Name,
   PartialMember,
+  PartialUser,
+  Person,
   Pronoun,
   User,
   WordStatus,
@@ -31,33 +34,7 @@ interface Props {
 
 export default function Index({ user, partialMembers }: Props) {
   return (
-    <>
-      <Head>
-        <title key="title">{`@${user.name} - pronouns.cc`}</title>
-      </Head>
-      <UserHead user={user} />
-      <IsOwnPageNotice user={user} />
-      <div className="container mx-auto pb-[20vh]">
-        <div
-          className="
-          m-2 p-2
-          flex flex-col lg:flex-row
-          justify-center lg:justify-start
-          items-center lg:items-start
-          lg:space-x-16
-          space-y-4 lg:space-y-0
-          border-b border-slate-200 dark:border-slate-700
-        "
-        >
-          <UserAvatar user={user} />
-          <UserInfo user={user} />
-        </div>
-        <LabelList source={user.names} />
-        <LabelList source={user.pronouns} />
-        <FieldCardGrid fields={user.fields} />
-        <MemberList user={user} partialMembers={partialMembers} />
-      </div>
-    </>
+    <PersonPage person={user} />
   );
 }
 
@@ -82,18 +59,76 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 };
 
-function UserHead({ user }: { user: User }) {
+function PersonPage({ person }: { person: Person }) {
+  return (
+    <>
+      <Head>
+        <title key="title">{`${personFullHandle(person)} - pronouns.cc`}</title>
+      </Head>
+      <PersonHead person={person} />
+      <IsOwnUserPageNotice person={person} />
+      <div className="container mx-auto pb-[20vh]">
+        <div
+          className="
+          m-2 p-2
+          flex flex-col lg:flex-row
+          justify-center lg:justify-start
+          items-center lg:items-start
+          lg:space-x-16
+          space-y-4 lg:space-y-0
+          border-b border-slate-200 dark:border-slate-700
+        "
+        >
+          <PersonAvatar person={person} />
+          <PersonInfo person={person} />
+        </div>
+        <LabelList content={person.names} />
+        <LabelList content={person.pronouns} />
+        <FieldCardGrid fields={person.fields} />
+        { 'user' in person && (
+          <MemberList user={person as any as User} />
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Full handle of a person. */
+function personFullHandle(person: Person) {
+  return 'user' in person
+    ? `&${person.name}@${person.user.name}`
+    : `@${person.name}`;
+}
+
+/** Short handle of a person. */
+function personShortHandle(person: Person) {
+  return ('user' in person ? '&' : '@') + person.name;
+}
+
+/** The user (account) associated with a person. */
+function personUser(person: Person) {
+  return 'user' in person ? person.user : person;
+}
+
+/** The (relative) URL pointing to a person. */
+function personURL(person: Person) {
+  const domain = typeof window !== "undefined" ? window.location.origin : process.env.DOMAIN;
+  return `${domain}/u/${'user' in person ? `${person.user.name}/` : ''}${person.name}`;
+}
+
+function PersonHead({ person }: { person: Person }) {
+  const { id, name, display_name, avatar_urls, bio, links, names, pronouns, fields } = person;
   let description = "";
   if (
-    user.names?.filter((name) => name.status === WordStatus.Favourite)
+    names?.filter((name) => name.status === WordStatus.Favourite)
       ?.length &&
-    user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
+    pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
       ?.length
   ) {
-    description = `@${user.name} goes by ${user.names
+    description = `${personShortHandle(person)} goes by ${names
       .filter((name) => name.status === WordStatus.Favourite)
       .map((name) => name.name)
-      .join(", ")} and uses ${user.pronouns
+      .join(", ")} and uses ${pronouns
       .filter((pronoun) => pronoun.status === WordStatus.Favourite)
       .map(
         (pronoun) =>
@@ -102,17 +137,17 @@ function UserHead({ user }: { user: User }) {
       )
       .join(", ")} pronouns.`;
   } else if (
-    user.names?.filter((name) => name.status === WordStatus.Favourite)?.length
+    names?.filter((name) => name.status === WordStatus.Favourite)?.length
   ) {
-    description = `@${user.name} goes by ${user.names
+    description = `${personShortHandle(person)} goes by ${names
       .filter((name) => name.status === WordStatus.Favourite)
       .map((name) => name.name)
       .join(", ")}.`;
   } else if (
-    user.pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
+    pronouns?.filter((pronoun) => pronoun.status === WordStatus.Favourite)
       ?.length
   ) {
-    description = `@${user.name} uses ${user.pronouns
+    description = `${personShortHandle(person)} uses ${pronouns
       .filter((pronoun) => pronoun.status === WordStatus.Favourite)
       .map(
         (pronoun) =>
@@ -120,12 +155,9 @@ function UserHead({ user }: { user: User }) {
           pronoun.pronouns.split("/").slice(0, 2).join("/")
       )
       .join(", ")} pronouns.`;
-  } else if (user.bio && user.bio !== "") {
-    description = user.bio.slice(0, 500);
+  } else if (bio && bio !== "") {
+    description = bio.slice(0, 500);
   }
-
-  const domain =
-    typeof window !== "undefined" ? window.location.origin : process.env.DOMAIN;
 
   return (
     <Head>
@@ -134,16 +166,16 @@ function UserHead({ user }: { user: User }) {
         key="og:title"
         property="og:title"
         content={
-          user.display_name
-            ? `${user.display_name} (@${user.name})`
-            : `@${user.name}`
+          display_name
+            ? `${display_name} (${personFullHandle(person)})`
+            : personFullHandle(person)
         }
       />
-      {user.avatar_urls && user.avatar_urls.length > 0 ? (
+      {avatar_urls && avatar_urls.length > 0 ? (
         <meta
           key="og:image"
           property="og:image"
-          content={user.avatar_urls[0]}
+          content={avatar_urls[0]}
         />
       ) : (
         <></>
@@ -156,17 +188,16 @@ function UserHead({ user }: { user: User }) {
       <meta
         key="og:url"
         property="og:url"
-        content={`${domain}/u/${user.name}`}
+        content={personURL(person)}
       />
     </Head>
   );
 }
 
-function IsOwnPageNotice({ user }: { user: User }) {
-  const isThisMyPage = useRecoilValue(userState)?.id === user.id;
-  return isThisMyPage || true ? (
+function IsOwnUserPageNotice({ person }: { person: Person }) {
+  return useRecoilValue(userState)?.id === person.id ? (
     <div className="lg:w-1/3 mx-auto bg-slate-100 dark:bg-slate-700 shadow rounded-md p-2">
-      You are currently viewing your <b>public</b> profile.
+      You are currently viewing your <b>public</b> user profile.
       <br />
       <BlueLink to="/edit/profile">Edit your profile</BlueLink>
     </div>
@@ -177,14 +208,12 @@ function IsOwnPageNotice({ user }: { user: User }) {
 
 function MemberList({
   user,
-  partialMembers,
   className,
 }: {
   user: User;
-  partialMembers: PartialMember[];
   className?: string;
 }) {
-  console.log(partialMembers);
+  const partialMembers = user.members;
   return (
     <div className={`mx-auto flex-col items-center ${className || ""}`}>
       <h1 className="text-2xl">Members</h1>
@@ -201,20 +230,21 @@ function MemberList({
   );
 }
 
-function UserAvatar({ user }: { user: User }) {
-  return user.avatar_urls && user.avatar_urls.length !== 0 ? (
+function PersonAvatar({ person }: { person: Person }) {
+  const { display_name, name, avatar_urls } = person;
+  return avatar_urls && avatar_urls.length !== 0 ? (
     <FallbackImage
       className="max-w-xs rounded-full"
-      urls={user.avatar_urls}
-      alt={`@${user.name}'s avatar`}
+      urls={avatar_urls}
+      alt={`${display_name || name}'s avatar`}
     />
   ) : (
     <></>
   );
 }
 
-function UserInfo({ user }: { user: User }) {
-  const { display_name, name, bio, links } = user;
+function PersonInfo({ person }: { person: Person }) {
+  const { display_name, name, bio, links } = person;
   return (
     <div className="flex flex-col">
       {/* display name */}
@@ -227,7 +257,7 @@ function UserInfo({ user }: { user: User }) {
             : "text-2xl font-bold"
         }`}
       >
-        @{name}
+        {personFullHandle(person)}
       </h3>
       {/* bio */}
       {bio && (
@@ -254,10 +284,10 @@ function UserInfo({ user }: { user: User }) {
   );
 }
 
-function LabelList({ source }: { source: Name[] | Pronoun[] }) {
-  return source?.length > 0 ? (
+function LabelList({ content }: { content: Name[] | Pronoun[] }) {
+  return content?.length > 0 ? (
     <div className="border-b border-slate-200 dark:border-slate-700">
-      {source.map((label, index) => (
+      {content.map((label, index) => (
         <LabelLine key={index} label={label} />
       ))}
     </div>

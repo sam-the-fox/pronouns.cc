@@ -7,7 +7,7 @@ export interface PartialPerson {
 export type PartialUser = PartialPerson;
 export type PartialMember = PartialPerson;
 
-export interface Person extends PartialPerson {
+interface _Person extends PartialPerson {
   bio: string | null;
   links: string[] | null;
   names: Name[];
@@ -15,13 +15,15 @@ export interface Person extends PartialPerson {
   fields: Field[];
 }
 
-export interface Member extends Person {
+export interface Member extends _Person {
   user: PartialUser;
 }
 
-export interface User extends Person {
+export interface User extends _Person {
   members: PartialMember[];
 }
+
+export type Person = Member | User;
 
 export interface MeUser extends User {
   discord: string | null;
