@@ -10,7 +10,10 @@ import (
 	"github.com/rs/xid"
 )
 
-const MaxMemberCount = 500
+const (
+	MaxMemberCount      = 500
+	MaxMemberNameLength = 100
+)
 
 type Member struct {
 	ID          xid.ID
@@ -117,4 +120,73 @@ func (db *DB) MemberCount(ctx context.Context, userID xid.ID) (n int64, err erro
 	}
 
 	return n, nil
+}
+
+func (db *DB) UpdateMember(
+	ctx context.Context,
+	tx pgx.Tx, id xid.ID,
+	name, displayName, bio *string,
+	links *[]string,
+	avatarURLs []string,
+) (m Member, err error) {
+	if name == nil && displayName == nil && bio == nil && links == nil && avatarURLs == nil {
+		return m, ErrNothingToUpdate
+	}
+
+	builder := sq.Update("members").Where("id = ?", id)
+	if name != nil {
+		if *name == "" {
+			builder = builder.Set("name", nil)
+		} else {
+			builder = builder.Set("name", *displayName)
+		}
+	}
+	if displayName != nil {
+		if *displayName == "" {
+			builder = builder.Set("display_name", nil)
+		} else {
+			builder = builder.Set("display_name", *displayName)
+		}
+	}
+	if bio != nil {
+		if *bio == "" {
+			builder = builder.Set("bio", nil)
+		} else {
+			builder = builder.Set("bio", *bio)
+		}
+	}
+	if links != nil {
+		if len(*links) == 0 {
+			builder = builder.Set("links", nil)
+		} else {
+			builder = builder.Set("links", *links)
+		}
+	}
+
+	if avatarURLs != nil {
+		if len(avatarURLs) == 0 {
+			builder = builder.Set("avatar_urls", nil)
+		} else {
+			builder = builder.Set("avatar_urls", avatarURLs)
+		}
+	}
+
+	sql, args, err := builder.Suffix("RETURNING *").ToSql()
+	if err != nil {
+		return m, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, tx, &m, sql, args...)
+	if err != nil {
+		pge := &pgconn.PgError{}
+		if errors.As(err, &pge) {
+			if pge.Code == "23505" {
+				return m, ErrMemberNameInUse
+			}
+		}
+
+		return m, errors.Wrap(err, "executing sql")
+	}
+
+	return m, nil
 }

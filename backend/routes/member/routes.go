@@ -25,7 +25,7 @@ func Mount(srv *server.Server, r chi.Router) {
 
 		// create, edit, and delete members
 		r.With(server.MustAuth).Post("/", server.WrapHandler(s.createMember))
-		r.With(server.MustAuth).Patch("/{memberRef}", nil)
+		r.With(server.MustAuth).Patch("/{memberRef}", server.WrapHandler(s.patchMember))
 		r.With(server.MustAuth).Delete("/{memberRef}", nil)
 	})
 }
