@@ -3,12 +3,13 @@ import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
-import { MeUser, SignupResponse } from "../../lib/types";
+import { APIError, MeUser, SignupResponse } from "../../lib/types";
 import TextInput from "../../components/TextInput";
 import Loading from "../../components/Loading";
 import Button, { ButtonStyle } from "../../components/Button";
 import Notice from "../../components/Notice";
 import BlueLink from "../../components/BlueLink";
+import toast from "../../lib/toast";
 
 interface CallbackResponse {
   has_account: boolean;
@@ -126,21 +127,15 @@ export default function Discord() {
       setUser(resp.user);
       localStorage.setItem("pronouns-token", resp.token);
 
+      toast({ text: "Created account!", background: "success" });
       router.push("/");
-    } catch (e) {
-      setState({ ...state, error: e });
+    } catch (e: any) {
+      toast({ text: `${e.message ?? e}`, background: "error" });
     }
   };
 
   return (
     <div>
-      {state.error && (
-        <Notice style={ButtonStyle.danger} header="Create account error">
-          <p>{state.error.message ?? state.error}</p>
-          <p>Try again?</p>
-        </Notice>
-      )}
-
       <div className="border-slate-200 dark:border-slate-700 border rounded max-w-xl">
         <div className="border-b border-slate-200 dark:border-slate-700 p-2">
           <h1 className="font-bold text-xl">Get started</h1>

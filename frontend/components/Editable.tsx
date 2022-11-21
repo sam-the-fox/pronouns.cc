@@ -32,6 +32,7 @@ type EditableCardProps = {
   onChangeName: React.ChangeEventHandler<HTMLInputElement>;
   onChangePronoun: React.ChangeEventHandler<HTMLInputElement>;
   onAddPronoun(pronoun: string): void;
+  onDeletePronoun(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
   onChangeFavourite(
     e: React.MouseEvent<HTMLButtonElement>,
     entry: string
@@ -125,6 +126,7 @@ export function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
+                  onClick={(e) => props.onDeletePronoun(e, pronoun)}
                   className="bg-red-600 dark:bg-red-700 hover:bg-red-700 hover:dark:bg-red-800 p-2"
                 >
                   <Trash3 />
@@ -138,6 +140,8 @@ export function EditableCard(props: EditableCardProps) {
           <Button
             style={ButtonStyle.success}
             onClick={() => {
+              if (!input || input === "") return;
+
               props.onAddPronoun(input);
               setInput("");
             }}

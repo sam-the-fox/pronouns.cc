@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import Loading from "../../components/Loading";
 import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
@@ -16,9 +16,10 @@ import {
 
 import Button, { ButtonStyle } from "../../components/Button";
 import { Plus, Save, Trash } from "react-bootstrap-icons";
+import toast from "../../lib/toast";
 
 export default function Index() {
-  const user = useRecoilValue(userState);
+  const [user, setUser] = useRecoilState(userState);
   const router = useRouter();
   const [state, setState] = useState(cloneDeep(user));
 
@@ -82,20 +83,21 @@ export default function Index() {
         {isEdited && (
           <Button
             style={ButtonStyle.success}
-            onClick={() =>
-              updateUser({
+            onClick={async () => {
+              const user = await updateUser({
                 displayName: state!.display_name,
                 bio: state!.bio,
                 fields,
-              })
-            }
+              });
+
+              if (user) setUser(user);
+            }}
           >
             <Save aria-hidden className="inline" /> Save changes
           </Button>
         )}
       </h1>
 
-      <div>{`fieldsUpdated: ${fieldsUpdated}`}</div>
       <h3 className="p-2 border-b border-slate-300 dark:border-slate-600 flex items-center justify-between">
         <span className="text-xl">Fields</span>
         <div className="inline">
@@ -144,6 +146,10 @@ export default function Index() {
             }}
             onAddPronoun={(pronoun) => {
               field.pronouns[pronoun] = PronounChoice.okay;
+              setFields([...fields]);
+            }}
+            onDeletePronoun={(e, pronoun) => {
+              delete field.pronouns[pronoun];
               setFields([...fields]);
             }}
             onChangeName={(e) => {
@@ -232,9 +238,17 @@ async function updateUser(args: {
     return field;
   });
 
-  return await fetchAPI<MeUser>("/users/@me", "PATCH", {
-    display_name: args.displayName ?? null,
-    bio: args.bio ?? null,
-    fields: newFields,
-  });
+  try {
+    const user = await fetchAPI<MeUser>("/users/@me", "PATCH", {
+      display_name: args.displayName ?? null,
+      bio: args.bio ?? null,
+      fields: newFields,
+    });
+
+    toast({ text: "Successfully updated your profile!" });
+
+    return user;
+  } catch (e: any) {
+    toast({ text: `${e.message ?? e}`, background: "error" });
+  }
 }
