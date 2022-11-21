@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { Field, Name, Person, Pronoun, User, WordStatus } from "../lib/types";
+import { Field, Member, Name, PartialPerson, Person, Pronoun, User, WordStatus } from "../lib/types";
 import ReactMarkdown from "react-markdown";
 import { userState } from "../lib/state";
 import { useRecoilValue } from "recoil";
@@ -41,7 +41,10 @@ export default function PersonPage({ person }: { person: Person }) {
         <LabelList content={person.names ?? []} />
         <LabelList content={person.pronouns ?? []} />
         <FieldCardGrid fields={person.fields ?? []} />
-        {!("user" in person) && <MemberList user={person as any as User} />}
+        {"user" in person
+          ? <BlueLink to={personURL(person.user)}>{`< ${person.user.display_name}`}</BlueLink>
+          : <MemberList user={person as any as User} />
+        }
       </div>
     </>
   );
@@ -65,7 +68,7 @@ function personUser(person: Person) {
 }
 
 /** The (relative) URL pointing to a person. */
-function personURL(person: Person) {
+function personURL(person: PartialPerson | Member) {
   const domain =
     typeof window !== "undefined" ? window.location.origin : process.env.DOMAIN;
   return `${domain}/u/${"user" in person ? `${person.user.name}/` : ""}${
@@ -199,16 +202,10 @@ function PersonInfo({ person }: { person: Person }) {
   const { display_name, name, bio, links } = person;
   return (
     <div className="flex flex-col">
-      {/* display name */}
-      {display_name && <h1 className="text-2xl font-bold">{display_name}</h1>}
       {/* name */}
-      <h3
-        className={`${
-          display_name
-            ? "text-xl italic text-slate-600 dark:text-slate-400"
-            : "text-2xl font-bold"
-        }`}
-      >
+      <h1 className="text-2xl font-bold">{display_name === null ? name : display_name}</h1>
+      {/* handle */}
+      <h3 className="text-xl font-light text-slate-600 dark:text-slate-400">
         {personFullHandle(person)}
       </h3>
       {/* bio */}
