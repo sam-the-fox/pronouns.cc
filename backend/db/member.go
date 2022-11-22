@@ -47,6 +47,7 @@ func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
 	return m, nil
 }
 
+// UserMember returns a member scoped by user.
 func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (m Member, err error) {
 	sql, args, err := sq.Select("*").From("members").
 		Where("user_id = ? and (id = ? or name = ?)", userID, memberRef, memberRef).ToSql()
@@ -65,6 +66,7 @@ func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (
 	return m, nil
 }
 
+// UserMembers returns all of a user's members, sorted by name.
 func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err error) {
 	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).OrderBy("name", "id").ToSql()
 	if err != nil {
@@ -105,6 +107,20 @@ func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name s
 	}
 
 	return m, nil
+}
+
+// DeleteMember deletes a member by the given ID. This is irreversible.
+func (db *DB) DeleteMember(ctx context.Context, id xid.ID) (err error) {
+	sql, args, err := sq.Delete("members").Where("id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = db.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "deleting member")
+	}
+	return nil
 }
 
 // MemberCount returns the number of members that the given user has.

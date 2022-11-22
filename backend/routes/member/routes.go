@@ -1,8 +1,9 @@
 package member
 
 import (
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
+
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
 )
 
 type Server struct {
@@ -26,6 +27,6 @@ func Mount(srv *server.Server, r chi.Router) {
 		// create, edit, and delete members
 		r.With(server.MustAuth).Post("/", server.WrapHandler(s.createMember))
 		r.With(server.MustAuth).Patch("/{memberRef}", server.WrapHandler(s.patchMember))
-		r.With(server.MustAuth).Delete("/{memberRef}", nil)
+		r.With(server.MustAuth).Delete("/{memberRef}", server.WrapHandler(s.deleteMember))
 	})
 }

@@ -27,6 +27,6 @@ export default async function fetchAPI<T>(
   });
 
   const data = await resp.json();
-  if (resp.status !== 200) throw data as APIError;
+  if (resp.status < 200 || resp.status >= 300) throw data as APIError;
   return data as T;
 }
