@@ -2,7 +2,7 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useRecoilValue } from "recoil";
 import Head from "next/head";
-import fetchAPI from "../../lib/fetch";
+import { fetchAPI } from "../../lib/api-fetch";
 import { userState } from "../../lib/state";
 
 interface URLsResponse {

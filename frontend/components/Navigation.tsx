@@ -6,8 +6,7 @@ import NavItem from "./NavItem";
 import Logo from "./logo";
 import { useRecoilState } from "recoil";
 import { userState } from "../lib/state";
-import fetchAPI from "../lib/fetch";
-import { APIError, ErrorCode, MeUser } from "../lib/types";
+import { fetchAPI, APIError, ErrorCode, MeUser } from "../lib/api-fetch";
 
 export default function Navigation() {
   const [user, setUser] = useRecoilState(userState);

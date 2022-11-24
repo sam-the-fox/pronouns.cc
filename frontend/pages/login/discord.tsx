@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
-import fetchAPI from "../../lib/fetch";
 import { userState } from "../../lib/state";
-import { APIError, MeUser, SignupResponse } from "../../lib/types";
 import TextInput from "../../components/TextInput";
 import Loading from "../../components/Loading";
 import Button, { ButtonStyle } from "../../components/Button";
 import Notice from "../../components/Notice";
 import BlueLink from "../../components/BlueLink";
 import toast from "../../lib/toast";
+import { fetchAPI, MeUser, SignupResponse } from "../../lib/api-fetch";
 
 interface CallbackResponse {
   has_account: boolean;

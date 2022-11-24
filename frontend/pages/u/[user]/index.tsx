@@ -1,22 +1,21 @@
 import { GetServerSideProps } from "next";
 import PersonPage from "../../../components/PersonPage";
-import fetchAPI from "../../../lib/fetch";
-import { PartialMember, User } from "../../../lib/types";
+import { User } from "../../../lib/api";
+import * as API from "../../../lib/api-fetch";
 
 interface Props {
-  user: User;
-  partialMembers: PartialMember[];
+  user: API.User;
 }
 
 export default function Index({ user }: Props) {
-  return <PersonPage person={user} />;
+  return <PersonPage person={new User(user)} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const name = context.params!.user;
+  const userName = context.params!.user;
+  if (typeof userName !== "string") return { notFound: true };
   try {
-    const user = await fetchAPI<User>(`/users/${name}`);
-    return { props: { user } };
+    return { props: { user: await API.fetchAPI<User>(`/users/${userName}`) } };
   } catch (e) {
     console.log(e);
     return { notFound: true };

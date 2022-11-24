@@ -1,26 +1,30 @@
 import { GetServerSideProps } from "next";
-import fetchAPI from "../../../lib/fetch";
-import { Member } from "../../../lib/types";
 import PersonPage from "../../../components/PersonPage";
+import { Member } from "../../../lib/api";
+import * as API from "../../../lib/api-fetch";
 
 interface Props {
-  member: Member;
+  member: API.Member;
 }
 
 export default function MemberPage({ member }: Props) {
-  return <PersonPage person={member} />;
+  return <PersonPage person={new Member(member)} />;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  try {
-    const member = await fetchAPI<Member>(
-      `/users/${context.params!.user}/members/${context.params!.member}`
-    );
+  const userName = context.params!.user;
+  if (typeof userName !== "string") return { notFound: true };
+  const memberName = context.params!.member;
+  if (typeof memberName !== "string") return { notFound: true };
 
-    return { props: { member } };
+  try {
+    return {
+      props: {
+        member: await API.fetchAPI<API.Member>(`/users/${context.params!.user}/members/${context.params!.member}`),
+      },
+    };
   } catch (e) {
     console.log(e);
-
     return { notFound: true };
   }
 };

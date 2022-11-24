@@ -2,9 +2,6 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import Loading from "../../components/Loading";
-import fetchAPI from "../../lib/fetch";
-import { userState } from "../../lib/state";
-import { MeUser, Field } from "../../lib/types";
 import cloneDeep from "lodash/cloneDeep";
 import { ReactSortable } from "react-sortablejs";
 
@@ -21,6 +18,8 @@ import toast from "../../lib/toast";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import ReactMarkdown from "react-markdown";
+import { userState } from "../../lib/state";
+import { fetchAPI, Field, MeUser } from "../../lib/api-fetch";
 
 export default function Index() {
   const [user, setUser] = useRecoilState(userState);
