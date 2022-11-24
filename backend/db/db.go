@@ -41,7 +41,8 @@ func New() (*DB, error) {
 			return nil, errors.Wrap(err, "creating redis client")
 		}
 	} else {
-		log.Warn("$REDIS was empty! ANY FUNCTIONALITY using redis will CRASH the server")
+		log.Warn("$REDIS was empty! Any functionality using Redis (such as authentication) will not work")
+		redis = &dummyRedis{}
 	}
 
 	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{

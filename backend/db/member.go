@@ -94,7 +94,7 @@ func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name s
 		return m, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, db, &m, sql, args...)
+	err = pgxscan.Get(ctx, tx, &m, sql, args...)
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
