@@ -8,8 +8,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-markdown": "^6.0.5",
     "@sentry/nextjs": "^7.20.0",
     "@types/lodash": "^4.14.189",
+    "@uiw/react-codemirror": "^4.15.1",
     "lodash": "^4.17.21",
     "next": "13.0.4",
     "react": "18.2.0",
@@ -20,6 +22,12 @@
     "recoil": "^0.7.5",
     "sortablejs": "^1.15.0",
     "toastify-js": "^1.12.0"
+  },
+  "overrides": {
+    "@codemirror/highlight": "0.19.8",
+    "@codemirror/lang-markdown": "^6.0.5",
+    "@codemirror/state": ">=6.0.0",
+    "@codemirror/view": ">=6.0.0"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.2",

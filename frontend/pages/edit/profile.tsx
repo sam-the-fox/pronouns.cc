@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import Loading from "../../components/Loading";
 import fetchAPI from "../../lib/fetch";
@@ -18,10 +18,21 @@ import Button, { ButtonStyle } from "../../components/Button";
 import { Plus, Save, Trash } from "react-bootstrap-icons";
 import toast from "../../lib/toast";
 
+import ReactCodeMirror from "@uiw/react-codemirror";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import ReactMarkdown from "react-markdown";
+
 export default function Index() {
   const [user, setUser] = useRecoilState(userState);
   const router = useRouter();
   const [state, setState] = useState(cloneDeep(user));
+
+  const onChangeBio = useCallback((value: string, viewUpdate: any) => {
+    setState((s) => {
+      s!.bio = value;
+      return s;
+    });
+  }, []);
 
   const originalOrder = state?.fields
     ? state.fields.map((f, i) => {
@@ -52,9 +63,11 @@ export default function Index() {
     : [];
 
   const [fields, setFields] = useState(cloneDeep(originalOrder));
+
   const resetFields = () => {
     setFields(cloneDeep(originalOrder));
   };
+
   const addField = () => {
     if (fields.length >= 25) return;
 
@@ -97,6 +110,24 @@ export default function Index() {
           </Button>
         )}
       </h1>
+
+      <h3 className="p-2 border-b border-slate-300 dark:border-slate-600 flex items-center justify-between">
+        <span className="text-xl">Bio</span>
+      </h3>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 py-2">
+        <div>
+          <h4 className="text-lg font-bold">Edit</h4>
+          <ReactCodeMirror
+            value={state?.bio || undefined}
+            onChange={onChangeBio}
+            extensions={[markdown({ base: markdownLanguage })]}
+          />
+        </div>
+        <div>
+          <h4 className="text-lg font-bold">Preview</h4>
+          <ReactMarkdown>{state?.bio || ""}</ReactMarkdown>
+        </div>
+      </div>
 
       <h3 className="p-2 border-b border-slate-300 dark:border-slate-600 flex items-center justify-between">
         <span className="text-xl">Fields</span>
@@ -249,6 +280,6 @@ async function updateUser(args: {
 
     return user;
   } catch (e: any) {
-    toast({ text: `${e.message ?? e}`, background: "error" });
+    toast({ text: `${e.details ?? e.message ?? e}`, background: "error" });
   }
 }
