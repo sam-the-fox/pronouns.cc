@@ -1,9 +1,10 @@
 import * as API from "./api-fetch";
-import { fetchAPI } from './api-fetch';
+import { fetchAPI } from "./api-fetch";
 
 function getDomain(): string {
-  const domain = typeof window !== "undefined" ? window.location.origin : process.env.DOMAIN;
-  if (!domain) throw new Error('process.env.DOMAIN not set');
+  const domain =
+    typeof window !== "undefined" ? window.location.origin : process.env.DOMAIN;
+  if (!domain) throw new Error("process.env.DOMAIN not set");
   return domain;
 }
 
@@ -39,18 +40,18 @@ abstract class _Person extends PartialPerson {
     const { bio, links, names, pronouns, fields } = apiData;
     this.bio = bio;
     this.links = links ?? [];
-    this.names = (names ?? []).map(x => new Name(x));
-    this.pronouns = (pronouns ?? []).map(x => new Pronouns(x));
-    this.fields = (fields ?? []).map(x => new Field(x));
+    this.names = (names ?? []).map((x) => new Name(x));
+    this.pronouns = (pronouns ?? []).map((x) => new Pronouns(x));
+    this.fields = (fields ?? []).map((x) => new Field(x));
   }
 
-  abstract fullHandle(): string
+  abstract fullHandle(): string;
 
   shortHandle(): string {
     return this.fullHandle();
   }
 
-  abstract relativeURL(): string
+  abstract relativeURL(): string;
 
   absoluteURL(): string {
     return `${getDomain()}${this.relativeURL()}`;
@@ -62,7 +63,7 @@ export class User extends _Person {
   constructor(apiData: API.User) {
     super(apiData);
     const { members } = apiData;
-    this.partialMembers = (members ?? []).map(x => new PartialMember(x));
+    this.partialMembers = (members ?? []).map((x) => new PartialMember(x));
   }
 
   static async fetchFromName(name: string): Promise<User> {
@@ -90,8 +91,13 @@ export class Member extends _Person {
     this.partialUser = new PartialUser(user);
   }
 
-  static async fetchFromUserAndMemberName(userName: string, memberName: string): Promise<Member> {
-    return new Member(await fetchAPI<API.Member>(`/users/${userName}/members/${memberName}`));
+  static async fetchFromUserAndMemberName(
+    userName: string,
+    memberName: string
+  ): Promise<Member> {
+    return new Member(
+      await fetchAPI<API.Member>(`/users/${userName}/members/${memberName}`)
+    );
   }
 
   fullHandle(): string {
@@ -130,10 +136,10 @@ export const LabelStatus = API.WordStatus;
 export type LabelStatus = API.WordStatus;
 
 export interface LabelData {
-  type?: LabelType
-  displayText: string | null
-  text: string
-  status: LabelStatus
+  type?: LabelType;
+  displayText: string | null;
+  text: string;
+  status: LabelStatus;
 }
 
 export class Label {
@@ -178,32 +184,46 @@ export class Pronouns extends Label {
     });
   }
 
-  get pronouns(): string[] { return this.text.split('/'); }
-  set pronouns(to: string[]) { this.text = to.join('/'); }
+  get pronouns(): string[] {
+    return this.text.split("/");
+  }
+  set pronouns(to: string[]) {
+    this.text = to.join("/");
+  }
 
   shortDisplay(): string {
-    return this.displayText ?? this.pronouns.splice(0, 2).join('/');
+    return this.displayText ?? this.pronouns.splice(0, 2).join("/");
   }
 }
 
 export class Field {
   name: string;
   labels: Label[];
-  constructor({ name, favourite, okay, jokingly, friends_only, avoid }: API.Field) {
+  constructor({
+    name,
+    favourite,
+    okay,
+    jokingly,
+    friends_only,
+    avoid,
+  }: API.Field) {
     this.name = name;
     function transpose(arr: API.Arr<string>, status: LabelStatus): Label[] {
-      return (arr ?? []).map(text => new Label({
-        displayText: null,
-        text,
-        status,
-      }));
+      return (arr ?? []).map(
+        (text) =>
+          new Label({
+            displayText: null,
+            text,
+            status,
+          })
+      );
     }
     this.labels = [
-      ...transpose(favourite,    LabelStatus.Favourite),
-      ...transpose(okay,         LabelStatus.Okay),
-      ...transpose(jokingly,     LabelStatus.Jokingly),
+      ...transpose(favourite, LabelStatus.Favourite),
+      ...transpose(okay, LabelStatus.Okay),
+      ...transpose(jokingly, LabelStatus.Jokingly),
       ...transpose(friends_only, LabelStatus.FriendsOnly),
-      ...transpose(avoid,        LabelStatus.Avoid),
+      ...transpose(avoid, LabelStatus.Avoid),
     ];
   }
 }

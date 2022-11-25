@@ -20,7 +20,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     return {
       props: {
-        member: await API.fetchAPI<API.Member>(`/users/${context.params!.user}/members/${context.params!.member}`),
+        member: await API.fetchAPI<API.Member>(
+          `/users/${context.params!.user}/members/${context.params!.member}`
+        ),
       },
     };
   } catch (e) {

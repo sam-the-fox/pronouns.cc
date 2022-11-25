@@ -124,7 +124,7 @@ export async function fetchAPI<T>(
   const resp = await fetch(`${apiBase}/v1${path}`, {
     method,
     headers: {
-      ...token ? { Authorization: token } : {},
+      ...(token ? { Authorization: token } : {}),
       "Content-Type": "application/json",
     },
     body: body ? JSON.stringify(body) : null,
