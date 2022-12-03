@@ -26,13 +26,6 @@ export default function Index() {
   const router = useRouter();
   const [state, setState] = useState(cloneDeep(user));
 
-  const onChangeBio = useCallback((value: string, viewUpdate: any) => {
-    setState((s) => {
-      s!.bio = value;
-      return s;
-    });
-  }, []);
-
   const originalOrder = state?.fields
     ? state.fields.map((f, i) => {
         const field: EditField = {
@@ -76,17 +69,17 @@ export default function Index() {
   };
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !state) {
       router.push("/");
     }
   }, [user]);
 
-  if (!user) {
+  if (!user || !state) {
     return <Loading />;
   }
 
   const fieldsUpdated = !fieldsEqual(fields, originalOrder);
-  const isEdited = fieldsUpdated;
+  const isEdited = fieldsUpdated || state.bio !== user.bio;
 
   return (
     <div className="container mx-auto">
@@ -97,8 +90,8 @@ export default function Index() {
             style={ButtonStyle.success}
             onClick={async () => {
               const user = await updateUser({
-                displayName: state!.display_name,
-                bio: state!.bio,
+                displayName: state.display_name,
+                bio: state.bio,
                 fields,
               });
 
@@ -117,14 +110,16 @@ export default function Index() {
         <div>
           <h4 className="text-lg font-bold">Edit</h4>
           <ReactCodeMirror
-            value={state?.bio || undefined}
-            onChange={onChangeBio}
+            value={state.bio || undefined}
+            onChange={(val, _) => {
+              setState({ ...state, bio: val });
+            }}
             extensions={[markdown({ base: markdownLanguage })]}
           />
         </div>
         <div>
           <h4 className="text-lg font-bold">Preview</h4>
-          <ReactMarkdown>{state?.bio || ""}</ReactMarkdown>
+          <ReactMarkdown>{state.bio || ""}</ReactMarkdown>
         </div>
       </div>
 
