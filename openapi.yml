@@ -1,0 +1,234 @@
+openapi: 3.1.0
+info:
+  title: pronouns.cc API
+  version: 1.0.0
+servers:
+  - url: https://pronouns.cc/api/v1
+paths:
+  /users/{userRef}:
+    parameters:
+      - name: userRef
+        in: path
+        required: true
+        schema:
+          anyOf:
+            - $ref: "#/components/schemas/xid"
+            - $ref: "#/components/schemas/name"
+    get:
+      summary: /users/{userRef}
+      description: Get a user's information.
+      tags: [Users]
+      operationId: GetUser
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: No user with that name or ID found.
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+components:
+  schemas:
+    XID:
+      title: ID
+      type: string
+      readOnly: true
+      minLength: 20
+      maxLength: 20
+      pattern: "^[0-9a-v]{20}$"
+      example: "ce6v1aje6i88cb6k5heg"
+      description: A unique, unchanging identifier for a user or a member.
+    Name:
+      title: Name
+      type: string
+      readOnly: false
+      minLength: 2
+      maxLength: 40
+      pattern: "^[\\w-.]{2,40}$"
+      example: "testingUser"
+      description: A user-defined identifier for a user or a member.
+
+    WordStatus:
+      type: integer
+      oneOf:
+        - title: Favourite
+          const: 1
+          description: Name/pronouns is user's/member's favourite
+        - title: Okay
+          const: 2
+          description: Name/pronouns is okay to use
+        - title: Jokingly
+          const: 3
+          description: Name/pronouns should only be used jokingly
+        - title: Friends only
+          const: 4
+          description: Name/pronouns can only be used by friends
+        - title: Avoid
+          const: 5
+          description: Name/pronouns should be avoided
+      example: 2
+      description: Status for name/pronouns.
+
+    Names:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            required: true
+            minLength: 1
+            maxLength: 50
+            summary: A single name entry.
+            example: "Testington"
+          status:
+            $ref: "#/components/schemas/WordStatus"
+      description: Array of user's/member's name preferences.
+
+    Pronouns:
+      type: array
+      items:
+        type: object
+        properties:
+          pronouns:
+            type: string
+            required: true
+            minLength: 1
+            maxLength: 50
+            summary: A single pronouns entry.
+            example: "it/it/its/its/itself"
+          display_text:
+            type: string
+            required: false
+            nullable: true
+            minLength: 1
+            maxLenght: 50
+            summary: A pronoun's display text. If not present, the first two forms (separated by /) in `pronouns` is used.
+            example: "it/its"
+          status:
+            $ref: "#/components/schemas/WordStatus"
+      description: Array of user's/member's pronoun preferences.
+
+    Field:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: false
+          required: true
+          minLength: 1
+          maxLength: 100
+          example: "Name"
+          description: The field's name.
+        favourite:
+          type: array
+          items:
+            type: string
+          description: The field's favourite entries.
+        okay:
+          type: array
+          items:
+            type: string
+          description: The field's okay entries.
+        jokingly:
+          type: array
+          items:
+            type: string
+          description: The field's joking entries.
+        friends_only:
+          type: array
+          items:
+            type: string
+          description: The field's friends only entries.
+        avoid:
+          type: array
+          items:
+            type: string
+          description: The field's avoid entries.
+
+    User:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/XID"
+        name:
+          $ref: "#/components/schemas/Name"
+        display_name:
+          type: string
+          nullable: true
+          readOnly: false
+          minLength: 1
+          maxLength: 100
+          example: "Testington, Head Tester"
+          description: An optional nickname.
+        bio:
+          type: string
+          nullable: true
+          readOnly: false
+          minLength: 1
+          maxLength: 1000
+          example: "Hi! I'm a user!"
+          description: An optional bio/description.
+        avatar_urls:
+          type: array
+          nullable: true
+          items:
+            type: string
+          readOnly: true
+          example: ["https://pronouns.cc/avatars/members/ce6v1aje6i88cb6k5heg.webp", "https://pronouns.cc/avatars/members/ce6v1aje6i88cb6k5heg.jpg"]
+          description: |
+            An optional array of avatar URLs.
+            The first entry is the canonical avatar URL (the one that should be used if possible),
+            if the array has more entries, those are alternative formats.
+        links:
+          type: array
+          nullable: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 256
+          readOnly: false
+          example: ["https://pronouns.cc", "https://codeberg.org/u1f320"]
+          description: An optional array of links associated with the user.
+        names:
+          $ref: "#/components/schemas/Names"
+        pronouns:
+          $ref: "#/components/schemas/Pronouns"
+        fields:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Field"
+    
+    APIError:
+      type: object
+      properties:
+        code:
+          type: integer
+          optional: false
+          nullable: false
+          readOnly: true
+          description: A machine-readable error code.
+        message:
+          type: string
+          optional: false
+          nullable: false
+          readOnly: true
+          description: A human-readable error string.
+        details:
+          type: string
+          optional: true
+          nullable: false
+          readOnly: true
+          description: Human-readable details, if applicable.
+        ratelimit_reset:
+          type: integer
+          optional: true
+          nullable: false
+          readOnly: true
+          description: Unix timestamp after which you can make requests again, if this is a rate limit error.
