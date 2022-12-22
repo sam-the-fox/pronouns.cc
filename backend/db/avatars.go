@@ -148,21 +148,23 @@ func (db *DB) WriteUserAvatar(ctx context.Context,
 	jpegLocation string,
 	err error,
 ) {
-	webpInfo, err := db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+".webp", webp, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+".webp", webp, -1, minio.PutObjectOptions{
 		ContentType: "image/webp",
 	})
 	if err != nil {
 		return "", "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	jpegInfo, err := db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
 		ContentType: "image/jpeg",
 	})
 	if err != nil {
 		return "", "", errors.Wrap(err, "uploading jpeg avatar")
 	}
 
-	return webpInfo.Location, jpegInfo.Location, nil
+	return db.baseURL.JoinPath("/media/users/" + userID.String() + ".webp").String(),
+		db.baseURL.JoinPath("/media/users/" + userID.String() + ".jpg").String(),
+		nil
 }
 
 func (db *DB) WriteMemberAvatar(ctx context.Context,
@@ -172,19 +174,21 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 	jpegLocation string,
 	err error,
 ) {
-	webpInfo, err := db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".webp", webp, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".webp", webp, -1, minio.PutObjectOptions{
 		ContentType: "image/webp",
 	})
 	if err != nil {
 		return "", "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	jpegInfo, err := db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
 		ContentType: "image/jpeg",
 	})
 	if err != nil {
 		return "", "", errors.Wrap(err, "uploading jpeg avatar")
 	}
 
-	return webpInfo.Location, jpegInfo.Location, nil
+	return db.baseURL.JoinPath("/media/members/" + memberID.String() + ".webp").String(),
+		db.baseURL.JoinPath("/media/members/" + memberID.String() + ".jpg").String(),
+		nil
 }

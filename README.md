@@ -14,16 +14,23 @@ A work-in-progress site to share your names, pronouns, and other preferred terms
 
 When working on the frontend, run the API and then use `yarn dev` in `frontend/` for hot reloading.
 
+Note that the Next.js server assumes that the backend listens on `:8080` and MinIO listens on `:9000`.
+If these ports differ on your development environment, you must edit `next.config.js`.
+
 ## Building
 
 Run `make backend` to build the API server, then run `yarn build` in `frontend/`.
 
 ## Running
 
-Both the backend and frontend are expected to run behind a reverse proxy such as [Caddy](https://caddyserver.com/).
+Both the backend and frontend are expected to run behind a reverse proxy such as [Caddy](https://caddyserver.com/) or nginx.
 
-The frontend should serve every possible path _except_ anything starting with `/api/`, which should be routed to the backend instead.
-**Make sure to rewrite requests going to the API server to remove the starting `/api/`.**
+Every path should be proxied to the frontend, except:
+
+- `/api/`: this should be proxied to the backend, with the URL being rewritten to remove `/api`
+  (for example, a request to `$DOMAIN/api/v1/users/@me` should be proxied to `localhost:8080/v1/users/@me`)
+- `/media/`: this should be proxied to your object storage.
+  Make sure to rewrite `/media` into your storage bucket's name.
 
 ## Development
 
@@ -52,7 +59,7 @@ HMAC_KEY="`go run -v ./scripts/genkey`"
 DATABASE_URL=postgresql://<username>:<pass>@localhost/<database> # PostgreSQL database URL
 REDIS=localhost:6379
 PORT=8080 # Port the API will listen on. Default is 8080, this is also default for the backend.
-MINIO_ENDPOINT=localhost:9000 # This always needs to be set, it *does not* need to point to a MinIO server.
+MINIO_ENDPOINT=localhost:9000 # This always needs to be set, it *does not* need to point to a running MinIO server.
 ```
 
 ## License

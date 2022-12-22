@@ -8,8 +8,12 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:8080/:path*", // Proxy to Backend
+        destination: "http://localhost:8080/:path*", // proxy to backend
       },
+      {
+        source: "/media/:path*",
+        destination: "http://localhost:9000/pronouns.cc/:path*", // proxy to media server
+      }
     ];
   },
   sentry: {

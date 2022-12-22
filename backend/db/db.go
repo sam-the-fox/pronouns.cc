@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
@@ -26,6 +27,7 @@ type DB struct {
 
 	minio       *minio.Client
 	minioBucket string
+	baseURL     *url.URL
 }
 
 func New() (*DB, error) {
@@ -53,12 +55,18 @@ func New() (*DB, error) {
 		return nil, errors.Wrap(err, "creating minio client")
 	}
 
+	baseURL, err := url.Parse(os.Getenv("BASE_URL"))
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing base URL")
+	}
+
 	db := &DB{
 		Pool:  pool,
 		Redis: redis,
 
 		minio:       minioClient,
 		minioBucket: os.Getenv("MINIO_BUCKET"),
+		baseURL:     baseURL,
 	}
 
 	return db, nil
