@@ -5,11 +5,12 @@ import Link from "next/link";
 import NavItem from "./NavItem";
 import Logo from "./logo";
 import { useRecoilState } from "recoil";
-import { userState } from "../lib/state";
+import { themeState, userState } from "../lib/state";
 import { fetchAPI, APIError, ErrorCode, MeUser } from "../lib/api-fetch";
 
 export default function Navigation() {
   const [user, setUser] = useRecoilState(userState);
+  const [darkTheme, setDarkTheme] = useRecoilState(themeState);
 
   useEffect(() => {
     if (user) return;
@@ -28,7 +29,6 @@ export default function Navigation() {
     );
   }, [user, setUser]);
 
-  const [darkTheme, setDarkTheme] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
