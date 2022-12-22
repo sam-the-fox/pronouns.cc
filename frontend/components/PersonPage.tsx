@@ -1,8 +1,5 @@
 import Head from "next/head";
-import ReactMarkdown from "react-markdown";
-import { userState } from "../lib/state";
-import { useRecoilValue } from "recoil";
-import FallbackImage from "./FallbackImage";
+import React from "react";
 import {
   EmojiLaughing,
   HandThumbsDown,
@@ -10,10 +7,14 @@ import {
   HeartFill,
   People,
 } from "react-bootstrap-icons";
-import BlueLink from "./BlueLink";
-import React from "react";
-import Card from "./Card";
+import ReactMarkdown from "react-markdown";
+import { useRecoilValue } from "recoil";
+
 import { Field, Label, LabelStatus, Person, User } from "../lib/api";
+import { userState } from "../lib/state";
+import BlueLink from "./BlueLink";
+import Card from "./Card";
+import FallbackImage from "./FallbackImage";
 
 export default function PersonPage({ person }: { person: Person }) {
   return (

@@ -1,4 +1,5 @@
 import { GetServerSideProps } from "next";
+
 import PersonPage from "../../../components/PersonPage";
 import { User } from "../../../lib/api";
 import * as API from "../../../lib/api-fetch";

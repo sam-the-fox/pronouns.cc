@@ -1,9 +1,11 @@
 import "../styles/globals.css";
+
 import type { AppProps } from "next/app";
+import Head from "next/head";
+import { RecoilRoot } from "recoil";
+
 import Container from "../components/Container";
 import Navigation from "../components/Navigation";
-import { RecoilRoot } from "recoil";
-import Head from "next/head";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const domain =

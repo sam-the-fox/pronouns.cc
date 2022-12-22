@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { MoonStars, Sun, List } from "react-bootstrap-icons";
+import { List, MoonStars, Sun } from "react-bootstrap-icons";
 
 import Link from "next/link";
-import NavItem from "./NavItem";
-import Logo from "./logo";
 import { useRecoilState } from "recoil";
+
+import { APIError, ErrorCode, fetchAPI, MeUser } from "../lib/api-fetch";
 import { themeState, userState } from "../lib/state";
-import { fetchAPI, APIError, ErrorCode, MeUser } from "../lib/api-fetch";
+import Logo from "./logo";
+import NavItem from "./NavItem";
 
 export default function Navigation() {
   const [user, setUser] = useRecoilState(userState);

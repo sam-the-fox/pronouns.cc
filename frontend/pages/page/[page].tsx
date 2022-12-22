@@ -1,9 +1,9 @@
-import { GetStaticProps } from "next";
 import { readdirSync } from "fs";
-import ReactMarkdown from "react-markdown";
 import { readFile } from "fs/promises";
-import { join } from "path";
+import { GetStaticProps } from "next";
 import Head from "next/head";
+import { join } from "path";
+import ReactMarkdown from "react-markdown";
 
 export async function getStaticPaths() {
   const names = readdirSync("./static_pages").filter((name) =>
