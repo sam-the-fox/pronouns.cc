@@ -1,28 +1,28 @@
-import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
-import Loading from "../../components/Loading";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
+import ReactCodeMirror from "@uiw/react-codemirror";
 import cloneDeep from "lodash/cloneDeep";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { Plus, Save, Trash } from "react-bootstrap-icons";
+import ReactMarkdown from "react-markdown";
 import { ReactSortable } from "react-sortablejs";
+import { useRecoilState, useRecoilValue } from "recoil";
 
+import Button, { ButtonStyle } from "../../components/Button";
 import {
   EditableCard,
   EditField,
   PronounChoice,
 } from "../../components/Editable";
-
-import Button, { ButtonStyle } from "../../components/Button";
-import { Plus, Save, Trash } from "react-bootstrap-icons";
-import toast from "../../lib/toast";
-
-import ReactCodeMirror from "@uiw/react-codemirror";
-import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import ReactMarkdown from "react-markdown";
-import { userState } from "../../lib/state";
+import Loading from "../../components/Loading";
 import { fetchAPI, Field, MeUser } from "../../lib/api-fetch";
+import { themeState, userState } from "../../lib/state";
+import toast from "../../lib/toast";
 
 export default function Index() {
   const [user, setUser] = useRecoilState(userState);
+  const darkTheme = useRecoilValue(themeState);
   const router = useRouter();
   const [state, setState] = useState(cloneDeep(user));
 
@@ -110,10 +110,21 @@ export default function Index() {
         <div>
           <h4 className="text-lg font-bold">Edit</h4>
           <ReactCodeMirror
+            className="text-base"
             value={state.bio || undefined}
             onChange={(val, _) => {
               setState({ ...state, bio: val });
             }}
+            theme={darkTheme ? githubDark : githubLight}
+            minHeight="200"
+            basicSetup={{
+              lineNumbers: false,
+              bracketMatching: false,
+              closeBrackets: false,
+              autocompletion: false,
+              allowMultipleSelections: false,
+            }}
+            lang="markdown"
             extensions={[markdown({ base: markdownLanguage })]}
           />
         </div>
