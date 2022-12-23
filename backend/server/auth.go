@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
 	"github.com/go-chi/render"
@@ -11,7 +12,7 @@ import (
 // maybeAuth is a globally-used middleware.
 func (s *Server) maybeAuth(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
+		token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 		if token == "" {
 			next.ServeHTTP(w, r)
 			return
