@@ -113,9 +113,8 @@ func (u *User) UpdateFromDiscord(ctx context.Context, db pgxscan.Querier, du *di
 	return pgxscan.Get(ctx, db, u, sql, args...)
 }
 
-// User gets a user by ID.
-func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
-	err = pgxscan.Get(ctx, db, &u, "select * from users where id = $1", id)
+func (db *DB) getUser(ctx context.Context, q pgxscan.Querier, id xid.ID) (u User, err error) {
+	err = pgxscan.Get(ctx, q, &u, "select * from users where id = $1", id)
 	if err != nil {
 		if errors.Cause(err) == pgx.ErrNoRows {
 			return u, ErrUserNotFound
@@ -125,6 +124,11 @@ func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
 	}
 
 	return u, nil
+}
+
+// User gets a user by ID.
+func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
+	return db.getUser(ctx, db, id)
 }
 
 // Username gets a user by username.
@@ -151,6 +155,32 @@ func (db *DB) UsernameTaken(ctx context.Context, username string) (valid, taken 
 	return true, taken, err
 }
 
+// UpdateUsername validates the given username, then updates the given user's name to it if valid.
+func (db *DB) UpdateUsername(ctx context.Context, tx pgx.Tx, id xid.ID, newName string) error {
+	if !usernameRegex.MatchString(newName) {
+		return ErrInvalidUsername
+	}
+
+	sql, args, err := sq.Update("users").Set("username", newName).Where("id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = db.Exec(ctx, sql, args...)
+	if err != nil {
+		pge := &pgconn.PgError{}
+		if errors.As(err, &pge) {
+			// unique constraint violation
+			if pge.Code == "23505" {
+				return ErrUsernameTaken
+			}
+		}
+
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}
+
 func (db *DB) UpdateUser(
 	ctx context.Context,
 	tx pgx.Tx, id xid.ID,
@@ -159,7 +189,7 @@ func (db *DB) UpdateUser(
 	avatarURLs []string,
 ) (u User, err error) {
 	if displayName == nil && bio == nil && links == nil && avatarURLs == nil {
-		return u, ErrNothingToUpdate
+		return db.getUser(ctx, tx, id)
 	}
 
 	builder := sq.Update("users").Where("id = ?", id)

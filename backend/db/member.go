@@ -30,13 +30,13 @@ const (
 	ErrMemberNameInUse = errors.Sentinel("member name already in use")
 )
 
-func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
+func (db *DB) getMember(ctx context.Context, q pgxscan.Querier, id xid.ID) (m Member, err error) {
 	sql, args, err := sq.Select("*").From("members").Where("id = ?", id).ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, db, &m, sql, args...)
+	err = pgxscan.Get(ctx, q, &m, sql, args...)
 	if err != nil {
 		if errors.Cause(err) == pgx.ErrNoRows {
 			return m, ErrMemberNotFound
@@ -45,6 +45,10 @@ func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
 		return m, errors.Wrap(err, "retrieving member")
 	}
 	return m, nil
+}
+
+func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
+	return db.getMember(ctx, db, id)
 }
 
 // UserMember returns a member scoped by user.
@@ -98,6 +102,7 @@ func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name s
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
+			// unique constraint violation
 			if pge.Code == "23505" {
 				return m, ErrMemberNameInUse
 			}
@@ -146,7 +151,7 @@ func (db *DB) UpdateMember(
 	avatarURLs []string,
 ) (m Member, err error) {
 	if name == nil && displayName == nil && bio == nil && links == nil && avatarURLs == nil {
-		return m, ErrNothingToUpdate
+		return db.getMember(ctx, tx, id)
 	}
 
 	builder := sq.Update("members").Where("id = ?", id)

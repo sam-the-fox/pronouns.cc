@@ -12,6 +12,7 @@ import (
 )
 
 type PatchUserRequest struct {
+	Username    *string       `json:"username"`
 	DisplayName *string       `json:"display_name"`
 	Bio         *string       `json:"bio"`
 	Links       *[]string     `json:"links"`
@@ -34,8 +35,15 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrBadRequest}
 	}
 
+	// get existing user, for comparison later
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting existing user")
+	}
+
 	// validate that *something* is set
-	if req.DisplayName == nil &&
+	if req.Username == nil &&
+		req.DisplayName == nil &&
 		req.Bio == nil &&
 		req.Links == nil &&
 		req.Fields == nil &&
@@ -130,7 +138,22 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	u, err := s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links, avatarURLs)
+	// update username
+	if req.Username != nil && *req.Username != u.Username {
+		err = s.DB.UpdateUsername(ctx, tx, claims.UserID, *req.Username)
+		if err != nil {
+			switch err {
+			case db.ErrUsernameTaken:
+				return server.APIError{Code: server.ErrUsernameTaken}
+			case db.ErrInvalidUsername:
+				return server.APIError{Code: server.ErrInvalidUsername}
+			default:
+				return errors.Wrap(err, "updating username")
+			}
+		}
+	}
+
+	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links, avatarURLs)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err
