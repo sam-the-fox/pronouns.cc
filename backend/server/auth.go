@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
 	"github.com/go-chi/render"
 )
@@ -20,6 +21,27 @@ func (s *Server) maybeAuth(next http.Handler) http.Handler {
 
 		claims, err := s.Auth.Claims(token)
 		if err != nil {
+			render.Status(r, errCodeStatuses[ErrInvalidToken])
+			render.JSON(w, r, APIError{
+				Code:    ErrInvalidToken,
+				Message: errCodeMessages[ErrInvalidToken],
+			})
+			return
+		}
+
+		// "valid" here refers to existence and expiry date, not whether the token is known
+		valid, err := s.DB.TokenValid(r.Context(), claims.UserID, claims.TokenID)
+		if err != nil {
+			log.Errorf("validating token for user %v: %v", claims.UserID, err)
+			render.Status(r, errCodeStatuses[ErrInternalServerError])
+			render.JSON(w, r, APIError{
+				Code:    ErrInternalServerError,
+				Message: errCodeMessages[ErrInternalServerError],
+			})
+			return
+		}
+
+		if !valid {
 			render.Status(r, errCodeStatuses[ErrInvalidToken])
 			render.JSON(w, r, APIError{
 				Code:    ErrInvalidToken,

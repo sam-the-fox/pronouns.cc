@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/render"
 	"github.com/mediocregopher/radix/v4"
+	"github.com/rs/xid"
 	"golang.org/x/oauth2"
 )
 
@@ -81,9 +82,17 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 			log.Errorf("updating user %v with Discord info: %v", u.ID, err)
 		}
 
-		token, err := s.Auth.CreateToken(u.ID)
+		// TODO: implement user + token permissions
+		tokenID := xid.New()
+		token, err := s.Auth.CreateToken(u.ID, tokenID, false, true)
 		if err != nil {
 			return err
+		}
+
+		// save token to database
+		_, err = s.DB.SaveToken(ctx, u.ID, tokenID)
+		if err != nil {
+			return errors.Wrap(err, "saving token to database")
 		}
 
 		render.JSON(w, r, discordCallbackResponse{
@@ -206,9 +215,17 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// create token
-	token, err := s.Auth.CreateToken(u.ID)
+	// TODO: implement user + token permissions
+	tokenID := xid.New()
+	token, err := s.Auth.CreateToken(u.ID, tokenID, false, true)
 	if err != nil {
 		return errors.Wrap(err, "creating token")
+	}
+
+	// save token to database
+	_, err = s.DB.SaveToken(ctx, u.ID, tokenID)
+	if err != nil {
+		return errors.Wrap(err, "saving token to database")
 	}
 
 	// return user

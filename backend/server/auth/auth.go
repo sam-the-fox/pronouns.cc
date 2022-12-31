@@ -14,7 +14,13 @@ import (
 
 // Claims are the claims used in a token.
 type Claims struct {
-	UserID xid.ID `json:"sub"`
+	UserID      xid.ID `json:"sub"`
+	TokenID     xid.ID `json:"jti"`
+	UserIsAdmin bool   `json:"adm"`
+
+	// TokenWrite specifies whether this token can be used for write actions.
+	// If set to false, this token can only be used for read actions.
+	TokenWrite bool `json:"twr"`
 
 	jwt.RegisteredClaims
 }
@@ -37,16 +43,20 @@ func New() *Verifier {
 	return &Verifier{key: key}
 }
 
-const expireDays = 30
+// ExpireDays is after how many days the token will expire.
+const ExpireDays = 30
 
 // CreateToken creates a token for the given user ID.
 // It expires after 30 days.
-func (v *Verifier) CreateToken(userID xid.ID) (string, error) {
+func (v *Verifier) CreateToken(userID, tokenID xid.ID, isAdmin bool, isWriteToken bool) (token string, err error) {
 	now := time.Now()
-	expires := now.Add(expireDays * 24 * time.Hour)
+	expires := now.Add(ExpireDays * 24 * time.Hour)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
-		UserID: userID,
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
+		UserID:      userID,
+		TokenID:     tokenID,
+		UserIsAdmin: isAdmin,
+		TokenWrite:  isWriteToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "pronouns",
 			ExpiresAt: jwt.NewNumericDate(expires),
@@ -55,7 +65,7 @@ func (v *Verifier) CreateToken(userID xid.ID) (string, error) {
 		},
 	})
 
-	return token.SignedString(v.key)
+	return t.SignedString(v.key)
 }
 
 // Claims parses the given token and returns its Claims.

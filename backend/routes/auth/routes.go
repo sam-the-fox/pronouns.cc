@@ -67,6 +67,11 @@ func Mount(srv *server.Server, r chi.Router) {
 		// invite routes
 		r.With(server.MustAuth).Get("/invites", server.WrapHandler(s.getInvites))
 		r.With(server.MustAuth).Post("/invites", server.WrapHandler(s.createInvite))
+
+		// tokens
+		r.With(server.MustAuth).Get("/tokens", server.WrapHandler(s.getTokens))
+		r.With(server.MustAuth).Post("/tokens", server.WrapHandler(s.createToken))
+		r.With(server.MustAuth).Delete("/tokens", server.WrapHandler(s.deleteToken))
 	})
 }
 
