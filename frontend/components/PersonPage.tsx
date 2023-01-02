@@ -260,15 +260,11 @@ function FieldCard({
 }) {
   return (
     <Card title={field.name} draggable={draggable}>
-      {labelStatusOrder.map((status, i) => (
-        <LabelsLine
-          key={i}
-          status={status}
-          texts={field.labels
-            .filter((x) => x.status === status)
-            .map((x) => x.display())}
-        />
-      ))}
+      {labelStatusOrder.map((status, i) =>
+        field.labels
+          .filter((x) => x.status === status)
+          .map((x) => <LabelLine key={i} label={x} />)
+      )}
     </Card>
   );
 }

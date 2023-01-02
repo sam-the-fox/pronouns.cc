@@ -9,7 +9,7 @@ export type Props = {
 
 export default function Card({ title, draggable, children, footer }: Props) {
   return (
-    <div className="bg-slate-100 dark:bg-slate-700 rounded-md shadow">
+    <div className="relative bg-slate-100 dark:bg-slate-700 rounded-md shadow">
       <h1
         className={`text-2xl p-2 border-b border-zinc-200 dark:border-slate-800${
           draggable && " handle hover:cursor-grab"
@@ -19,7 +19,7 @@ export default function Card({ title, draggable, children, footer }: Props) {
       </h1>
       <div className="flex flex-col p-2">{children}</div>
       {footer && (
-        <div className="p-2 border-t border-zinc-200 dark:border-slate-800">
+        <div className="border-t border-zinc-200 dark:border-slate-800">
           {footer}
         </div>
       )}

@@ -48,11 +48,28 @@ export function EditableCard(props: EditableCardProps) {
   const [input, setInput] = useState("");
 
   const footer = (
-    <div className="flex justify-between">
-      <TextInput value={props.field.name} onChange={props.onChangeName} />
-      <Button style={ButtonStyle.danger} onClick={props.onClickDelete}>
-        <Trash3 aria-hidden className="inline" /> Delete
-      </Button>
+    <div className="flex flex-col justify-between space-y-2">
+      <div className="flex justify-between items-center px-2 pt-2">
+        <TextInput value={input} onChange={(e) => setInput(e.target.value)} />
+        <Button
+          disabled={!input || input === ""}
+          style={ButtonStyle.success}
+          onClick={() => {
+            if (!input || input === "") return;
+
+            props.onAddPronoun(input);
+            setInput("");
+          }}
+        >
+          <Plus aria-hidden className="inline" /> Add entry
+        </Button>
+      </div>
+      <div className="flex justify-between p-2 border-t border-zinc-200 dark:border-slate-800">
+        <TextInput value={props.field.name} onChange={props.onChangeName} />
+        <Button style={ButtonStyle.danger} onClick={props.onClickDelete}>
+          <Trash3 aria-hidden className="inline" /> Delete field
+        </Button>
+      </div>
     </div>
   );
 
@@ -76,7 +93,7 @@ export function EditableCard(props: EditableCardProps) {
                     choice == PronounChoice.favourite
                       ? "bg-slate-500"
                       : "bg-slate-600"
-                  } hover:bg-slate-400 p-2`}
+                  } text-white hover:bg-slate-400 p-2`}
                 >
                   <Heart />
                 </button>
@@ -87,7 +104,7 @@ export function EditableCard(props: EditableCardProps) {
                     choice == PronounChoice.okay
                       ? "bg-slate-500"
                       : "bg-slate-600"
-                  } hover:bg-slate-400 p-2`}
+                  } text-white hover:bg-slate-400 p-2`}
                 >
                   <HandThumbsUp />
                 </button>
@@ -98,7 +115,7 @@ export function EditableCard(props: EditableCardProps) {
                     choice == PronounChoice.jokingly
                       ? "bg-slate-500"
                       : "bg-slate-600"
-                  } hover:bg-slate-400 p-2`}
+                  } text-white hover:bg-slate-400 p-2`}
                 >
                   <EmojiLaughing />
                 </button>
@@ -109,7 +126,7 @@ export function EditableCard(props: EditableCardProps) {
                     choice == PronounChoice.friendsOnly
                       ? "bg-slate-500"
                       : "bg-slate-600"
-                  } hover:bg-slate-400 p-2`}
+                  } text-white hover:bg-slate-400 p-2`}
                 >
                   <People />
                 </button>
@@ -120,7 +137,7 @@ export function EditableCard(props: EditableCardProps) {
                     choice == PronounChoice.avoid
                       ? "bg-slate-500"
                       : "bg-slate-600"
-                  } hover:bg-slate-400 p-2`}
+                  } text-white hover:bg-slate-400 p-2`}
                 >
                   <HandThumbsDown />
                 </button>
@@ -135,20 +152,6 @@ export function EditableCard(props: EditableCardProps) {
             </li>
           );
         })}
-        <li className="flex justify-between my-1 items-center">
-          <TextInput value={input} onChange={(e) => setInput(e.target.value)} />
-          <Button
-            style={ButtonStyle.success}
-            onClick={() => {
-              if (!input || input === "") return;
-
-              props.onAddPronoun(input);
-              setInput("");
-            }}
-          >
-            <Plus aria-hidden className="inline" /> Add
-          </Button>
-        </li>
       </ul>
     </Card>
   );

@@ -63,9 +63,12 @@ export default function Index() {
   const addField = () => {
     if (fields.length >= 25) return;
 
-    const lastId = fields[fields.length - 1]?.id ?? 0;
+    const lastId = fields[fields.length - 1]?.id ?? -1;
 
-    setFields([...fields, { id: lastId + 1, name: "", pronouns: {} }]);
+    setFields([
+      ...fields,
+      { id: lastId + 1, name: `Field #${lastId + 2}`, pronouns: {} },
+    ]);
   };
 
   useEffect(() => {
