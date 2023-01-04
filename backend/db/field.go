@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
-	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
@@ -18,13 +18,9 @@ const (
 )
 
 type Field struct {
-	ID          int64    `json:"-"`
-	Name        string   `json:"name"`
-	Favourite   []string `json:"favourite"`
-	Okay        []string `json:"okay"`
-	Jokingly    []string `json:"jokingly"`
-	FriendsOnly []string `json:"friends_only"`
-	Avoid       []string `json:"avoid"`
+	ID      int64        `json:"-"`
+	Name    string       `json:"name"`
+	Entries []FieldEntry `json:"entries"`
 }
 
 // Validate validates this field. If it is invalid, a non-empty string is returned as error message.
@@ -37,37 +33,17 @@ func (f Field) Validate() string {
 		return fmt.Sprintf("name max length is %d characters, length is %d", FieldNameMaxLength, length)
 	}
 
-	if length := len(f.Favourite) + len(f.Okay) + len(f.Jokingly) + len(f.FriendsOnly) + len(f.Avoid); length > FieldEntriesLimit {
+	if length := len(f.Entries); length > FieldEntriesLimit {
 		return fmt.Sprintf("max number of entries is %d, current number is %d", FieldEntriesLimit, length)
 	}
 
-	for i, entry := range f.Favourite {
-		if length := len([]rune(entry)); length > FieldEntryMaxLength {
-			return fmt.Sprintf("favourite.%d: name max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
+	for i, entry := range f.Entries {
+		if length := len([]rune(entry.Value)); length > FieldEntryMaxLength {
+			return fmt.Sprintf("entries.%d: max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
 		}
-	}
 
-	for i, entry := range f.Okay {
-		if length := len([]rune(entry)); length > FieldEntryMaxLength {
-			return fmt.Sprintf("okay.%d: name max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
-		}
-	}
-
-	for i, entry := range f.Jokingly {
-		if length := len([]rune(entry)); length > FieldEntryMaxLength {
-			return fmt.Sprintf("jokingly.%d: name max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
-		}
-	}
-
-	for i, entry := range f.FriendsOnly {
-		if length := len([]rune(entry)); length > FieldEntryMaxLength {
-			return fmt.Sprintf("friends_only.%d: name max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
-		}
-	}
-
-	for i, entry := range f.Avoid {
-		if length := len([]rune(entry)); length > FieldEntryMaxLength {
-			return fmt.Sprintf("avoid.%d: name max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
+		if entry.Status == StatusUnknown || entry.Status >= wordStatusMax {
+			return fmt.Sprintf("entries.%d: status is invalid, must be between 1 and %d, is %d", i, wordStatusMax-1, entry.Status)
 		}
 	}
 
@@ -76,17 +52,20 @@ func (f Field) Validate() string {
 
 // UserFields returns the fields associated with the given user ID.
 func (db *DB) UserFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
-	sql, args, err := sq.
-		Select("id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid").
-		From("user_fields").Where("user_id = ?", id).OrderBy("id ASC").ToSql()
+	qfields, err := db.q.GetUserFields(ctx, id.String())
 	if err != nil {
-		return nil, errors.Wrap(err, "building sql")
+		return nil, errors.Wrap(err, "querying fields")
 	}
 
-	err = pgxscan.Select(ctx, db, &fs, sql, args...)
-	if err != nil {
-		return nil, errors.Cause(err)
+	fs = make([]Field, len(qfields))
+	for i := range qfields {
+		fs[i] = Field{
+			ID:      int64(*qfields[i].ID),
+			Name:    *qfields[i].Name,
+			Entries: dbEntriesToFieldEntries(qfields[i].Entries),
+		}
 	}
+
 	return fs, nil
 }
 
@@ -102,20 +81,14 @@ func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, field
 		return errors.Wrap(err, "deleting existing fields")
 	}
 
-	_, err = tx.CopyFrom(ctx,
-		pgx.Identifier{"user_fields"},
-		[]string{"user_id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid"},
-		pgx.CopyFromSlice(len(fields), func(i int) ([]any, error) {
-			return []any{
-				userID,
-				fields[i].Name,
-				fields[i].Favourite,
-				fields[i].Okay,
-				fields[i].Jokingly,
-				fields[i].FriendsOnly,
-				fields[i].Avoid,
-			}, nil
-		}))
+	querier := queries.NewQuerier(tx)
+	for _, field := range fields {
+		querier.InsertUserField(ctx, queries.InsertUserFieldParams{
+			UserID:  userID.String(),
+			Name:    field.Name,
+			Entries: entriesToDBEntries(field.Entries),
+		})
+	}
 	if err != nil {
 		return errors.Wrap(err, "inserting new fields")
 	}
@@ -124,17 +97,20 @@ func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, field
 
 // MemberFields returns the fields associated with the given member ID.
 func (db *DB) MemberFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
-	sql, args, err := sq.
-		Select("id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid").
-		From("member_fields").Where("member_id = ?", id).OrderBy("id ASC").ToSql()
+	qfields, err := db.q.GetMemberFields(ctx, id.String())
 	if err != nil {
-		return nil, errors.Wrap(err, "building sql")
+		return nil, errors.Wrap(err, "querying fields")
 	}
 
-	err = pgxscan.Select(ctx, db, &fs, sql, args...)
-	if err != nil {
-		return nil, errors.Cause(err)
+	fs = make([]Field, len(qfields))
+	for i := range qfields {
+		fs[i] = Field{
+			ID:      int64(*qfields[i].ID),
+			Name:    *qfields[i].Name,
+			Entries: dbEntriesToFieldEntries(qfields[i].Entries),
+		}
 	}
+
 	return fs, nil
 }
 
@@ -150,20 +126,14 @@ func (db *DB) SetMemberFields(ctx context.Context, tx pgx.Tx, memberID xid.ID, f
 		return errors.Wrap(err, "deleting existing fields")
 	}
 
-	_, err = tx.CopyFrom(ctx,
-		pgx.Identifier{"member_fields"},
-		[]string{"member_id", "name", "favourite", "okay", "jokingly", "friends_only", "avoid"},
-		pgx.CopyFromSlice(len(fields), func(i int) ([]any, error) {
-			return []any{
-				memberID,
-				fields[i].Name,
-				fields[i].Favourite,
-				fields[i].Okay,
-				fields[i].Jokingly,
-				fields[i].FriendsOnly,
-				fields[i].Avoid,
-			}, nil
-		}))
+	querier := queries.NewQuerier(tx)
+	for _, field := range fields {
+		querier.InsertMemberField(ctx, queries.InsertMemberFieldParams{
+			MemberID: memberID.String(),
+			Name:     field.Name,
+			Entries:  entriesToDBEntries(field.Entries),
+		})
+	}
 	if err != nil {
 		return errors.Wrap(err, "inserting new fields")
 	}

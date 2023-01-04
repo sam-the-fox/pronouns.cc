@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
 	"github.com/georgysavva/scany/pgxscan"
@@ -98,7 +99,7 @@ func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err er
 	return u, nil
 }
 
-func (u *User) UpdateFromDiscord(ctx context.Context, db pgxscan.Querier, du *discordgo.User) error {
+func (u *User) UpdateFromDiscord(ctx context.Context, db querier, du *discordgo.User) error {
 	builder := sq.Update("users").
 		Set("discord", du.ID).
 		Set("discord_username", du.String()).
@@ -113,14 +114,26 @@ func (u *User) UpdateFromDiscord(ctx context.Context, db pgxscan.Querier, du *di
 	return pgxscan.Get(ctx, db, u, sql, args...)
 }
 
-func (db *DB) getUser(ctx context.Context, q pgxscan.Querier, id xid.ID) (u User, err error) {
-	err = pgxscan.Get(ctx, q, &u, "select * from users where id = $1", id)
+func (db *DB) getUser(ctx context.Context, q querier, id xid.ID) (u User, err error) {
+	qu, err := queries.NewQuerier(q).GetUserByID(ctx, id.String())
 	if err != nil {
 		if errors.Cause(err) == pgx.ErrNoRows {
 			return u, ErrUserNotFound
 		}
 
-		return u, errors.Cause(err)
+		return u, errors.Wrap(err, "getting user from database")
+	}
+
+	u = User{
+		ID:              id,
+		Username:        qu.Username,
+		DisplayName:     qu.DisplayName,
+		Bio:             qu.Bio,
+		AvatarURLs:      qu.AvatarUrls,
+		Links:           qu.Links,
+		Discord:         qu.Discord,
+		DiscordUsername: qu.DiscordUsername,
+		MaxInvites:      int(qu.MaxInvites),
 	}
 
 	return u, nil

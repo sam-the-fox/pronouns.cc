@@ -7,9 +7,12 @@ import (
 	"net/url"
 	"os"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mediocregopher/radix/v4"
 	"github.com/minio/minio-go/v7"
@@ -20,6 +23,12 @@ var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 const ErrNothingToUpdate = errors.Sentinel("nothing to update")
 
+type querier interface {
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+}
+
 type DB struct {
 	*pgxpool.Pool
 
@@ -28,6 +37,8 @@ type DB struct {
 	minio       *minio.Client
 	minioBucket string
 	baseURL     *url.URL
+
+	q queries.Querier
 }
 
 func New() (*DB, error) {
@@ -67,6 +78,8 @@ func New() (*DB, error) {
 		minio:       minioClient,
 		minioBucket: os.Getenv("MINIO_BUCKET"),
 		baseURL:     baseURL,
+
+		q: queries.NewQuerier(pool),
 	}
 
 	return db, nil

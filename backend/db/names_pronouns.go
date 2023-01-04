@@ -11,18 +11,6 @@ import (
 	"github.com/rs/xid"
 )
 
-type WordStatus int
-
-const (
-	StatusUnknown     WordStatus = 0
-	StatusFavourite   WordStatus = 1
-	StatusOkay        WordStatus = 2
-	StatusJokingly    WordStatus = 3
-	StatusFriendsOnly WordStatus = 4
-	StatusAvoid       WordStatus = 5
-	wordStatusMax     WordStatus = 6
-)
-
 type Name struct {
 	ID     int64      `json:"-"`
 	Name   string     `json:"name"`

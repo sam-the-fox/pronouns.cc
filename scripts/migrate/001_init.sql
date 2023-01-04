@@ -14,7 +14,7 @@ create table users (
     discord          text unique, -- for Discord oauth
     discord_username text,
 
-    max_invites int default 10
+    max_invites int not null default 10
 );
 
 create table user_names (
