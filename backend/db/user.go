@@ -22,6 +22,9 @@ type User struct {
 	AvatarURLs []string `db:"avatar_urls"`
 	Links      []string
 
+	Names    []Name
+	Pronouns []Pronoun
+
 	Discord         *string
 	DiscordUsername *string
 
@@ -130,6 +133,8 @@ func (db *DB) getUser(ctx context.Context, q querier, id xid.ID) (u User, err er
 		DisplayName:     qu.DisplayName,
 		Bio:             qu.Bio,
 		AvatarURLs:      qu.AvatarUrls,
+		Names:           namesFromDB(qu.Names),
+		Pronouns:        pronounsFromDB(qu.Pronouns),
 		Links:           qu.Links,
 		Discord:         qu.Discord,
 		DiscordUsername: qu.DiscordUsername,
@@ -146,13 +151,32 @@ func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
 
 // Username gets a user by username.
 func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
-	err = pgxscan.Get(ctx, db, &u, "select * from users where username = $1", name)
+	qu, err := db.q.GetUserByUsername(ctx, name)
 	if err != nil {
 		if errors.Cause(err) == pgx.ErrNoRows {
 			return u, ErrUserNotFound
 		}
 
-		return u, errors.Cause(err)
+		return u, errors.Wrap(err, "getting user from db")
+	}
+
+	id, err := xid.FromString(qu.ID)
+	if err != nil {
+		return u, errors.Wrap(err, "parsing ID")
+	}
+
+	u = User{
+		ID:              id,
+		Username:        qu.Username,
+		DisplayName:     qu.DisplayName,
+		Bio:             qu.Bio,
+		AvatarURLs:      qu.AvatarUrls,
+		Names:           namesFromDB(qu.Names),
+		Pronouns:        pronounsFromDB(qu.Pronouns),
+		Links:           qu.Links,
+		Discord:         qu.Discord,
+		DiscordUsername: qu.DiscordUsername,
+		MaxInvites:      int(qu.MaxInvites),
 	}
 
 	return u, nil

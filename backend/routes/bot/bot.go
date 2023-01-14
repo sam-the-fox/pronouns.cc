@@ -133,17 +133,25 @@ func (bot *Bot) userPronouns(w http.ResponseWriter, r *http.Request, ev *discord
 	}
 
 	for _, field := range fields {
-		if len(field.Favourite) == 0 {
+		var favs []db.FieldEntry
+
+		for _, e := range field.Entries {
+			if e.Status == db.StatusFavourite {
+				favs = append(favs, e)
+			}
+		}
+
+		if len(favs) == 0 {
 			continue
 		}
 
 		var value string
-		for _, fav := range field.Favourite {
-			if len(value) > 500 {
+		for _, fav := range favs {
+			if len(fav.Value) > 500 {
 				break
 			}
 
-			value += fav + "\n"
+			value += fav.Value + "\n"
 		}
 
 		e.Fields = append(e.Fields, &discordgo.MessageEmbedField{

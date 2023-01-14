@@ -199,31 +199,11 @@ export class Pronouns extends Label {
 export class Field {
   name: string;
   labels: Label[];
-  constructor({
-    name,
-    favourite,
-    okay,
-    jokingly,
-    friends_only,
-    avoid,
-  }: API.Field) {
+  constructor({ name, entries }: API.Field) {
     this.name = name;
-    function transpose(arr: API.Arr<string>, status: LabelStatus): Label[] {
-      return (arr ?? []).map(
-        (text) =>
-          new Label({
-            displayText: null,
-            text,
-            status,
-          })
-      );
-    }
-    this.labels = [
-      ...transpose(favourite, LabelStatus.Favourite),
-      ...transpose(okay, LabelStatus.Okay),
-      ...transpose(jokingly, LabelStatus.Jokingly),
-      ...transpose(friends_only, LabelStatus.FriendsOnly),
-      ...transpose(avoid, LabelStatus.Avoid),
-    ];
+    this.labels =
+      entries?.map(
+        (e) => new Label({ displayText: null, text: e.value, status: e.status })
+      ) ?? [];
   }
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4"
@@ -73,35 +74,6 @@ func (p Pronoun) String() string {
 	}
 
 	return strings.Join(split[:1], "/")
-}
-
-func (db *DB) UserNames(ctx context.Context, userID xid.ID) (ns []Name, err error) {
-	sql, args, err := sq.Select("id", "name", "status").From("user_names").Where("user_id = ?", userID).OrderBy("id").ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "building sql")
-	}
-
-	err = pgxscan.Select(ctx, db, &ns, sql, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "executing query")
-	}
-	return ns, nil
-}
-
-func (db *DB) UserPronouns(ctx context.Context, userID xid.ID) (ps []Pronoun, err error) {
-	sql, args, err := sq.
-		Select("id", "display_text", "pronouns", "status").
-		From("user_pronouns").Where("user_id = ?", userID).
-		OrderBy("id").ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "building sql")
-	}
-
-	err = pgxscan.Select(ctx, db, &ps, sql, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "executing query")
-	}
-	return ps, nil
 }
 
 func (db *DB) SetUserNames(ctx context.Context, tx pgx.Tx, userID xid.ID, names []Name) (err error) {
@@ -241,4 +213,27 @@ func (db *DB) SetMemberPronouns(ctx context.Context, tx pgx.Tx, memberID xid.ID,
 		return errors.Wrap(err, "inserting new pronouns")
 	}
 	return nil
+}
+
+func namesFromDB(dn []queries.FieldEntry) []Name {
+	names := make([]Name, len(dn))
+	for i := range dn {
+		names[i] = Name{
+			Name:   *dn[i].Value,
+			Status: WordStatus(*dn[i].Status),
+		}
+	}
+	return names
+}
+
+func pronounsFromDB(dn []queries.PronounEntry) []Pronoun {
+	pronouns := make([]Pronoun, len(dn))
+	for i := range dn {
+		pronouns[i] = Pronoun{
+			DisplayText: dn[i].DisplayValue,
+			Pronouns:    *dn[i].Value,
+			Status:      WordStatus(*dn[i].Status),
+		}
+	}
+	return pronouns
 }

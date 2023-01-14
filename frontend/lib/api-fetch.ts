@@ -51,11 +51,12 @@ export interface Pronoun {
 
 export interface Field {
   name: string;
-  favourite: Arr<string>;
-  okay: Arr<string>;
-  jokingly: Arr<string>;
-  friends_only: Arr<string>;
-  avoid: Arr<string>;
+  entries: Arr<FieldEntry>;
+}
+
+export interface FieldEntry {
+  value: string;
+  status: WordStatus;
 }
 
 export interface APIError {

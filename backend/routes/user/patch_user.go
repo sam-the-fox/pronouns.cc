@@ -159,11 +159,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var (
-		names    []db.Name
-		pronouns []db.Pronoun
-		fields   []db.Field
-	)
+	var fields []db.Field
 
 	if req.Names != nil {
 		err = s.DB.SetUserNames(ctx, tx, claims.UserID, *req.Names)
@@ -171,13 +167,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 			log.Errorf("setting names for user %v: %v", claims.UserID, err)
 			return err
 		}
-		names = *req.Names
-	} else {
-		names, err = s.DB.UserNames(ctx, claims.UserID)
-		if err != nil {
-			log.Errorf("getting names for user %v: %v", claims.UserID, err)
-			return err
-		}
+		u.Names = *req.Names
 	}
 
 	if req.Pronouns != nil {
@@ -186,13 +176,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 			log.Errorf("setting pronouns for user %v: %v", claims.UserID, err)
 			return err
 		}
-		pronouns = *req.Pronouns
-	} else {
-		pronouns, err = s.DB.UserPronouns(ctx, claims.UserID)
-		if err != nil {
-			log.Errorf("getting fields for user %v: %v", claims.UserID, err)
-			return err
-		}
+		u.Pronouns = *req.Pronouns
 	}
 
 	if req.Fields != nil {
@@ -217,7 +201,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated user back on success
-	render.JSON(w, r, dbUserToResponse(u, fields, names, pronouns, nil))
+	render.JSON(w, r, dbUserToResponse(u, fields, nil))
 	return nil
 }
 
