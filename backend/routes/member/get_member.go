@@ -19,14 +19,14 @@ type GetMemberResponse struct {
 	AvatarURLs  []string `json:"avatar_urls"`
 	Links       []string `json:"links"`
 
-	Names    []db.Name    `json:"names"`
-	Pronouns []db.Pronoun `json:"pronouns"`
-	Fields   []db.Field   `json:"fields"`
+	Names    []db.FieldEntry   `json:"names"`
+	Pronouns []db.PronounEntry `json:"pronouns"`
+	Fields   []db.Field        `json:"fields"`
 
 	User PartialUser `json:"user"`
 }
 
-func dbMemberToMember(u db.User, m db.Member, names []db.Name, pronouns []db.Pronoun, fields []db.Field) GetMemberResponse {
+func dbMemberToMember(u db.User, m db.Member, fields []db.Field) GetMemberResponse {
 	return GetMemberResponse{
 		ID:          m.ID,
 		Name:        m.Name,
@@ -35,8 +35,8 @@ func dbMemberToMember(u db.User, m db.Member, names []db.Name, pronouns []db.Pro
 		AvatarURLs:  m.AvatarURLs,
 		Links:       m.Links,
 
-		Names:    names,
-		Pronouns: pronouns,
+		Names:    m.Names,
+		Pronouns: m.Pronouns,
 		Fields:   fields,
 
 		User: PartialUser{
@@ -77,22 +77,12 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	names, err := s.DB.MemberNames(ctx, m.ID)
-	if err != nil {
-		return err
-	}
-
-	pronouns, err := s.DB.MemberPronouns(ctx, m.ID)
-	if err != nil {
-		return err
-	}
-
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, names, pronouns, fields))
+	render.JSON(w, r, dbMemberToMember(u, m, fields))
 	return nil
 }
 
@@ -113,22 +103,12 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	names, err := s.DB.MemberNames(ctx, m.ID)
-	if err != nil {
-		return err
-	}
-
-	pronouns, err := s.DB.MemberPronouns(ctx, m.ID)
-	if err != nil {
-		return err
-	}
-
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, names, pronouns, fields))
+	render.JSON(w, r, dbMemberToMember(u, m, fields))
 	return nil
 }
 

@@ -18,7 +18,7 @@ export type PartialMember = PartialPerson;
 export interface _Person extends PartialPerson {
   bio: string | null;
   links: Arr<string>;
-  names: Arr<Name>;
+  names: Arr<FieldEntry>;
   pronouns: Arr<Pronoun>;
   fields: Arr<Field>;
 }
@@ -38,11 +38,6 @@ export interface MeUser extends User {
   discord_username: string | null;
 }
 
-export interface Name {
-  name: string;
-  status: WordStatus;
-}
-
 export interface Pronoun {
   display_text?: string;
   pronouns: string;
@@ -51,11 +46,12 @@ export interface Pronoun {
 
 export interface Field {
   name: string;
-  favourite: Arr<string>;
-  okay: Arr<string>;
-  jokingly: Arr<string>;
-  friends_only: Arr<string>;
-  avoid: Arr<string>;
+  entries: Arr<FieldEntry>;
+}
+
+export interface FieldEntry {
+  value: string;
+  status: WordStatus;
 }
 
 export interface APIError {

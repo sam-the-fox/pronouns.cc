@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
@@ -23,6 +24,8 @@ type Member struct {
 	Bio         *string
 	AvatarURLs  []string `db:"avatar_urls"`
 	Links       []string
+	Names       []FieldEntry
+	Pronouns    []PronounEntry
 }
 
 const (
@@ -30,19 +33,27 @@ const (
 	ErrMemberNameInUse = errors.Sentinel("member name already in use")
 )
 
-func (db *DB) getMember(ctx context.Context, q pgxscan.Querier, id xid.ID) (m Member, err error) {
-	sql, args, err := sq.Select("*").From("members").Where("id = ?", id).ToSql()
+func (db *DB) getMember(ctx context.Context, q querier, id xid.ID) (m Member, err error) {
+	qm, err := queries.NewQuerier(q).GetMemberByID(ctx, id.String())
 	if err != nil {
-		return m, errors.Wrap(err, "building sql")
+		return m, errors.Wrap(err, "getting member from db")
 	}
 
-	err = pgxscan.Get(ctx, q, &m, sql, args...)
+	userID, err := xid.FromString(qm.UserID)
 	if err != nil {
-		if errors.Cause(err) == pgx.ErrNoRows {
-			return m, ErrMemberNotFound
-		}
+		return m, errors.Wrap(err, "parsing user ID")
+	}
 
-		return m, errors.Wrap(err, "retrieving member")
+	m = Member{
+		ID:          id,
+		UserID:      userID,
+		Name:        qm.Name,
+		DisplayName: qm.DisplayName,
+		Bio:         qm.Bio,
+		AvatarURLs:  qm.AvatarUrls,
+		Links:       qm.Links,
+		Names:       fieldEntriesFromDB(qm.Names),
+		Pronouns:    pronounsFromDB(qm.Pronouns),
 	}
 	return m, nil
 }
@@ -53,26 +64,35 @@ func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
 
 // UserMember returns a member scoped by user.
 func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (m Member, err error) {
-	sql, args, err := sq.Select("*").From("members").
-		Where("user_id = ? and (id = ? or name = ?)", userID, memberRef, memberRef).ToSql()
+	qm, err := db.q.GetMemberByName(ctx, userID.String(), memberRef)
 	if err != nil {
-		return m, errors.Wrap(err, "building sql")
+		return m, errors.Wrap(err, "getting member from db")
 	}
 
-	err = pgxscan.Get(ctx, db, &m, sql, args...)
+	memberID, err := xid.FromString(qm.ID)
 	if err != nil {
-		if errors.Cause(err) == pgx.ErrNoRows {
-			return m, ErrMemberNotFound
-		}
+		return m, errors.Wrap(err, "parsing member ID")
+	}
 
-		return m, errors.Wrap(err, "retrieving member")
+	m = Member{
+		ID:          memberID,
+		UserID:      userID,
+		Name:        qm.Name,
+		DisplayName: qm.DisplayName,
+		Bio:         qm.Bio,
+		AvatarURLs:  qm.AvatarUrls,
+		Links:       qm.Links,
+		Names:       fieldEntriesFromDB(qm.Names),
+		Pronouns:    pronounsFromDB(qm.Pronouns),
 	}
 	return m, nil
 }
 
 // UserMembers returns all of a user's members, sorted by name.
 func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err error) {
-	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).OrderBy("name", "id").ToSql()
+	sql, args, err := sq.Select("id", "user_id", "name", "display_name", "bio", "avatar_urls").
+		From("members").Where("user_id = ?", userID).
+		OrderBy("name", "id").ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "building sql")
 	}
@@ -93,12 +113,13 @@ func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name s
 	sql, args, err := sq.Insert("members").
 		Columns("user_id", "id", "name", "display_name", "bio", "links").
 		Values(userID, xid.New(), name, displayName, bio, links).
-		Suffix("RETURNING *").ToSql()
+		Suffix("RETURNING id").ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, tx, &m, sql, args...)
+	var id xid.ID
+	err = tx.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
@@ -109,6 +130,11 @@ func (db *DB) CreateMember(ctx context.Context, tx pgx.Tx, userID xid.ID, name s
 		}
 
 		return m, errors.Wrap(err, "executing query")
+	}
+
+	m, err = db.getMember(ctx, tx, id)
+	if err != nil {
+		return m, errors.Wrap(err, "getting created member")
 	}
 
 	return m, nil
@@ -192,12 +218,12 @@ func (db *DB) UpdateMember(
 		}
 	}
 
-	sql, args, err := builder.Suffix("RETURNING *").ToSql()
+	sql, args, err := builder.ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, tx, &m, sql, args...)
+	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
@@ -207,6 +233,11 @@ func (db *DB) UpdateMember(
 		}
 
 		return m, errors.Wrap(err, "executing sql")
+	}
+
+	m, err = db.getMember(ctx, tx, id)
+	if err != nil {
+		return m, errors.Wrap(err, "getting member")
 	}
 
 	return m, nil
