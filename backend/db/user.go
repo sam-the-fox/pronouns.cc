@@ -22,8 +22,8 @@ type User struct {
 	AvatarURLs []string `db:"avatar_urls"`
 	Links      []string
 
-	Names    []Name
-	Pronouns []Pronoun
+	Names    []FieldEntry
+	Pronouns []PronounEntry
 
 	Discord         *string
 	DiscordUsername *string
@@ -133,7 +133,7 @@ func (db *DB) getUser(ctx context.Context, q querier, id xid.ID) (u User, err er
 		DisplayName:     qu.DisplayName,
 		Bio:             qu.Bio,
 		AvatarURLs:      qu.AvatarUrls,
-		Names:           namesFromDB(qu.Names),
+		Names:           fieldEntriesFromDB(qu.Names),
 		Pronouns:        pronounsFromDB(qu.Pronouns),
 		Links:           qu.Links,
 		Discord:         qu.Discord,
@@ -171,7 +171,7 @@ func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
 		DisplayName:     qu.DisplayName,
 		Bio:             qu.Bio,
 		AvatarURLs:      qu.AvatarUrls,
-		Names:           namesFromDB(qu.Names),
+		Names:           fieldEntriesFromDB(qu.Names),
 		Pronouns:        pronounsFromDB(qu.Pronouns),
 		Links:           qu.Links,
 		Discord:         qu.Discord,
@@ -260,15 +260,19 @@ func (db *DB) UpdateUser(
 		}
 	}
 
-	sql, args, err := builder.Suffix("RETURNING *").ToSql()
+	sql, args, err := builder.ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, tx, &u, sql, args...)
+	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		return u, errors.Wrap(err, "executing sql")
 	}
 
+	u, err = db.getUser(ctx, tx, id)
+	if err != nil {
+		return u, errors.Wrap(err, "getting updated user")
+	}
 	return u, nil
 }

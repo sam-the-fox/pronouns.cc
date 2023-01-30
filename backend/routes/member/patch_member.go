@@ -14,14 +14,14 @@ import (
 )
 
 type PatchMemberRequest struct {
-	Name        *string       `json:"name"`
-	Bio         *string       `json:"bio"`
-	DisplayName *string       `json:"display_name"`
-	Links       *[]string     `json:"links"`
-	Names       *[]db.Name    `json:"names"`
-	Pronouns    *[]db.Pronoun `json:"pronouns"`
-	Fields      *[]db.Field   `json:"fields"`
-	Avatar      *string       `json:"avatar"`
+	Name        *string            `json:"name"`
+	Bio         *string            `json:"bio"`
+	DisplayName *string            `json:"display_name"`
+	Links       *[]string          `json:"links"`
+	Names       *[]db.FieldEntry   `json:"names"`
+	Pronouns    *[]db.PronounEntry `json:"pronouns"`
+	Fields      *[]db.Field        `json:"fields"`
+	Avatar      *string            `json:"avatar"`
 }
 
 func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
@@ -169,42 +169,27 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 
 	}
 
-	var (
-		names    []db.Name
-		pronouns []db.Pronoun
-		fields   []db.Field
-	)
+	if req.Names != nil || req.Pronouns != nil {
+		names := m.Names
+		pronouns := m.Pronouns
 
-	if req.Names != nil {
-		err = s.DB.SetMemberNames(ctx, tx, id, *req.Names)
+		if req.Names != nil {
+			names = *req.Names
+		}
+		if req.Pronouns != nil {
+			pronouns = *req.Pronouns
+		}
+
+		err = s.DB.SetMemberNamesPronouns(ctx, tx, id, names, pronouns)
 		if err != nil {
 			log.Errorf("setting names for member %v: %v", id, err)
 			return err
 		}
-		names = *req.Names
-	} else {
-		names, err = s.DB.MemberNames(ctx, id)
-		if err != nil {
-			log.Errorf("getting names for member %v: %v", id, err)
-			return err
-		}
+		m.Names = names
+		m.Pronouns = pronouns
 	}
 
-	if req.Pronouns != nil {
-		err = s.DB.SetMemberPronouns(ctx, tx, id, *req.Pronouns)
-		if err != nil {
-			log.Errorf("setting pronouns for member %v: %v", id, err)
-			return err
-		}
-		pronouns = *req.Pronouns
-	} else {
-		pronouns, err = s.DB.MemberPronouns(ctx, id)
-		if err != nil {
-			log.Errorf("getting fields for member %v: %v", id, err)
-			return err
-		}
-	}
-
+	var fields []db.Field
 	if req.Fields != nil {
 		err = s.DB.SetMemberFields(ctx, tx, id, *req.Fields)
 		if err != nil {
@@ -232,6 +217,6 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated member back on success
-	render.JSON(w, r, dbMemberToMember(u, m, names, pronouns, fields))
+	render.JSON(w, r, dbMemberToMember(u, m, fields))
 	return nil
 }

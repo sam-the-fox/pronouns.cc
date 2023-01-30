@@ -12,16 +12,16 @@ import (
 )
 
 type GetUserResponse struct {
-	ID          xid.ID          `json:"id"`
-	Username    string          `json:"name"`
-	DisplayName *string         `json:"display_name"`
-	Bio         *string         `json:"bio"`
-	AvatarURLs  []string        `json:"avatar_urls"`
-	Links       []string        `json:"links"`
-	Names       []db.Name       `json:"names"`
-	Pronouns    []db.Pronoun    `json:"pronouns"`
-	Members     []PartialMember `json:"members"`
-	Fields      []db.Field      `json:"fields"`
+	ID          xid.ID            `json:"id"`
+	Username    string            `json:"name"`
+	DisplayName *string           `json:"display_name"`
+	Bio         *string           `json:"bio"`
+	AvatarURLs  []string          `json:"avatar_urls"`
+	Links       []string          `json:"links"`
+	Names       []db.FieldEntry   `json:"names"`
+	Pronouns    []db.PronounEntry `json:"pronouns"`
+	Members     []PartialMember   `json:"members"`
+	Fields      []db.Field        `json:"fields"`
 }
 
 type GetMeResponse struct {

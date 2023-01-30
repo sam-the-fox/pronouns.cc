@@ -12,14 +12,14 @@ import (
 )
 
 type PatchUserRequest struct {
-	Username    *string       `json:"username"`
-	DisplayName *string       `json:"display_name"`
-	Bio         *string       `json:"bio"`
-	Links       *[]string     `json:"links"`
-	Names       *[]db.Name    `json:"names"`
-	Pronouns    *[]db.Pronoun `json:"pronouns"`
-	Fields      *[]db.Field   `json:"fields"`
-	Avatar      *string       `json:"avatar"`
+	Username    *string            `json:"username"`
+	DisplayName *string            `json:"display_name"`
+	Bio         *string            `json:"bio"`
+	Links       *[]string          `json:"links"`
+	Names       *[]db.FieldEntry   `json:"names"`
+	Pronouns    *[]db.PronounEntry `json:"pronouns"`
+	Fields      *[]db.Field        `json:"fields"`
+	Avatar      *string            `json:"avatar"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
@@ -159,26 +159,27 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	if req.Names != nil || req.Pronouns != nil {
+		names := u.Names
+		pronouns := u.Pronouns
+
+		if req.Names != nil {
+			names = *req.Names
+		}
+		if req.Pronouns != nil {
+			pronouns = *req.Pronouns
+		}
+
+		err = s.DB.SetUserNamesPronouns(ctx, tx, claims.UserID, names, pronouns)
+		if err != nil {
+			log.Errorf("setting names for member %v: %v", claims.UserID, err)
+			return err
+		}
+		u.Names = names
+		u.Pronouns = pronouns
+	}
+
 	var fields []db.Field
-
-	if req.Names != nil {
-		err = s.DB.SetUserNames(ctx, tx, claims.UserID, *req.Names)
-		if err != nil {
-			log.Errorf("setting names for user %v: %v", claims.UserID, err)
-			return err
-		}
-		u.Names = *req.Names
-	}
-
-	if req.Pronouns != nil {
-		err = s.DB.SetUserPronouns(ctx, tx, claims.UserID, *req.Pronouns)
-		if err != nil {
-			log.Errorf("setting pronouns for user %v: %v", claims.UserID, err)
-			return err
-		}
-		u.Pronouns = *req.Pronouns
-	}
-
 	if req.Fields != nil {
 		err = s.DB.SetUserFields(ctx, tx, claims.UserID, *req.Fields)
 		if err != nil {

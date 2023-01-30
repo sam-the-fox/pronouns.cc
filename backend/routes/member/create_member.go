@@ -12,14 +12,14 @@ import (
 )
 
 type CreateMemberRequest struct {
-	Name        string       `json:"name"`
-	DisplayName *string      `json:"display_name"`
-	Bio         string       `json:"bio"`
-	Avatar      string       `json:"avatar"`
-	Links       []string     `json:"links"`
-	Names       []db.Name    `json:"names"`
-	Pronouns    []db.Pronoun `json:"pronouns"`
-	Fields      []db.Field   `json:"fields"`
+	Name        string            `json:"name"`
+	DisplayName *string           `json:"display_name"`
+	Bio         string            `json:"bio"`
+	Avatar      string            `json:"avatar"`
+	Links       []string          `json:"links"`
+	Names       []db.FieldEntry   `json:"names"`
+	Pronouns    []db.PronounEntry `json:"pronouns"`
+	Fields      []db.Field        `json:"fields"`
 }
 
 func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error) {
@@ -92,16 +92,14 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	}
 
 	// set names, pronouns, fields
-	err = s.DB.SetMemberNames(ctx, tx, m.ID, cmr.Names)
+	err = s.DB.SetMemberNamesPronouns(ctx, tx, m.ID, cmr.Names, cmr.Pronouns)
 	if err != nil {
-		log.Errorf("setting names for member %v: %v", m.ID, err)
+		log.Errorf("setting names and pronouns for member %v: %v", m.ID, err)
 		return err
 	}
-	err = s.DB.SetMemberPronouns(ctx, tx, m.ID, cmr.Pronouns)
-	if err != nil {
-		log.Errorf("setting pronouns for member %v: %v", m.ID, err)
-		return err
-	}
+	m.Names = cmr.Names
+	m.Pronouns = cmr.Pronouns
+
 	err = s.DB.SetMemberFields(ctx, tx, m.ID, cmr.Fields)
 	if err != nil {
 		log.Errorf("setting fields for member %v: %v", m.ID, err)
@@ -144,7 +142,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		return errors.Wrap(err, "committing transaction")
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, cmr.Names, cmr.Pronouns, cmr.Fields))
+	render.JSON(w, r, dbMemberToMember(u, m, cmr.Fields))
 	return nil
 }
 

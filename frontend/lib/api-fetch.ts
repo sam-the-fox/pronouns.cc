@@ -18,7 +18,7 @@ export type PartialMember = PartialPerson;
 export interface _Person extends PartialPerson {
   bio: string | null;
   links: Arr<string>;
-  names: Arr<Name>;
+  names: Arr<FieldEntry>;
   pronouns: Arr<Pronoun>;
   fields: Arr<Field>;
 }
@@ -36,11 +36,6 @@ export type Person = Member | User;
 export interface MeUser extends User {
   discord: string | null;
   discord_username: string | null;
-}
-
-export interface Name {
-  name: string;
-  status: WordStatus;
 }
 
 export interface Pronoun {

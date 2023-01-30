@@ -164,11 +164,11 @@ export class Label {
 }
 
 export class Name extends Label {
-  constructor({ name, status }: API.Name) {
+  constructor({ value, status }: API.FieldEntry) {
     super({
       type: LabelType.Name,
       displayText: null,
-      text: name,
+      text: value,
       status,
     });
   }
