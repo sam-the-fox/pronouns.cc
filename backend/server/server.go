@@ -8,6 +8,7 @@ import (
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
+	"codeberg.org/u1f320/pronouns.cc/backend/server/rate"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
@@ -45,11 +46,10 @@ func New() (*Server, error) {
 	s.Router.Use(s.maybeAuth)
 
 	// rate limit handling
-	// - 120 req/minute (2/s)
+	// - base is 120 req/minute (2/s)
 	// - keyed by Authorization header if valid token is provided, otherwise by IP
 	// - returns rate limit reset info in error
-	s.Router.Use(httprate.Limit(
-		120, time.Minute,
+	rateLimiter := rate.NewLimiter(120, time.Minute,
 		httprate.WithKeyFuncs(func(r *http.Request) (string, error) {
 			_, ok := ClaimsFromContext(r.Context())
 			if token := r.Header.Get("Authorization"); ok && token != "" {
@@ -69,7 +69,33 @@ func New() (*Server, error) {
 				RatelimitReset: &reset,
 			})
 		}),
-	))
+	)
+
+	// set scopes
+	// users
+	rateLimiter.Scope("GET", "/users/*", 60)
+	rateLimiter.Scope("PATCH", "/users/@me", 5)
+
+	// members
+	rateLimiter.Scope("GET", "/users/*/members", 60)
+	rateLimiter.Scope("GET", "/users/*/members/*", 60)
+
+	rateLimiter.Scope("POST", "/members", 5)
+	rateLimiter.Scope("GET", "/members/*", 60)
+	rateLimiter.Scope("PATCH", "/members/*", 5)
+	rateLimiter.Scope("DELETE", "/members/*", 5)
+
+	// auth
+	rateLimiter.Scope("*", "/auth/*", 20)
+	rateLimiter.Scope("*", "/auth/tokens", 10)
+	rateLimiter.Scope("*", "/auth/invites", 10)
+	rateLimiter.Scope("POST", "/auth/discord/*", 10)
+
+	// rate limit handling
+	// - 120 req/minute (2/s)
+	// - keyed by Authorization header if valid token is provided, otherwise by IP
+	// - returns rate limit reset info in error
+	s.Router.Use(rateLimiter.Handler())
 
 	// return an API error for not found + method not allowed
 	s.Router.NotFound(func(w http.ResponseWriter, r *http.Request) {

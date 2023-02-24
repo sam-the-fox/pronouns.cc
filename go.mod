@@ -10,11 +10,14 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/httprate v0.5.3
 	github.com/go-chi/render v1.0.1
+	github.com/gobwas/glob v0.2.3
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/jackc/pgconn v1.12.0
+	github.com/jackc/pgtype v1.11.0
 	github.com/jackc/pgx/v4 v4.16.0
 	github.com/joho/godotenv v1.4.0
 	github.com/mediocregopher/radix/v4 v4.1.0
+	github.com/minio/minio-go/v7 v7.0.37
 	github.com/rs/xid v1.4.0
 	github.com/rubenv/sql-migrate v1.1.1
 	go.uber.org/zap v1.21.0
@@ -33,7 +36,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
-	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
@@ -41,7 +43,6 @@ require (
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/minio-go/v7 v7.0.37 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
