@@ -29,8 +29,9 @@ type scopedLimiter struct {
 
 func NewLimiter(defaultLimit int, windowLength time.Duration, options ...httprate.Option) *Limiter {
 	return &Limiter{
-		windowLength: windowLength,
-		options:      options,
+		windowLength:   windowLength,
+		options:        options,
+		defaultLimiter: httprate.Limit(defaultLimit, windowLength, options...),
 	}
 }
 
