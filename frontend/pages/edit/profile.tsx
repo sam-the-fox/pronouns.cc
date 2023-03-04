@@ -10,13 +10,9 @@ import { ReactSortable } from "react-sortablejs";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import Button, { ButtonStyle } from "../../components/Button";
-import {
-  EditableCard,
-  EditField,
-  PronounChoice,
-} from "../../components/Editable";
+import { EditableCard, EditField } from "../../components/Editable";
 import Loading from "../../components/Loading";
-import { fetchAPI, Field, MeUser } from "../../lib/api-fetch";
+import { fetchAPI, Field, MeUser, WordStatus } from "../../lib/api-fetch";
 import { themeState, userState } from "../../lib/state";
 import toast from "../../lib/toast";
 
@@ -31,23 +27,11 @@ export default function Index() {
         const field: EditField = {
           id: i,
           name: f.name,
-          pronouns: {},
+          values: [],
         };
 
-        f.favourite?.forEach((val) => {
-          field.pronouns[val] = PronounChoice.favourite;
-        });
-        f.okay?.forEach((val) => {
-          field.pronouns[val] = PronounChoice.okay;
-        });
-        f.jokingly?.forEach((val) => {
-          field.pronouns[val] = PronounChoice.jokingly;
-        });
-        f.friends_only?.forEach((val) => {
-          field.pronouns[val] = PronounChoice.friendsOnly;
-        });
-        f.avoid?.forEach((val) => {
-          field.pronouns[val] = PronounChoice.avoid;
+        f.entries?.forEach((entry) => {
+          field.values.push(entry);
         });
 
         return field;
@@ -67,7 +51,7 @@ export default function Index() {
 
     setFields([
       ...fields,
-      { id: lastId + 1, name: `Field #${lastId + 2}`, pronouns: {} },
+      { id: lastId + 1, name: `Field #${lastId + 2}`, values: [] },
     ]);
   };
 
@@ -176,43 +160,43 @@ export default function Index() {
                 e.target.attributes.getNamedItem("data-prev-value")?.value;
               if (!prev || !e.target.value) return;
 
-              const choice = field.pronouns[prev];
-              delete field.pronouns[prev];
-
-              field.pronouns[e.target.value] = choice;
+              const idx = field.values.findIndex((val) => val.value === prev);
+              if (idx !== -1) {
+                field.values[idx].value = e.target.value;
+              }
 
               setFields([...fields]);
             }}
             onAddPronoun={(pronoun) => {
-              field.pronouns[pronoun] = PronounChoice.okay;
+              field.values.push({ value: pronoun, status: WordStatus.Okay });
               setFields([...fields]);
             }}
-            onDeletePronoun={(e, pronoun) => {
-              delete field.pronouns[pronoun];
+            onDeletePronoun={(e, index) => {
+              delete field.values[index];
               setFields([...fields]);
             }}
             onChangeName={(e) => {
               field.name = e.target.value;
               setFields([...fields]);
             }}
-            onChangeFavourite={(e, entry: string) => {
-              field.pronouns[entry] = PronounChoice.favourite;
+            onChangeFavourite={(e, index) => {
+              field.values[index].status = WordStatus.Favourite;
               setFields([...fields]);
             }}
-            onChangeOkay={(e, entry: string) => {
-              field.pronouns[entry] = PronounChoice.okay;
+            onChangeOkay={(e, index) => {
+              field.values[index].status = WordStatus.Okay;
               setFields([...fields]);
             }}
-            onChangeJokingly={(e, entry: string) => {
-              field.pronouns[entry] = PronounChoice.jokingly;
+            onChangeJokingly={(e, index) => {
+              field.values[index].status = WordStatus.Jokingly;
               setFields([...fields]);
             }}
-            onChangeFriends={(e, entry: string) => {
-              field.pronouns[entry] = PronounChoice.friendsOnly;
+            onChangeFriends={(e, index) => {
+              field.values[index].status = WordStatus.FriendsOnly;
               setFields([...fields]);
             }}
-            onChangeAvoid={(e, entry: string) => {
-              field.pronouns[entry] = PronounChoice.avoid;
+            onChangeAvoid={(e, index) => {
+              field.values[index].status = WordStatus.Avoid;
               setFields([...fields]);
             }}
             onClickDelete={(_) => {
@@ -233,8 +217,10 @@ function fieldsEqual(arr1: EditField[], arr2: EditField[]) {
   if (!arr1.every((_, i) => arr1[i].id === arr2[i].id)) return false;
 
   return arr1.every((_, i) =>
-    Object.keys(arr1[i].pronouns).every(
-      (val) => arr1[i].pronouns[val] === arr2[i].pronouns[val]
+    arr1[i].values.every(
+      (val, j) =>
+        val.value === arr2[i].values[j].value &&
+        val.status === arr2[i].values[j].status
     )
   );
 }
@@ -247,32 +233,10 @@ async function updateUser(args: {
   const newFields = args.fields.map((editField) => {
     const field: Field = {
       name: editField.name,
-      favourite: [],
-      okay: [],
-      jokingly: [],
-      friends_only: [],
-      avoid: [],
+      entries: [],
     };
 
-    Object.keys(editField.pronouns).forEach((pronoun) => {
-      switch (editField.pronouns[pronoun]) {
-        case PronounChoice.favourite:
-          field.favourite!.push(pronoun);
-          break;
-        case PronounChoice.okay:
-          field.okay!.push(pronoun);
-          break;
-        case PronounChoice.jokingly:
-          field.jokingly!.push(pronoun);
-          break;
-        case PronounChoice.friendsOnly:
-          field.friends_only!.push(pronoun);
-          break;
-        case PronounChoice.avoid:
-          field.avoid!.push(pronoun);
-          break;
-      }
-    });
+    field.entries = [...editField.values];
 
     return field;
   });

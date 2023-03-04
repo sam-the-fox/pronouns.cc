@@ -12,19 +12,12 @@ import Card from "./Card";
 import TextInput from "./TextInput";
 import Button, { ButtonStyle } from "./Button";
 import { useState } from "react";
+import { WordStatus } from "../lib/api-fetch";
 
 export interface EditField {
   id: number;
   name: string;
-  pronouns: Record<string, PronounChoice>;
-}
-
-export enum PronounChoice {
-  favourite,
-  okay,
-  jokingly,
-  friendsOnly,
-  avoid,
+  values: Array<{ value: string; status: WordStatus }>;
 }
 
 type EditableCardProps = {
@@ -32,15 +25,15 @@ type EditableCardProps = {
   onChangeName: React.ChangeEventHandler<HTMLInputElement>;
   onChangePronoun: React.ChangeEventHandler<HTMLInputElement>;
   onAddPronoun(pronoun: string): void;
-  onDeletePronoun(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
+  onDeletePronoun(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
   onChangeFavourite(
     e: React.MouseEvent<HTMLButtonElement>,
-    entry: string
+    index: number
   ): void;
-  onChangeOkay(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
-  onChangeJokingly(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
-  onChangeFriends(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
-  onChangeAvoid(e: React.MouseEvent<HTMLButtonElement>, entry: string): void;
+  onChangeOkay(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
+  onChangeJokingly(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
+  onChangeFriends(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
+  onChangeAvoid(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
   onClickDelete: React.MouseEventHandler<HTMLButtonElement>;
 };
 
@@ -76,21 +69,20 @@ export function EditableCard(props: EditableCardProps) {
   return (
     <Card title={props.field.name} draggable footer={footer}>
       <ul>
-        {Object.keys(props.field.pronouns).map((pronoun, index) => {
-          const choice = props.field.pronouns[pronoun];
+        {props.field.values.map((value, index) => {
           return (
             <li className="flex justify-between my-1 items-center" key={index}>
               <TextInput
-                value={pronoun}
-                prevValue={pronoun}
+                value={value.value}
+                prevValue={value.value}
                 onChange={props.onChangePronoun}
               />
               <div className="rounded-md">
                 <button
                   type="button"
-                  onClick={(e) => props.onChangeFavourite(e, pronoun)}
+                  onClick={(e) => props.onChangeFavourite(e, index)}
                   className={`${
-                    choice == PronounChoice.favourite
+                    value.status == WordStatus.Favourite
                       ? "bg-slate-500"
                       : "bg-slate-600"
                   } text-white hover:bg-slate-400 p-2`}
@@ -99,9 +91,9 @@ export function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => props.onChangeOkay(e, pronoun)}
+                  onClick={(e) => props.onChangeOkay(e, index)}
                   className={`${
-                    choice == PronounChoice.okay
+                    value.status == WordStatus.Okay
                       ? "bg-slate-500"
                       : "bg-slate-600"
                   } text-white hover:bg-slate-400 p-2`}
@@ -110,9 +102,9 @@ export function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => props.onChangeJokingly(e, pronoun)}
+                  onClick={(e) => props.onChangeJokingly(e, index)}
                   className={`${
-                    choice == PronounChoice.jokingly
+                    value.status == WordStatus.Jokingly
                       ? "bg-slate-500"
                       : "bg-slate-600"
                   } text-white hover:bg-slate-400 p-2`}
@@ -121,9 +113,9 @@ export function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => props.onChangeFriends(e, pronoun)}
+                  onClick={(e) => props.onChangeFriends(e, index)}
                   className={`${
-                    choice == PronounChoice.friendsOnly
+                    value.status == WordStatus.FriendsOnly
                       ? "bg-slate-500"
                       : "bg-slate-600"
                   } text-white hover:bg-slate-400 p-2`}
@@ -132,9 +124,9 @@ export function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => props.onChangeAvoid(e, pronoun)}
+                  onClick={(e) => props.onChangeAvoid(e, index)}
                   className={`${
-                    choice == PronounChoice.avoid
+                    value.status == WordStatus.Avoid
                       ? "bg-slate-500"
                       : "bg-slate-600"
                   } text-white hover:bg-slate-400 p-2`}
@@ -143,7 +135,7 @@ export function EditableCard(props: EditableCardProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => props.onDeletePronoun(e, pronoun)}
+                  onClick={(e) => props.onDeletePronoun(e, index)}
                   className="bg-red-600 dark:bg-red-700 hover:bg-red-700 hover:dark:bg-red-800 p-2"
                 >
                   <Trash3 />
