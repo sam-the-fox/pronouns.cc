@@ -5,6 +5,7 @@ import {
   Heart,
   People,
   Plus,
+  ThreeDotsVertical,
   Trash3,
 } from "react-bootstrap-icons";
 
@@ -13,11 +14,18 @@ import TextInput from "./TextInput";
 import Button, { ButtonStyle } from "./Button";
 import { useState } from "react";
 import { WordStatus } from "../lib/api-fetch";
+import { ReactSortable } from "react-sortablejs";
 
 export interface EditField {
   id: number;
   name: string;
-  values: Array<{ value: string; status: WordStatus }>;
+  values: EditFieldValue[];
+}
+
+export interface EditFieldValue {
+  id: number;
+  value: string;
+  status: WordStatus;
 }
 
 type EditableCardProps = {
@@ -35,6 +43,7 @@ type EditableCardProps = {
   onChangeFriends(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
   onChangeAvoid(e: React.MouseEvent<HTMLButtonElement>, index: number): void;
   onClickDelete: React.MouseEventHandler<HTMLButtonElement>;
+  onChangeOrder(newState: EditFieldValue[]): void;
 };
 
 export function EditableCard(props: EditableCardProps) {
@@ -68,16 +77,21 @@ export function EditableCard(props: EditableCardProps) {
 
   return (
     <Card title={props.field.name} draggable footer={footer}>
-      <ul>
+      <ReactSortable
+        handle=".entry-handle"
+        list={props.field.values}
+        setList={props.onChangeOrder}
+      >
         {props.field.values.map((value, index) => {
           return (
             <li className="flex justify-between my-1 items-center" key={index}>
+              <ThreeDotsVertical className="entry-handle hover:cursor-grab" />
               <TextInput
                 value={value.value}
                 prevValue={value.value}
                 onChange={props.onChangePronoun}
               />
-              <div className="rounded-md">
+              <div>
                 <button
                   type="button"
                   onClick={(e) => props.onChangeFavourite(e, index)}
@@ -144,7 +158,7 @@ export function EditableCard(props: EditableCardProps) {
             </li>
           );
         })}
-      </ul>
+      </ReactSortable>
     </Card>
   );
 }

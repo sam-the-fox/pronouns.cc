@@ -10,7 +10,11 @@ import { ReactSortable } from "react-sortablejs";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import Button, { ButtonStyle } from "../../components/Button";
-import { EditableCard, EditField } from "../../components/Editable";
+import {
+  EditableCard,
+  EditField,
+  EditFieldValue,
+} from "../../components/Editable";
 import Loading from "../../components/Loading";
 import { fetchAPI, Field, MeUser, WordStatus } from "../../lib/api-fetch";
 import { themeState, userState } from "../../lib/state";
@@ -30,8 +34,8 @@ export default function Index() {
           values: [],
         };
 
-        f.entries?.forEach((entry) => {
-          field.values.push(entry);
+        f.entries?.forEach((entry, idx) => {
+          field.values.push({ ...entry, id: idx });
         });
 
         return field;
@@ -168,7 +172,15 @@ export default function Index() {
               setFields([...fields]);
             }}
             onAddPronoun={(pronoun) => {
-              field.values.push({ value: pronoun, status: WordStatus.Okay });
+              field.values.push({
+                id: field.values.length + 1,
+                value: pronoun,
+                status: WordStatus.Okay,
+              });
+              setFields([...fields]);
+            }}
+            onChangeOrder={(newState: EditFieldValue[]) => {
+              field.values = newState;
               setFields([...fields]);
             }}
             onDeletePronoun={(e, index) => {

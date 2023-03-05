@@ -7,7 +7,6 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
-	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
@@ -89,20 +88,18 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 
 // DiscordUser fetches a user by Discord user ID.
 func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err error) {
-	sql, args, err := sq.Select("*").From("users").Where("discord = ?", discordID).ToSql()
+	sql, args, err := sq.Select("id").From("users").Where("discord = ?", discordID).ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
 
-	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	var id xid.ID
+	err = db.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
-		if errors.Cause(err) == pgx.ErrNoRows {
-			return u, ErrUserNotFound
-		}
-		return u, errors.Cause(err)
+		return u, errors.Wrap(err, "executing id query")
 	}
 
-	return u, nil
+	return db.getUser(ctx, db, id)
 }
 
 func (u *User) UpdateFromDiscord(ctx context.Context, db querier, du *discordgo.User) error {
