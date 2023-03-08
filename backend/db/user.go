@@ -3,11 +3,13 @@ package db
 import (
 	"context"
 	"regexp"
+	"time"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
@@ -28,6 +30,10 @@ type User struct {
 	DiscordUsername *string
 
 	MaxInvites int
+
+	DeletedAt    *time.Time
+	SelfDelete   *bool
+	DeleteReason *string
 }
 
 // usernames must match this regex
@@ -134,6 +140,11 @@ func (db *DB) getUser(ctx context.Context, q querier, id xid.ID) (u User, err er
 		return u, errors.Wrap(err, "getting user from database")
 	}
 
+	var deletedAt *time.Time
+	if qu.DeletedAt.Status == pgtype.Present {
+		deletedAt = &qu.DeletedAt.Time
+	}
+
 	u = User{
 		ID:              id,
 		Username:        qu.Username,
@@ -146,6 +157,9 @@ func (db *DB) getUser(ctx context.Context, q querier, id xid.ID) (u User, err er
 		Discord:         qu.Discord,
 		DiscordUsername: qu.DiscordUsername,
 		MaxInvites:      int(qu.MaxInvites),
+		DeletedAt:       deletedAt,
+		SelfDelete:      qu.SelfDelete,
+		DeleteReason:    qu.DeleteReason,
 	}
 
 	return u, nil
@@ -282,4 +296,21 @@ func (db *DB) UpdateUser(
 		return u, errors.Wrap(err, "getting updated user")
 	}
 	return u, nil
+}
+
+func (db *DB) DeleteUser(ctx context.Context, q querier, id xid.ID, selfDelete bool, reason string) error {
+	builder := sq.Update("users").Set("deleted_at", time.Now().UTC()).Set("self_delete", selfDelete).Where("id = ?", id)
+	if !selfDelete {
+		builder = builder.Set("delete_reason", reason)
+	}
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = q.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
 }

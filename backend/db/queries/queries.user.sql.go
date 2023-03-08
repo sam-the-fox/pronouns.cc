@@ -5,23 +5,27 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 )
 
 const getUserByIDSQL = `SELECT * FROM users WHERE id = $1;`
 
 type GetUserByIDRow struct {
-	ID              string         `json:"id"`
-	Username        string         `json:"username"`
-	DisplayName     *string        `json:"display_name"`
-	Bio             *string        `json:"bio"`
-	AvatarUrls      []string       `json:"avatar_urls"`
-	Links           []string       `json:"links"`
-	Discord         *string        `json:"discord"`
-	DiscordUsername *string        `json:"discord_username"`
-	MaxInvites      int32          `json:"max_invites"`
-	Names           []FieldEntry   `json:"names"`
-	Pronouns        []PronounEntry `json:"pronouns"`
+	ID              string             `json:"id"`
+	Username        string             `json:"username"`
+	DisplayName     *string            `json:"display_name"`
+	Bio             *string            `json:"bio"`
+	AvatarUrls      []string           `json:"avatar_urls"`
+	Links           []string           `json:"links"`
+	Discord         *string            `json:"discord"`
+	DiscordUsername *string            `json:"discord_username"`
+	MaxInvites      int32              `json:"max_invites"`
+	Names           []FieldEntry       `json:"names"`
+	Pronouns        []PronounEntry     `json:"pronouns"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+	SelfDelete      *bool              `json:"self_delete"`
+	DeleteReason    *string            `json:"delete_reason"`
 }
 
 // GetUserByID implements Querier.GetUserByID.
@@ -31,7 +35,7 @@ func (q *DBQuerier) GetUserByID(ctx context.Context, id string) (GetUserByIDRow,
 	var item GetUserByIDRow
 	namesArray := q.types.newFieldEntryArray()
 	pronounsArray := q.types.newPronounEntryArray()
-	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray); err != nil {
+	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray, &item.DeletedAt, &item.SelfDelete, &item.DeleteReason); err != nil {
 		return item, fmt.Errorf("query GetUserByID: %w", err)
 	}
 	if err := namesArray.AssignTo(&item.Names); err != nil {
@@ -54,7 +58,7 @@ func (q *DBQuerier) GetUserByIDScan(results pgx.BatchResults) (GetUserByIDRow, e
 	var item GetUserByIDRow
 	namesArray := q.types.newFieldEntryArray()
 	pronounsArray := q.types.newPronounEntryArray()
-	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray); err != nil {
+	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray, &item.DeletedAt, &item.SelfDelete, &item.DeleteReason); err != nil {
 		return item, fmt.Errorf("scan GetUserByIDBatch row: %w", err)
 	}
 	if err := namesArray.AssignTo(&item.Names); err != nil {
@@ -69,17 +73,20 @@ func (q *DBQuerier) GetUserByIDScan(results pgx.BatchResults) (GetUserByIDRow, e
 const getUserByUsernameSQL = `SELECT * FROM users WHERE username = $1;`
 
 type GetUserByUsernameRow struct {
-	ID              string         `json:"id"`
-	Username        string         `json:"username"`
-	DisplayName     *string        `json:"display_name"`
-	Bio             *string        `json:"bio"`
-	AvatarUrls      []string       `json:"avatar_urls"`
-	Links           []string       `json:"links"`
-	Discord         *string        `json:"discord"`
-	DiscordUsername *string        `json:"discord_username"`
-	MaxInvites      int32          `json:"max_invites"`
-	Names           []FieldEntry   `json:"names"`
-	Pronouns        []PronounEntry `json:"pronouns"`
+	ID              string             `json:"id"`
+	Username        string             `json:"username"`
+	DisplayName     *string            `json:"display_name"`
+	Bio             *string            `json:"bio"`
+	AvatarUrls      []string           `json:"avatar_urls"`
+	Links           []string           `json:"links"`
+	Discord         *string            `json:"discord"`
+	DiscordUsername *string            `json:"discord_username"`
+	MaxInvites      int32              `json:"max_invites"`
+	Names           []FieldEntry       `json:"names"`
+	Pronouns        []PronounEntry     `json:"pronouns"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+	SelfDelete      *bool              `json:"self_delete"`
+	DeleteReason    *string            `json:"delete_reason"`
 }
 
 // GetUserByUsername implements Querier.GetUserByUsername.
@@ -89,7 +96,7 @@ func (q *DBQuerier) GetUserByUsername(ctx context.Context, username string) (Get
 	var item GetUserByUsernameRow
 	namesArray := q.types.newFieldEntryArray()
 	pronounsArray := q.types.newPronounEntryArray()
-	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray); err != nil {
+	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray, &item.DeletedAt, &item.SelfDelete, &item.DeleteReason); err != nil {
 		return item, fmt.Errorf("query GetUserByUsername: %w", err)
 	}
 	if err := namesArray.AssignTo(&item.Names); err != nil {
@@ -112,7 +119,7 @@ func (q *DBQuerier) GetUserByUsernameScan(results pgx.BatchResults) (GetUserByUs
 	var item GetUserByUsernameRow
 	namesArray := q.types.newFieldEntryArray()
 	pronounsArray := q.types.newPronounEntryArray()
-	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray); err != nil {
+	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray, &item.DeletedAt, &item.SelfDelete, &item.DeleteReason); err != nil {
 		return item, fmt.Errorf("scan GetUserByUsernameBatch row: %w", err)
 	}
 	if err := namesArray.AssignTo(&item.Names); err != nil {
@@ -137,17 +144,20 @@ type UpdateUserNamesPronounsParams struct {
 }
 
 type UpdateUserNamesPronounsRow struct {
-	ID              string         `json:"id"`
-	Username        string         `json:"username"`
-	DisplayName     *string        `json:"display_name"`
-	Bio             *string        `json:"bio"`
-	AvatarUrls      []string       `json:"avatar_urls"`
-	Links           []string       `json:"links"`
-	Discord         *string        `json:"discord"`
-	DiscordUsername *string        `json:"discord_username"`
-	MaxInvites      int32          `json:"max_invites"`
-	Names           []FieldEntry   `json:"names"`
-	Pronouns        []PronounEntry `json:"pronouns"`
+	ID              string             `json:"id"`
+	Username        string             `json:"username"`
+	DisplayName     *string            `json:"display_name"`
+	Bio             *string            `json:"bio"`
+	AvatarUrls      []string           `json:"avatar_urls"`
+	Links           []string           `json:"links"`
+	Discord         *string            `json:"discord"`
+	DiscordUsername *string            `json:"discord_username"`
+	MaxInvites      int32              `json:"max_invites"`
+	Names           []FieldEntry       `json:"names"`
+	Pronouns        []PronounEntry     `json:"pronouns"`
+	DeletedAt       pgtype.Timestamptz `json:"deleted_at"`
+	SelfDelete      *bool              `json:"self_delete"`
+	DeleteReason    *string            `json:"delete_reason"`
 }
 
 // UpdateUserNamesPronouns implements Querier.UpdateUserNamesPronouns.
@@ -157,7 +167,7 @@ func (q *DBQuerier) UpdateUserNamesPronouns(ctx context.Context, params UpdateUs
 	var item UpdateUserNamesPronounsRow
 	namesArray := q.types.newFieldEntryArray()
 	pronounsArray := q.types.newPronounEntryArray()
-	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray); err != nil {
+	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray, &item.DeletedAt, &item.SelfDelete, &item.DeleteReason); err != nil {
 		return item, fmt.Errorf("query UpdateUserNamesPronouns: %w", err)
 	}
 	if err := namesArray.AssignTo(&item.Names); err != nil {
@@ -180,7 +190,7 @@ func (q *DBQuerier) UpdateUserNamesPronounsScan(results pgx.BatchResults) (Updat
 	var item UpdateUserNamesPronounsRow
 	namesArray := q.types.newFieldEntryArray()
 	pronounsArray := q.types.newPronounEntryArray()
-	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray); err != nil {
+	if err := row.Scan(&item.ID, &item.Username, &item.DisplayName, &item.Bio, &item.AvatarUrls, &item.Links, &item.Discord, &item.DiscordUsername, &item.MaxInvites, namesArray, pronounsArray, &item.DeletedAt, &item.SelfDelete, &item.DeleteReason); err != nil {
 		return item, fmt.Errorf("scan UpdateUserNamesPronounsBatch row: %w", err)
 	}
 	if err := namesArray.AssignTo(&item.Names); err != nil {

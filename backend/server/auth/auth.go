@@ -18,6 +18,9 @@ type Claims struct {
 	TokenID     xid.ID `json:"jti"`
 	UserIsAdmin bool   `json:"adm"`
 
+	// APIToken specifies whether this token was generated for the API or for the website.
+	// API tokens cannot perform some destructive actions, such as DELETE /users/@me.
+	APIToken bool `json:"atn"`
 	// TokenWrite specifies whether this token can be used for write actions.
 	// If set to false, this token can only be used for read actions.
 	TokenWrite bool `json:"twr"`
@@ -48,7 +51,7 @@ const ExpireDays = 30
 
 // CreateToken creates a token for the given user ID.
 // It expires after 30 days.
-func (v *Verifier) CreateToken(userID, tokenID xid.ID, isAdmin bool, isWriteToken bool) (token string, err error) {
+func (v *Verifier) CreateToken(userID, tokenID xid.ID, isAdmin bool, isAPIToken bool, isWriteToken bool) (token string, err error) {
 	now := time.Now()
 	expires := now.Add(ExpireDays * 24 * time.Hour)
 
@@ -56,6 +59,7 @@ func (v *Verifier) CreateToken(userID, tokenID xid.ID, isAdmin bool, isWriteToke
 		UserID:      userID,
 		TokenID:     tokenID,
 		UserIsAdmin: isAdmin,
+		APIToken:    isAPIToken,
 		TokenWrite:  isWriteToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "pronouns",

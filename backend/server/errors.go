@@ -83,6 +83,7 @@ const (
 	ErrInvitesDisabled    = 1008 // invites are disabled (unneeded)
 	ErrInviteLimitReached = 1009 // invite limit reached (when creating invites)
 	ErrInviteAlreadyUsed  = 1010 // invite already used (when signing up)
+	ErrDeletionPending    = 1011 // own user deletion pending, returned with undo code
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -94,7 +95,8 @@ const (
 	ErrNotOwnMember       = 3004
 
 	// General request error codes
-	ErrRequestTooBig = 4001
+	ErrRequestTooBig      = 4001
+	ErrMissingPermissions = 4002
 )
 
 var errCodeMessages = map[int]string{
@@ -115,6 +117,7 @@ var errCodeMessages = map[int]string{
 	ErrInvitesDisabled:    "Invites are disabled",
 	ErrInviteLimitReached: "Your account has reached the invite limit",
 	ErrInviteAlreadyUsed:  "That invite code has already been used",
+	ErrDeletionPending:    "Your account is pending deletion",
 
 	ErrUserNotFound: "User not found",
 
@@ -123,7 +126,8 @@ var errCodeMessages = map[int]string{
 	ErrMemberNameInUse:    "Member name already in use",
 	ErrNotOwnMember:       "Not your member",
 
-	ErrRequestTooBig: "Request too big (max 2 MB)",
+	ErrRequestTooBig:      "Request too big (max 2 MB)",
+	ErrMissingPermissions: "Your account or current token is missing required permissions for this action",
 }
 
 var errCodeStatuses = map[int]int{
@@ -144,6 +148,7 @@ var errCodeStatuses = map[int]int{
 	ErrInvitesDisabled:    http.StatusForbidden,
 	ErrInviteLimitReached: http.StatusForbidden,
 	ErrInviteAlreadyUsed:  http.StatusBadRequest,
+	ErrDeletionPending:    http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 
@@ -152,5 +157,6 @@ var errCodeStatuses = map[int]int{
 	ErrMemberNameInUse:    http.StatusBadRequest,
 	ErrNotOwnMember:       http.StatusForbidden,
 
-	ErrRequestTooBig: http.StatusBadRequest,
+	ErrRequestTooBig:      http.StatusBadRequest,
+	ErrMissingPermissions: http.StatusForbidden,
 }

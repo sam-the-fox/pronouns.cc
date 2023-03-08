@@ -18,6 +18,7 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.With(server.MustAuth).Group(func(r chi.Router) {
 			r.Get("/@me", server.WrapHandler(s.getMeUser))
 			r.Patch("/@me", server.WrapHandler(s.patchUser))
+			r.Delete("/@me", server.WrapHandler(s.deleteUser))
 		})
 	})
 }
