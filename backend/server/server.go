@@ -18,6 +18,9 @@ import (
 // Revision is the git commit, filled at build time
 var Revision = "[unknown]"
 
+// Repository is the URL of the git repository
+const Repository = "https://codeberg.org/u1f320/pronouns.cc"
+
 type Server struct {
 	Router *chi.Mux
 
