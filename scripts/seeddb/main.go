@@ -48,16 +48,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = pg.SetUserNames(ctx, tx, u.ID, []db.Name{
-		{Name: "testing 1", Status: db.StatusFavourite},
-		{Name: "testing 2", Status: db.StatusOkay},
-	})
-	if err != nil {
-		fmt.Println("error setting names:", err)
-		os.Exit(1)
-	}
-
-	err = pg.SetUserPronouns(ctx, tx, u.ID, []db.Pronoun{
+	err = pg.SetUserNamesPronouns(ctx, tx, u.ID, []db.FieldEntry{
+		{Value: "testing 1", Status: db.StatusFavourite},
+		{Value: "testing 2", Status: db.StatusOkay},
+	}, []db.PronounEntry{
 		{Pronouns: "it/it/its/its/itself", DisplayText: ptr("it/its"), Status: db.StatusFavourite},
 		{Pronouns: "they/them/their/theirs/themself", Status: db.StatusOkay},
 	})
@@ -68,44 +62,54 @@ func main() {
 
 	err = pg.SetUserFields(ctx, tx, u.ID, []db.Field{
 		{
-			Name:        "Field 1",
-			Favourite:   []string{"Favourite 1"},
-			Okay:        []string{"Okay 1"},
-			Jokingly:    []string{"Jokingly 1"},
-			FriendsOnly: []string{"Friends only 1"},
-			Avoid:       []string{"Avoid 1"},
+			Name: "Field 1",
+			Entries: []db.FieldEntry{
+				{Value: "Favourite 1", Status: db.StatusFavourite},
+				{Value: "Okay 1", Status: db.StatusOkay},
+				{Value: "Jokingly 1", Status: db.StatusJokingly},
+				{Value: "Friends only 1", Status: db.StatusFriendsOnly},
+				{Value: "Avoid 1", Status: db.StatusAvoid},
+			},
 		},
 		{
-			Name:        "Field 2",
-			Favourite:   []string{"Favourite 2"},
-			Okay:        []string{"Okay 2"},
-			Jokingly:    []string{"Jokingly 2"},
-			FriendsOnly: []string{"Friends only 2"},
-			Avoid:       []string{"Avoid 2"},
+			Name: "Field 2",
+			Entries: []db.FieldEntry{
+				{Value: "Favourite 2", Status: db.StatusFavourite},
+				{Value: "Okay 2", Status: db.StatusOkay},
+				{Value: "Jokingly 2", Status: db.StatusJokingly},
+				{Value: "Friends only 2", Status: db.StatusFriendsOnly},
+				{Value: "Avoid 2", Status: db.StatusAvoid},
+			},
 		},
 		{
-			Name:        "Field 3",
-			Favourite:   []string{"Favourite 3"},
-			Okay:        []string{"Okay 3"},
-			Jokingly:    []string{"Jokingly 3"},
-			FriendsOnly: []string{"Friends only 3"},
-			Avoid:       []string{"Avoid 3"},
+			Name: "Field 3",
+			Entries: []db.FieldEntry{
+				{Value: "Favourite 3", Status: db.StatusFavourite},
+				{Value: "Okay 3", Status: db.StatusOkay},
+				{Value: "Jokingly 3", Status: db.StatusJokingly},
+				{Value: "Friends only 3", Status: db.StatusFriendsOnly},
+				{Value: "Avoid 3", Status: db.StatusAvoid},
+			},
 		},
 		{
-			Name:        "Field 4",
-			Favourite:   []string{"Favourite 4"},
-			Okay:        []string{"Okay 4"},
-			Jokingly:    []string{"Jokingly 4"},
-			FriendsOnly: []string{"Friends only 4"},
-			Avoid:       []string{"Avoid 4"},
+			Name: "Field 4",
+			Entries: []db.FieldEntry{
+				{Value: "Favourite 4", Status: db.StatusFavourite},
+				{Value: "Okay 4", Status: db.StatusOkay},
+				{Value: "Jokingly 4", Status: db.StatusJokingly},
+				{Value: "Friends only 4", Status: db.StatusFriendsOnly},
+				{Value: "Avoid 4", Status: db.StatusAvoid},
+			},
 		},
 		{
-			Name:        "Field 5",
-			Favourite:   []string{"Favourite 5"},
-			Okay:        []string{"Okay 5"},
-			Jokingly:    []string{"Jokingly 5"},
-			FriendsOnly: []string{"Friends only 5"},
-			Avoid:       []string{"Avoid 5"},
+			Name: "Field 5",
+			Entries: []db.FieldEntry{
+				{Value: "Favourite 5", Status: db.StatusFavourite},
+				{Value: "Okay 5", Status: db.StatusOkay},
+				{Value: "Jokingly 5", Status: db.StatusJokingly},
+				{Value: "Friends only 5", Status: db.StatusFriendsOnly},
+				{Value: "Avoid 5", Status: db.StatusAvoid},
+			},
 		},
 	})
 	if err != nil {
