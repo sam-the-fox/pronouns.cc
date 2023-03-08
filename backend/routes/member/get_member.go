@@ -77,6 +77,10 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	if u.DeletedAt != nil {
+		return server.APIError{Code: server.ErrMemberNotFound}
+	}
+
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
 		return err
@@ -94,6 +98,10 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{
 			Code: server.ErrUserNotFound,
 		}
+	}
+
+	if u.DeletedAt != nil {
+		return server.APIError{Code: server.ErrUserNotFound}
 	}
 
 	m, err := s.DB.UserMember(ctx, u.ID, chi.URLParam(r, "memberRef"))

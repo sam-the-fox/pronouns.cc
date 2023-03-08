@@ -104,6 +104,10 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	if u.DeletedAt != nil {
+		return server.APIError{Code: server.ErrUserNotFound}
+	}
+
 	fields, err := s.DB.UserFields(ctx, u.ID)
 	if err != nil {
 		log.Errorf("Error getting user fields: %v", err)

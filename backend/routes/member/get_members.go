@@ -44,6 +44,10 @@ func (s *Server) getUserMembers(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	if u.DeletedAt != nil {
+		return server.APIError{Code: server.ErrUserNotFound}
+	}
+
 	ms, err := s.DB.UserMembers(ctx, u.ID)
 	if err != nil {
 		return err
