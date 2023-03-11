@@ -102,6 +102,10 @@ func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err er
 	var id xid.ID
 	err = db.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
 		return u, errors.Wrap(err, "executing id query")
 	}
 

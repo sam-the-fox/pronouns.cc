@@ -50,6 +50,14 @@ type APIError struct {
 }
 
 func (e APIError) Error() string {
+	if e.Message == "" {
+		e.Message = errCodeMessages[e.Code]
+	}
+
+	if e.Details != "" {
+		return fmt.Sprintf("%s (code: %d) (%s)", e.Message, e.Code, e.Details)
+	}
+
 	return fmt.Sprintf("%s (code: %d)", e.Message, e.Code)
 }
 
