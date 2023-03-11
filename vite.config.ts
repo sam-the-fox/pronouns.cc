@@ -13,8 +13,11 @@ export default defineConfig({
       "/media": {
         target: "http://localhost:9000",
         changeOrigin: true,
-		rewrite: (path) => path.replace(/^\/media/, "/pronouns.cc")
+        rewrite: (path) => path.replace(/^\/media/, "/pronouns.cc"),
       },
     },
+  },
+  ssr: {
+    noExternal: ["@popperjs/core"],
   },
 });

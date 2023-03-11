@@ -1,7 +1,7 @@
-import { fetchAPI } from "$lib/api/fetch";
+import { apiFetch } from "$lib/api/fetch";
 
 export const load = async () => {
-  const resp = await fetchAPI<UrlsResponse>("/auth/urls", {
+  const resp = await apiFetch<UrlsResponse>("/auth/urls", {
     method: "POST",
     body: {
       callback_domain: process.env.ORIGIN,
