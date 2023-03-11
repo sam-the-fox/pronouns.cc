@@ -7,19 +7,19 @@ A work-in-progress site to share your names, pronouns, and other preferred terms
 - API server is written in Go with the [chi](https://github.com/go-chi/chi) router
 - Persistent data is stored in PostgreSQL
 - Temporary data is stored in Redis
-- The frontend is written in TypeScript with React, using [Next](https://nextjs.org/) for server-side rendering
+- The frontend is written in TypeScript with Svelte, using [SvelteKit](https://kit.svelte.dev/) for server-side rendering
 - Avatars are stored in S3-compatible storage ([MinIO](https://github.com/minio/minio) for development)
 
 ## Development
 
-When working on the frontend, run the API and then use `yarn dev` in `frontend/` for hot reloading.
+When working on the frontend, run the API and then use `pnpm dev` in `frontend/` for hot reloading.
 
-Note that the Next.js server assumes that the backend listens on `:8080` and MinIO listens on `:9000`.
-If these ports differ on your development environment, you must edit `next.config.js`.
+Note that the Vite dev server assumes that the backend listens on `:8080` and MinIO listens on `:9000`.
+If these ports differ on your development environment, you must edit `vite.config.ts`.
 
 ## Building
 
-Run `make backend` to build the API server, then run `yarn build` in `frontend/`.
+Run `make backend` to build the API server, then run `pnpm build` in `frontend/`.
 
 ## Running
 
@@ -48,10 +48,11 @@ Requirements:
    For example: `create user pronouns with password 'password'; create database pronouns with owner pronouns;`
 2. Create a `.env` file in the repository root containing at least `HMAC_KEY`, `DATABASE_URL`, `REDIS`, `PORT`, and `MINIO_ENDPOINT` keys.
    (See below for an example)
-3. Run `make migrate` to initialize the database, then optionally `make seeddb` to insert a test user.
-4. Run `go run -v ./backend` to run the backend.
-5. Create `frontend/.env` with the following content: `API_BASE=http://localhost:8080`
-6. cd into the `frontend` directory and run `yarn dev` to run the frontend.
+3. Create a `.env` file in the `frontend/` directory containing `DOMAIN=http://localhost:5173`.
+4. Run `make migrate` to initialize the database, then optionally `make seeddb` to insert a test user.
+5. Run `go run -v ./backend` to run the backend.
+6. Create `frontend/.env` with the following content: `API_BASE=http://localhost:8080`
+7. cd into the `frontend` directory and run `pnpm dev` to run the frontend.
 
 ```sh
 # Example env file
