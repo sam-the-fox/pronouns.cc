@@ -2,34 +2,65 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
 
-  import { Collapse,Icon,  Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "sveltestrap";
+  import {
+    Collapse,
+    Icon,
+    Nav,
+    Navbar,
+    NavbarBrand,
+    NavbarToggler,
+    NavItem,
+    NavLink,
+  } from "sveltestrap";
 
   import Logo from "./Logo.svelte";
+  import { userStore, themeStore } from "$lib/store";
+  import { ErrorCode, type APIError, type MeUser } from "$lib/api/entities";
+  import { apiFetch } from "$lib/api/fetch";
 
-  let darkTheme: boolean = false;
+  let theme: string;
+  let currentUser: MeUser | null;
   let showMenu: boolean = false;
 
+  $: currentUser = $userStore;
+  $: theme = $themeStore;
+
   onMount(() => {
-    darkTheme =
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const localUser = localStorage.getItem("pronouns-user");
+    userStore.set(localUser ? JSON.parse(localUser) : null);
+
+    const token = localStorage.getItem("pronouns-token");
+    if (token) {
+      apiFetch<MeUser>("/users/@me", { token })
+        .then((user) => {
+          userStore.set(user);
+          localStorage.setItem("pronouns-user", JSON.stringify(user));
+        })
+        .catch((e) => {
+          console.log("getting /users/@me:", e);
+
+          if (
+            (e as APIError).code == ErrorCode.InvalidToken ||
+            (e as APIError).code == ErrorCode.Forbidden
+          ) {
+            localStorage.removeItem("pronouns-token");
+            localStorage.removeItem("pronouns-user");
+          }
+        });
+    }
   });
 
-  $: updateTheme(darkTheme);
+  $: updateTheme(theme);
 
-  const updateTheme = (isDark: boolean) => {
+  const updateTheme = (newTheme: string) => {
     if (!browser) return;
 
-    if (isDark) {
-      document.documentElement.setAttribute("data-bs-theme", "dark");
-    } else {
-      document.documentElement.setAttribute("data-bs-theme", "light");
-    }
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+    document.documentElement.setAttribute("data-bs-theme", newTheme);
+    localStorage.setItem("pronouns-theme", newTheme);
   };
 
   const toggleTheme = () => {
-    darkTheme = !darkTheme;
+    themeStore.set(theme === "dark" ? "light" : "dark")
   };
   const toggleMenu = () => {
     showMenu = !showMenu;
@@ -37,9 +68,9 @@
 </script>
 
 <Navbar
-  color={darkTheme ? "dark" : "light"}
-  light={!darkTheme}
-  dark={darkTheme}
+  color={theme === "dark" ? "dark" : "light"}
+  light={theme !== "dark"}
+  dark={theme === "dark"}
   expand="lg"
   class="mb-4"
 >
@@ -48,15 +79,21 @@
   <Collapse isOpen={showMenu} navbar expand="lg">
     <Nav class="ms-auto" navbar>
       <NavItem>
-        <NavLink href="/login">Log in</NavLink>
+        {#if currentUser}
+          <NavLink href="/@{currentUser.name}">@{currentUser.name}</NavLink>
+          <NavLink href="/settings">Settings</NavLink>
+          <NavLink href="/logout">Log out</NavLink>
+        {:else}
+          <NavLink href="/login">Log in</NavLink>
+        {/if}
       </NavItem>
       <NavItem>
         <NavLink
           on:click={() => toggleTheme()}
-          title={darkTheme ? "Switch to light mode" : "Switch to dark mode"}
+          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         >
-          <Icon name={darkTheme ? "sun" : "moon-stars"} height="24" />
-          {darkTheme ? "Light mode" : "Dark mode"}
+          <Icon name={theme === "dark" ? "sun" : "moon-stars"} height="24" />
+          {theme === "dark" ? "Light mode" : "Dark mode"}
         </NavLink>
       </NavItem>
     </Nav>

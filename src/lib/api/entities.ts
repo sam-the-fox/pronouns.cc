@@ -49,6 +49,22 @@ export interface PartialMember {
   avatar_urls: string[] | null;
 }
 
+export interface Member extends PartialMember {
+  bio: string | null;
+  links: string | null;
+  names: FieldEntry[];
+  pronouns: Pronoun[];
+  fields: Field[];
+  user: MemberPartialUser;
+}
+
+export interface MemberPartialUser {
+  id: string;
+  name: string;
+  display_name: string | null;
+  avatar_urls: string[] | null;
+}
+
 export interface APIError {
   code: ErrorCode;
   message?: string;

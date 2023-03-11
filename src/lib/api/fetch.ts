@@ -1,12 +1,12 @@
 import type { APIError } from "./entities";
+import { PUBLIC_BASE_URL } from "$env/static/public";
 
 export async function apiFetch<T>(
   path: string,
   { method, body, token }: { method?: string; body?: any; token?: string },
 ) {
-  const apiBase = typeof process !== "undefined" ? process.env.ORIGIN : "";
 
-  const resp = await fetch(`${apiBase}/api/v1${path}`, {
+  const resp = await fetch(`${PUBLIC_BASE_URL}/api/v1${path}`, {
     method: method || "GET",
     headers: {
       ...(token ? { Authorization: token } : {}),

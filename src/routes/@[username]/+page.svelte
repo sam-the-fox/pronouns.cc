@@ -6,7 +6,9 @@
 
   import type { PageData } from "./$types";
   import StatusIcon from "$lib/components/StatusIcon.svelte";
-    import PronounLink from "$lib/components/PronounLink.svelte";
+  import PronounLink from "$lib/components/PronounLink.svelte";
+  import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
+  import FallbackImage from "$lib/components/FallbackImage.svelte";
 
   export let data: PageData;
 
@@ -21,13 +23,13 @@
 <div class="container">
   <div class="grid">
     <div class="row">
-      {#if data.avatar_urls}
-        <div class="col-md" />
-      {/if}
+      <div class="col-md text-center">
+        <FallbackImage urls={data.avatar_urls} alt="Avatar for @{data.name}" />
+      </div>
       <div class="col-md">
         {#if data.display_name}
           <h2>{data.display_name}</h2>
-          <h4>@{data.name}</h4>
+          <h5 class="text-body-secondary">@{data.name}</h5>
         {:else}
           <h2>@{data.name}</h2>
         {/if}
@@ -64,7 +66,7 @@
             {#each data.pronouns as pronouns}
               <li>
                 <StatusIcon status={pronouns.status} />
-                <PronounLink pronouns={pronouns} />
+                <PronounLink {pronouns} />
               </li>
             {/each}
           </ul>
@@ -78,6 +80,19 @@
         <div class="col">
           <FieldCard {field} />
         </div>
+      {/each}
+    </div>
+  {/if}
+  {#if data.members}
+    <div class="row">
+      <div class="col">
+        <hr />
+        <h2>Members</h2>
+      </div>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 text-center">
+      {#each data.members as member}
+        <PartialMemberCard user={data} {member} />
       {/each}
     </div>
   {/if}
