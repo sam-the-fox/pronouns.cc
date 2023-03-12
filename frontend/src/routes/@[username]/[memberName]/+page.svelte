@@ -49,7 +49,7 @@
         </div>
       {/if}
     </div>
-    <div class="row">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
       {#if data.names}
         <div class="col-md">
           <h4>Names</h4>
@@ -73,15 +73,11 @@
           </ul>
         </div>
       {/if}
-    </div>
-  </div>
-  {#if data.fields}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
       {#each data.fields as field}
         <div class="col">
           <FieldCard {field} />
         </div>
       {/each}
     </div>
-  {/if}
+  </div>
 </div>

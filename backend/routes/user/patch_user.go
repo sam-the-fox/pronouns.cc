@@ -23,7 +23,6 @@ type PatchUserRequest struct {
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
-// TODO: could this be refactored to be less repetitive? names, pronouns, and fields are all validated in the same way
 func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 

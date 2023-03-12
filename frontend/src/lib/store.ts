@@ -3,8 +3,8 @@ import { browser } from "$app/environment";
 
 import type { MeUser } from "./api/entities";
 
-export const userStore = writable<MeUser | null>(null);
-export const tokenStore = writable<string | null>(null);
+const initialUserValue = null;
+export const userStore = writable<MeUser | null>(initialUserValue);
 
 let defaultThemeValue = "dark";
 const initialThemeValue = browser

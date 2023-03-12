@@ -9,7 +9,7 @@
 </script>
 
 <div>
-  <h5>{field.name}</h5>
+  <h4>{field.name}</h4>
   <ul class="list-unstyled">
     {#each field.entries as entry}
       <li><StatusIcon status={entry.status} /> {entry.value}</li>

@@ -52,7 +52,7 @@ func (f Field) Validate() string {
 
 // UserFields returns the fields associated with the given user ID.
 func (db *DB) UserFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
-	sql, args, err := sq.Select("*").From("user_fields").Where("user_id = ?", id).OrderBy("id").ToSql()
+	sql, args, err := sq.Select("id", "name", "entries").From("user_fields").Where("user_id = ?", id).OrderBy("id").ToSql()
 	if err != nil {
 		return fs, errors.Wrap(err, "building sql")
 	}
@@ -88,7 +88,7 @@ func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, field
 
 // MemberFields returns the fields associated with the given member ID.
 func (db *DB) MemberFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
-	sql, args, err := sq.Select("*").From("member_fields").Where("member_id = ?", id).OrderBy("id").ToSql()
+	sql, args, err := sq.Select("id", "name", "entries").From("member_fields").Where("member_id = ?", id).OrderBy("id").ToSql()
 	if err != nil {
 		return fs, errors.Wrap(err, "building sql")
 	}

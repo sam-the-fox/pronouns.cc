@@ -3,8 +3,8 @@ export interface User {
   name: string;
   display_name: string | null;
   bio: string | null;
-  avatar_urls: string[] | null;
-  links: string[] | null;
+  avatar_urls: string[];
+  links: string[];
 
   names: FieldEntry[];
   pronouns: Pronoun[];
@@ -46,15 +46,16 @@ export interface PartialMember {
   id: string;
   name: string;
   display_name: string | null;
-  avatar_urls: string[] | null;
+  bio: string | null;
+  avatar_urls: string[];
+  links: string[];
+  names: FieldEntry[];
+  pronouns: Pronoun[];
 }
 
 export interface Member extends PartialMember {
-  bio: string | null;
-  links: string | null;
-  names: FieldEntry[];
-  pronouns: Pronoun[];
   fields: Field[];
+
   user: MemberPartialUser;
 }
 
@@ -62,7 +63,7 @@ export interface MemberPartialUser {
   id: string;
   name: string;
   display_name: string | null;
-  avatar_urls: string[] | null;
+  avatar_urls: string[];
 }
 
 export interface APIError {

@@ -1,16 +1,16 @@
-import type { MeUser } from "$lib/api/entities";
+import type { APIError, MeUser } from "$lib/api/entities";
 import { apiFetch } from "$lib/api/fetch";
-import type { PageServerLoad } from "./$types";
+import type { PageServerLoad, Actions } from "./$types";
 import { PUBLIC_BASE_URL } from "$env/static/public";
 
-export const load = (async (event) => {
+export const load = (async ({ locals, url }) => {
   try {
     const resp = await apiFetch<CallbackResponse>("/auth/discord/callback", {
       method: "POST",
       body: {
         callback_domain: PUBLIC_BASE_URL,
-        code: event.url.searchParams.get("code"),
-        state: event.url.searchParams.get("state"),
+        code: url.searchParams.get("code"),
+        state: url.searchParams.get("state"),
       },
     });
 
@@ -18,7 +18,9 @@ export const load = (async (event) => {
       ...resp,
     };
   } catch (e) {
-    return { error: e };
+    console.log(e);
+
+    return { error: e as APIError };
   }
 }) satisfies PageServerLoad;
 

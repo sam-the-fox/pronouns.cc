@@ -35,7 +35,9 @@ type PartialMember struct {
 	ID          xid.ID            `json:"id"`
 	Name        string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
+	Bio         *string           `json:"bio"`
 	AvatarURLs  []string          `json:"avatar_urls"`
+	Links       []string          `json:"links"`
 	Names       []db.FieldEntry   `json:"names"`
 	Pronouns    []db.PronounEntry `json:"pronouns"`
 }
@@ -59,7 +61,9 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUser
 			ID:          members[i].ID,
 			Name:        members[i].Name,
 			DisplayName: members[i].DisplayName,
+			Bio:         members[i].Bio,
 			AvatarURLs:  db.NotNull(members[i].AvatarURLs),
+			Links:       db.NotNull(members[i].Links),
 			Names:       db.NotNull(members[i].Names),
 			Pronouns:    db.NotNull(members[i].Pronouns),
 		}

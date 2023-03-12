@@ -105,10 +105,10 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 
 	// copy Discord config and set redirect url
 	discordCfg := discordOAuthConfig
-	discordCfg.RedirectURL = req.CallbackDomain + "/login/discord"
+	discordCfg.RedirectURL = req.CallbackDomain + "/auth/login/discord"
 
 	render.JSON(w, r, oauthURLsResponse{
-		Discord: discordCfg.AuthCodeURL(state),
+		Discord: discordCfg.AuthCodeURL(state) + "&prompt=none",
 	})
 	return nil
 }

@@ -1,15 +1,44 @@
 <script lang="ts">
-  import type { PartialMember, User } from "$lib/api/entities";
+  import { WordStatus, type PartialMember, type User } from "$lib/api/entities";
   import FallbackImage from "./FallbackImage.svelte";
 
   export let user: User;
   export let member: PartialMember;
+
+  let pronouns: string | undefined;
+
+  const getPronouns = (member: PartialMember) => {
+    const filteredPronouns = member.pronouns.filter(
+      (pronouns) => pronouns.status === WordStatus.Favourite,
+    );
+    if (filteredPronouns.length === 0) {
+      return undefined;
+    }
+    return filteredPronouns
+      .map((pronouns) => {
+        if (pronouns.display_text) {
+          return pronouns.display_text;
+        } else {
+          const split = pronouns.pronouns.split("/");
+          if (split.length < 2) return split.join("/");
+          else return split.slice(0, 2).join("/");
+        }
+      })
+      .join(", ");
+  };
+
+  $: pronouns = getPronouns(member);
 </script>
 
 <div>
-  <FallbackImage
-    urls={member.avatar_urls}
-    alt="Avatar for {member.name}"
-  />
-  <a class="text-reset" href="/@{user.name}/{member.name}"><h5 class="m-2">{member.display_name ?? member.name}</h5></a>
+  <FallbackImage urls={member.avatar_urls} width={200} alt="Avatar for {member.name}" />
+  <p class="m-2">
+    <a class="text-reset fs-5" href="/@{user.name}/{member.name}">
+      {member.display_name ?? member.name}
+    </a>
+    {#if pronouns}
+      <br />
+      {pronouns}
+    {/if}
+  </p>
 </div>

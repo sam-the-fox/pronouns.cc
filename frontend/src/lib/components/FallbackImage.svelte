@@ -1,6 +1,7 @@
 <script lang="ts">
-  export let urls: string[] | null;
+  export let urls: string[];
   export let alt: string;
+  export let width = 300;
 
   const contentTypeFor = (url: string) => {
     if (url.endsWith(".webp")) {
@@ -15,14 +16,14 @@
   };
 </script>
 
-{#if urls}
+{#if urls.length > 0}
   <picture class="rounded-circle img-fluid">
     {#each urls as url}
-      <source width=300 srcSet={url} type={contentTypeFor(url)} />
+      <source {width} srcSet={url} type={contentTypeFor(url)} />
     {/each}
-    <img width=300 src={urls[0]} {alt} class="rounded-circle img-fluid" />
+    <img {width} src={urls[0]} {alt} class="rounded-circle img-fluid" />
   </picture>
 {:else}
   <!-- TODO: actual placeholder that isn't a cat -->
-  <img width=300 class="rounded-circle img-fluid" src="https://placekitten.com/512/512" {alt} />
+  <img {width} class="rounded-circle img-fluid" src="https://placekitten.com/512/512" {alt} />
 {/if}

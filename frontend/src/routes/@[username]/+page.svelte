@@ -48,41 +48,37 @@
         </div>
       {/if}
     </div>
-    <div class="row">
-      {#if data.names}
-        <div class="col-md">
-          <h4>Names</h4>
-          <ul class="list-unstyled">
-            {#each data.names as name}
-              <li><StatusIcon status={name.status} /> {name.value}</li>
-            {/each}
-          </ul>
-        </div>
-      {/if}
-      {#if data.pronouns}
-        <div class="col-md">
-          <h4>Pronouns</h4>
-          <ul class="list-unstyled">
-            {#each data.pronouns as pronouns}
-              <li>
-                <StatusIcon status={pronouns.status} />
-                <PronounLink {pronouns} />
-              </li>
-            {/each}
-          </ul>
-        </div>
-      {/if}
-    </div>
   </div>
-  {#if data.fields}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-      {#each data.fields as field}
-        <div class="col">
-          <FieldCard {field} />
-        </div>
-      {/each}
-    </div>
-  {/if}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
+    {#if data.names}
+      <div class="col-md">
+        <h4>Names</h4>
+        <ul class="list-unstyled">
+          {#each data.names as name}
+            <li><StatusIcon status={name.status} /> {name.value}</li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+    {#if data.pronouns}
+      <div class="col-md">
+        <h4>Pronouns</h4>
+        <ul class="list-unstyled">
+          {#each data.pronouns as pronouns}
+            <li>
+              <StatusIcon status={pronouns.status} />
+              <PronounLink {pronouns} />
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+    {#each data.fields as field}
+      <div class="col">
+        <FieldCard {field} />
+      </div>
+    {/each}
+  </div>
   {#if data.members}
     <div class="row">
       <div class="col">
@@ -90,7 +86,7 @@
         <h2>Members</h2>
       </div>
     </div>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 text-center">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 text-center">
       {#each data.members as member}
         <PartialMemberCard user={data} {member} />
       {/each}

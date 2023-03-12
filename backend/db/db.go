@@ -7,12 +7,9 @@ import (
 	"net/url"
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mediocregopher/radix/v4"
 	"github.com/minio/minio-go/v7"
@@ -38,15 +35,7 @@ type DB struct {
 }
 
 func New() (*DB, error) {
-	pgxCfg, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
-	if err != nil {
-		return nil, errors.Wrap(err, "parsing config")
-	}
-	pgxCfg.ConnConfig.LogLevel = pgx.LogLevelDebug
-	pgxCfg.ConnConfig.Logger = zapadapter.NewLogger(log.Logger)
-
-	pool, err := pgxpool.ConnectConfig(context.Background(), pgxCfg)
-	//	pool, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating postgres client")
 	}

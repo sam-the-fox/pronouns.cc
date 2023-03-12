@@ -60,7 +60,7 @@
   };
 
   const toggleTheme = () => {
-    themeStore.set(theme === "dark" ? "light" : "dark")
+    themeStore.set(theme === "dark" ? "light" : "dark");
   };
   const toggleMenu = () => {
     showMenu = !showMenu;
@@ -78,15 +78,21 @@
   <NavbarToggler on:click={toggleMenu} />
   <Collapse isOpen={showMenu} navbar expand="lg">
     <Nav class="ms-auto" navbar>
-      <NavItem>
-        {#if currentUser}
+      {#if currentUser}
+        <NavItem>
           <NavLink href="/@{currentUser.name}">@{currentUser.name}</NavLink>
+        </NavItem>
+        <NavItem>
           <NavLink href="/settings">Settings</NavLink>
-          <NavLink href="/logout">Log out</NavLink>
-        {:else}
-          <NavLink href="/login">Log in</NavLink>
-        {/if}
-      </NavItem>
+        </NavItem>
+        <NavItem>
+          <NavLink href="/auth/logout">Log out</NavLink>
+        </NavItem>
+      {:else}
+        <NavItem>
+          <NavLink href="/auth/login">Log in</NavLink>
+        </NavItem>
+      {/if}
       <NavItem>
         <NavLink
           on:click={() => toggleTheme()}

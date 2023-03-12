@@ -61,7 +61,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	cfg := discordOAuthConfig
-	cfg.RedirectURL = decoded.CallbackDomain + "/login/discord"
+	cfg.RedirectURL = decoded.CallbackDomain + "/auth/login/discord"
 	token, err := cfg.Exchange(r.Context(), decoded.Code)
 	if err != nil {
 		log.Errorf("exchanging oauth code: %v", err)
