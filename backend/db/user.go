@@ -5,11 +5,10 @@ import (
 	"regexp"
 	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
+	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
@@ -70,13 +69,12 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 		return u, ErrInvalidUsername
 	}
 
-	sql, args, err := sq.Insert("users").Columns("id", "username").Values(xid.New(), username).Suffix("RETURNING id").ToSql()
+	sql, args, err := sq.Insert("users").Columns("id", "username").Values(xid.New(), username).Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
 
-	var id xid.ID
-	err = tx.QueryRow(ctx, sql, args...).Scan(&id)
+	err = pgxscan.Get(ctx, tx, &u, sql, args...)
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
@@ -88,31 +86,28 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 
 		return u, errors.Cause(err)
 	}
-
-	return db.getUser(ctx, tx, id)
+	return u, nil
 }
 
 // DiscordUser fetches a user by Discord user ID.
 func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err error) {
-	sql, args, err := sq.Select("id").From("users").Where("discord = ?", discordID).ToSql()
+	sql, args, err := sq.Select("*").From("users").Where("discord = ?", discordID).ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
 
-	var id xid.ID
-	err = db.QueryRow(ctx, sql, args...).Scan(&id)
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
 	if err != nil {
 		if errors.Cause(err) == pgx.ErrNoRows {
 			return u, ErrUserNotFound
 		}
 
-		return u, errors.Wrap(err, "executing id query")
+		return u, errors.Wrap(err, "executing query")
 	}
-
-	return db.getUser(ctx, db, id)
+	return u, nil
 }
 
-func (u *User) UpdateFromDiscord(ctx context.Context, db querier, du *discordgo.User) error {
+func (u *User) UpdateFromDiscord(ctx context.Context, ex Execer, du *discordgo.User) error {
 	sql, args, err := sq.Update("users").
 		Set("discord", du.ID).
 		Set("discord_username", du.String()).
@@ -122,7 +117,7 @@ func (u *User) UpdateFromDiscord(ctx context.Context, db querier, du *discordgo.
 		return errors.Wrap(err, "building sql")
 	}
 
-	_, err = db.Exec(ctx, sql, args...)
+	_, err = ex.Exec(ctx, sql, args...)
 	if err != nil {
 		return errors.Wrap(err, "executing query")
 	}
@@ -134,49 +129,14 @@ func (u *User) UpdateFromDiscord(ctx context.Context, db querier, du *discordgo.
 	return nil
 }
 
-func (db *DB) getUser(ctx context.Context, q querier, id xid.ID) (u User, err error) {
-	qu, err := queries.NewQuerier(q).GetUserByID(ctx, id.String())
-	if err != nil {
-		if errors.Cause(err) == pgx.ErrNoRows {
-			return u, ErrUserNotFound
-		}
-
-		return u, errors.Wrap(err, "getting user from database")
-	}
-
-	var deletedAt *time.Time
-	if qu.DeletedAt.Status == pgtype.Present {
-		deletedAt = &qu.DeletedAt.Time
-	}
-
-	u = User{
-		ID:              id,
-		Username:        qu.Username,
-		DisplayName:     qu.DisplayName,
-		Bio:             qu.Bio,
-		AvatarURLs:      qu.AvatarUrls,
-		Names:           fieldEntriesFromDB(qu.Names),
-		Pronouns:        pronounsFromDB(qu.Pronouns),
-		Links:           qu.Links,
-		Discord:         qu.Discord,
-		DiscordUsername: qu.DiscordUsername,
-		MaxInvites:      int(qu.MaxInvites),
-		DeletedAt:       deletedAt,
-		SelfDelete:      qu.SelfDelete,
-		DeleteReason:    qu.DeleteReason,
-	}
-
-	return u, nil
-}
-
 // User gets a user by ID.
 func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
-	return db.getUser(ctx, db, id)
-}
+	sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
 
-// Username gets a user by username.
-func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
-	qu, err := db.q.GetUserByUsername(ctx, name)
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
 	if err != nil {
 		if errors.Cause(err) == pgx.ErrNoRows {
 			return u, ErrUserNotFound
@@ -185,23 +145,23 @@ func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
 		return u, errors.Wrap(err, "getting user from db")
 	}
 
-	id, err := xid.FromString(qu.ID)
+	return u, nil
+}
+
+// Username gets a user by username.
+func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
+	sql, args, err := sq.Select("*").From("users").Where("username = ?", name).ToSql()
 	if err != nil {
-		return u, errors.Wrap(err, "parsing ID")
+		return u, errors.Wrap(err, "building sql")
 	}
 
-	u = User{
-		ID:              id,
-		Username:        qu.Username,
-		DisplayName:     qu.DisplayName,
-		Bio:             qu.Bio,
-		AvatarURLs:      qu.AvatarUrls,
-		Names:           fieldEntriesFromDB(qu.Names),
-		Pronouns:        pronounsFromDB(qu.Pronouns),
-		Links:           qu.Links,
-		Discord:         qu.Discord,
-		DiscordUsername: qu.DiscordUsername,
-		MaxInvites:      int(qu.MaxInvites),
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "getting user from db")
 	}
 
 	return u, nil
@@ -251,10 +211,20 @@ func (db *DB) UpdateUser(
 	avatarURLs []string,
 ) (u User, err error) {
 	if displayName == nil && bio == nil && links == nil && avatarURLs == nil {
-		return db.getUser(ctx, tx, id)
+		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
+		if err != nil {
+			return u, errors.Wrap(err, "building sql")
+		}
+
+		err = pgxscan.Get(ctx, db, &u, sql, args...)
+		if err != nil {
+			return u, errors.Wrap(err, "getting user from db")
+		}
+
+		return u, nil
 	}
 
-	builder := sq.Update("users").Where("id = ?", id)
+	builder := sq.Update("users").Where("id = ?", id).Suffix("RETURNING *")
 	if displayName != nil {
 		if *displayName == "" {
 			builder = builder.Set("display_name", nil)
@@ -270,19 +240,11 @@ func (db *DB) UpdateUser(
 		}
 	}
 	if links != nil {
-		if len(*links) == 0 {
-			builder = builder.Set("links", nil)
-		} else {
-			builder = builder.Set("links", *links)
-		}
+		builder = builder.Set("links", *links)
 	}
 
 	if avatarURLs != nil {
-		if len(avatarURLs) == 0 {
-			builder = builder.Set("avatar_urls", nil)
-		} else {
-			builder = builder.Set("avatar_urls", avatarURLs)
-		}
+		builder = builder.Set("avatar_urls", avatarURLs)
 	}
 
 	sql, args, err := builder.ToSql()
@@ -290,19 +252,14 @@ func (db *DB) UpdateUser(
 		return u, errors.Wrap(err, "building sql")
 	}
 
-	_, err = tx.Exec(ctx, sql, args...)
+	err = pgxscan.Get(ctx, tx, &u, sql, args...)
 	if err != nil {
 		return u, errors.Wrap(err, "executing sql")
-	}
-
-	u, err = db.getUser(ctx, tx, id)
-	if err != nil {
-		return u, errors.Wrap(err, "getting updated user")
 	}
 	return u, nil
 }
 
-func (db *DB) DeleteUser(ctx context.Context, q querier, id xid.ID, selfDelete bool, reason string) error {
+func (db *DB) DeleteUser(ctx context.Context, tx pgx.Tx, id xid.ID, selfDelete bool, reason string) error {
 	builder := sq.Update("users").Set("deleted_at", time.Now().UTC()).Set("self_delete", selfDelete).Where("id = ?", id)
 	if !selfDelete {
 		builder = builder.Set("delete_reason", reason)
@@ -312,7 +269,7 @@ func (db *DB) DeleteUser(ctx context.Context, q querier, id xid.ID, selfDelete b
 		return errors.Wrap(err, "building sql")
 	}
 
-	_, err = q.Exec(ctx, sql, args...)
+	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		return errors.Wrap(err, "executing query")
 	}

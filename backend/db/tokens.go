@@ -97,13 +97,13 @@ func (db *DB) InvalidateToken(ctx context.Context, userID xid.ID, tokenID xid.ID
 	return t, nil
 }
 
-func (db *DB) InvalidateAllTokens(ctx context.Context, q querier, userID xid.ID) error {
+func (db *DB) InvalidateAllTokens(ctx context.Context, tx pgx.Tx, userID xid.ID) error {
 	sql, args, err := sq.Update("tokens").Where("user_id = ?", userID).Set("invalidated", true).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "building sql")
 	}
 
-	_, err = q.Exec(ctx, sql, args...)
+	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		return errors.Wrap(err, "executing query")
 	}

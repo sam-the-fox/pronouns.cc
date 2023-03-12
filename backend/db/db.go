@@ -7,12 +7,12 @@ import (
 	"net/url"
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mediocregopher/radix/v4"
 	"github.com/minio/minio-go/v7"
@@ -23,10 +23,8 @@ var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 const ErrNothingToUpdate = errors.Sentinel("nothing to update")
 
-type querier interface {
-	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
-	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+type Execer interface {
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error)
 }
 
 type DB struct {
@@ -37,25 +35,25 @@ type DB struct {
 	minio       *minio.Client
 	minioBucket string
 	baseURL     *url.URL
-
-	q queries.Querier
 }
 
 func New() (*DB, error) {
-	pool, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	pgxCfg, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing config")
+	}
+	pgxCfg.ConnConfig.LogLevel = pgx.LogLevelDebug
+	pgxCfg.ConnConfig.Logger = zapadapter.NewLogger(log.Logger)
+
+	pool, err := pgxpool.ConnectConfig(context.Background(), pgxCfg)
+	//	pool, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating postgres client")
 	}
 
-	var redis radix.Client
-	if os.Getenv("REDIS") != "" {
-		redis, err = (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
-		if err != nil {
-			return nil, errors.Wrap(err, "creating redis client")
-		}
-	} else {
-		log.Warn("$REDIS was empty! Any functionality using Redis (such as authentication) will not work")
-		redis = &dummyRedis{}
+	redis, err := (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
+	if err != nil {
+		return nil, errors.Wrap(err, "creating redis client")
 	}
 
 	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
@@ -78,8 +76,6 @@ func New() (*DB, error) {
 		minio:       minioClient,
 		minioBucket: os.Getenv("MINIO_BUCKET"),
 		baseURL:     baseURL,
-
-		q: queries.NewQuerier(pool),
 	}
 
 	return db, nil
@@ -161,4 +157,13 @@ func (db *DB) GetDelJSON(ctx context.Context, key string, v any) error {
 		return errors.Wrap(err, "unmarshaling json")
 	}
 	return nil
+}
+
+// NotNull is a little helper that returns an *empty slice* when the slice's length is 0.
+// This is to prevent nil slices from being marshaled as JSON null
+func NotNull[T any](slice []T) []T {
+	if len(slice) == 0 {
+		return []T{}
+	}
+	return slice
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 	"emperror.dev/errors"
+	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
@@ -52,18 +52,14 @@ func (f Field) Validate() string {
 
 // UserFields returns the fields associated with the given user ID.
 func (db *DB) UserFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
-	qfields, err := db.q.GetUserFields(ctx, id.String())
+	sql, args, err := sq.Select("*").From("user_fields").Where("user_id = ?", id).OrderBy("id").ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "querying fields")
+		return fs, errors.Wrap(err, "building sql")
 	}
 
-	fs = make([]Field, len(qfields))
-	for i := range qfields {
-		fs[i] = Field{
-			ID:      int64(*qfields[i].ID),
-			Name:    *qfields[i].Name,
-			Entries: dbEntriesToFieldEntries(qfields[i].Entries),
-		}
+	err = pgxscan.Select(ctx, db, &fs, sql, args...)
+	if err != nil {
+		return fs, errors.Wrap(err, "executing query")
 	}
 
 	return fs, nil
@@ -81,34 +77,25 @@ func (db *DB) SetUserFields(ctx context.Context, tx pgx.Tx, userID xid.ID, field
 		return errors.Wrap(err, "deleting existing fields")
 	}
 
-	querier := queries.NewQuerier(tx)
 	for _, field := range fields {
-		querier.InsertUserField(ctx, queries.InsertUserFieldParams{
-			UserID:  userID.String(),
-			Name:    field.Name,
-			Entries: entriesToDBEntries(field.Entries),
-		})
-	}
-	if err != nil {
-		return errors.Wrap(err, "inserting new fields")
+		_, err := tx.Exec(ctx, "INSERT INTO user_fields (user_id, name, entries) VALUES ($1, $2, $3)", userID, field.Name, field.Entries)
+		if err != nil {
+			return errors.Wrap(err, "inserting new fields")
+		}
 	}
 	return nil
 }
 
 // MemberFields returns the fields associated with the given member ID.
 func (db *DB) MemberFields(ctx context.Context, id xid.ID) (fs []Field, err error) {
-	qfields, err := db.q.GetMemberFields(ctx, id.String())
+	sql, args, err := sq.Select("*").From("member_fields").Where("member_id = ?", id).OrderBy("id").ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "querying fields")
+		return fs, errors.Wrap(err, "building sql")
 	}
 
-	fs = make([]Field, len(qfields))
-	for i := range qfields {
-		fs[i] = Field{
-			ID:      int64(*qfields[i].ID),
-			Name:    *qfields[i].Name,
-			Entries: dbEntriesToFieldEntries(qfields[i].Entries),
-		}
+	err = pgxscan.Select(ctx, db, &fs, sql, args...)
+	if err != nil {
+		return fs, errors.Wrap(err, "executing query")
 	}
 
 	return fs, nil
@@ -126,16 +113,11 @@ func (db *DB) SetMemberFields(ctx context.Context, tx pgx.Tx, memberID xid.ID, f
 		return errors.Wrap(err, "deleting existing fields")
 	}
 
-	querier := queries.NewQuerier(tx)
 	for _, field := range fields {
-		querier.InsertMemberField(ctx, queries.InsertMemberFieldParams{
-			MemberID: memberID.String(),
-			Name:     field.Name,
-			Entries:  entriesToDBEntries(field.Entries),
-		})
-	}
-	if err != nil {
-		return errors.Wrap(err, "inserting new fields")
+		_, err := tx.Exec(ctx, "INSERT INTO member_fields (member_id, name, entries) VALUES ($1, $2, $3)", memberID, field.Name, field.Entries)
+		if err != nil {
+			return errors.Wrap(err, "inserting new fields")
+		}
 	}
 	return nil
 }

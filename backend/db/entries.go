@@ -3,8 +3,6 @@ package db
 import (
 	"fmt"
 	"strings"
-
-	"codeberg.org/u1f320/pronouns.cc/backend/db/queries"
 )
 
 type WordStatus int
@@ -79,39 +77,4 @@ func (p PronounEntry) String() string {
 	}
 
 	return strings.Join(split[:1], "/")
-}
-
-func dbEntriesToFieldEntries(entries []queries.FieldEntry) []FieldEntry {
-	out := make([]FieldEntry, len(entries))
-	for i := range entries {
-		out[i] = FieldEntry{
-			*entries[i].Value, WordStatus(*entries[i].Status),
-		}
-	}
-	return out
-}
-
-func entriesToDBEntries(entries []FieldEntry) []queries.FieldEntry {
-	out := make([]queries.FieldEntry, len(entries))
-	for i := range entries {
-		status := int32(entries[i].Status)
-		out[i] = queries.FieldEntry{
-			Value:  &entries[i].Value,
-			Status: &status,
-		}
-	}
-	return out
-}
-
-func pronounEntriesToDBEntries(entries []PronounEntry) []queries.PronounEntry {
-	out := make([]queries.PronounEntry, len(entries))
-	for i := range entries {
-		status := int32(entries[i].Status)
-		out[i] = queries.PronounEntry{
-			Value:        &entries[i].Pronouns,
-			DisplayValue: entries[i].DisplayText,
-			Status:       &status,
-		}
-	}
-	return out
 }
