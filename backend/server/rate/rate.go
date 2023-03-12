@@ -2,6 +2,7 @@ package rate
 
 import (
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ type Limiter struct {
 	options      []httprate.Option
 
 	wildcardScopes []*scopedLimiter
+	frontendIP     string
 }
 
 type scopedLimiter struct {
@@ -32,6 +34,7 @@ func NewLimiter(defaultLimit int, windowLength time.Duration, options ...httprat
 		windowLength:   windowLength,
 		options:        options,
 		defaultLimiter: httprate.Limit(defaultLimit, windowLength, options...),
+		frontendIP:     os.Getenv("FRONTEND_IP"),
 	}
 }
 
@@ -65,6 +68,14 @@ func (l *Limiter) Handler() func(http.Handler) http.Handler {
 
 func (l *Limiter) handle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if l.frontendIP != "" {
+			ip, err := httprate.KeyByIP(r)
+			if err == nil && ip == l.frontendIP {
+				// frontend gets to bypass ratelimit
+				next.ServeHTTP(w, r)
+			}
+		}
+
 		for _, s := range l.scopes {
 			if (r.Method == s.Method || s.Method == "*") && s.glob.Match(r.URL.Path) {
 				bucket := s.Pattern
