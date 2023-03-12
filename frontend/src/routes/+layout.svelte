@@ -17,8 +17,12 @@
   <footer>
     <hr />
     <p>
-      pronouns.cc <a href={data.git_repository}>{version}</a>
-      {#if versionMismatch}(backend: {data.git_commit}){/if} &middot;
+      pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{version}">{version}</a>
+      {#if versionMismatch}
+        (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}">
+          {data.git_commit}
+        </a>)
+      {/if} &middot;
       <a href="/page/terms">Terms of service</a>
       - <a href="/page/privacy">Privacy policy</a>
     </p>
