@@ -18,6 +18,7 @@
   onMount(() => {
     if (data.token && data.user) {
       localStorage.setItem("pronouns-token", data.token);
+      localStorage.setItem("pronouns-user", JSON.stringify(data.user));
       userStore.set(data.user);
       goto("/");
     }
@@ -38,6 +39,7 @@
       });
 
       localStorage.setItem("pronouns-token", resp.token);
+      localStorage.setItem("pronouns-user", JSON.stringify(resp.user));
       userStore.set(resp.user);
       goto("/");
     } catch (e) {
@@ -53,7 +55,7 @@
 <h1>Log in with Discord</h1>
 
 {#if data.error}
-  <Alert color="danger">
+  <Alert color="danger" fade={false}>
     <h4 class="alert-heading">An error occurred</h4>
     <b>{data.error.code}:</b>
     {data.error.message}
