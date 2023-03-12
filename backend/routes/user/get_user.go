@@ -32,10 +32,12 @@ type GetMeResponse struct {
 }
 
 type PartialMember struct {
-	ID          xid.ID   `json:"id"`
-	Name        string   `json:"name"`
-	DisplayName *string  `json:"display_name"`
-	AvatarURLs  []string `json:"avatar_urls"`
+	ID          xid.ID            `json:"id"`
+	Name        string            `json:"name"`
+	DisplayName *string           `json:"display_name"`
+	AvatarURLs  []string          `json:"avatar_urls"`
+	Names       []db.FieldEntry   `json:"names"`
+	Pronouns    []db.PronounEntry `json:"pronouns"`
 }
 
 func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUserResponse {
@@ -44,11 +46,11 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUser
 		Username:    u.Username,
 		DisplayName: u.DisplayName,
 		Bio:         u.Bio,
-		AvatarURLs:  u.AvatarURLs,
-		Links:       u.Links,
-		Names:       u.Names,
-		Pronouns:    u.Pronouns,
-		Fields:      fields,
+		AvatarURLs:  db.NotNull(u.AvatarURLs),
+		Links:       db.NotNull(u.Links),
+		Names:       db.NotNull(u.Names),
+		Pronouns:    db.NotNull(u.Pronouns),
+		Fields:      db.NotNull(fields),
 	}
 
 	resp.Members = make([]PartialMember, len(members))
@@ -57,7 +59,9 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUser
 			ID:          members[i].ID,
 			Name:        members[i].Name,
 			DisplayName: members[i].DisplayName,
-			AvatarURLs:  members[i].AvatarURLs,
+			AvatarURLs:  db.NotNull(members[i].AvatarURLs),
+			Names:       db.NotNull(members[i].Names),
+			Pronouns:    db.NotNull(members[i].Pronouns),
 		}
 	}
 

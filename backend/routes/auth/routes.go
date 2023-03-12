@@ -20,25 +20,31 @@ type Server struct {
 }
 
 type userResponse struct {
-	ID          xid.ID   `json:"id"`
-	Username    string   `json:"name"`
-	DisplayName *string  `json:"display_name"`
-	Bio         *string  `json:"bio"`
-	AvatarURLs  []string `json:"avatar_urls"`
-	Links       []string `json:"links"`
+	ID          xid.ID            `json:"id"`
+	Username    string            `json:"name"`
+	DisplayName *string           `json:"display_name"`
+	Bio         *string           `json:"bio"`
+	AvatarURLs  []string          `json:"avatar_urls"`
+	Links       []string          `json:"links"`
+	Names       []db.FieldEntry   `json:"names"`
+	Pronouns    []db.PronounEntry `json:"pronouns"`
+	Fields      []db.Field        `json:"fields"`
 
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
 }
 
-func dbUserToUserResponse(u db.User) *userResponse {
+func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 	return &userResponse{
 		ID:              u.ID,
 		Username:        u.Username,
 		DisplayName:     u.DisplayName,
 		Bio:             u.Bio,
-		AvatarURLs:      u.AvatarURLs,
-		Links:           u.Links,
+		AvatarURLs:      db.NotNull(u.AvatarURLs),
+		Links:           db.NotNull(u.Links),
+		Names:           db.NotNull(u.Names),
+		Pronouns:        db.NotNull(u.Pronouns),
+		Fields:          db.NotNull(fields),
 		Discord:         u.Discord,
 		DiscordUsername: u.DiscordUsername,
 	}

@@ -68,6 +68,13 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	if req.Name != nil && *req.Name == "" {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: "Name must not be empty",
+		}
+	}
+
 	// validate display name/bio
 	if req.Name != nil && len(*req.Name) > db.MaxMemberNameLength {
 		return server.APIError{

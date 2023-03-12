@@ -32,18 +32,18 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field) GetMemberRespon
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
 		Bio:         m.Bio,
-		AvatarURLs:  m.AvatarURLs,
-		Links:       m.Links,
+		AvatarURLs:  db.NotNull(m.AvatarURLs),
+		Links:       db.NotNull(m.Links),
 
-		Names:    m.Names,
-		Pronouns: m.Pronouns,
-		Fields:   fields,
+		Names:    db.NotNull(m.Names),
+		Pronouns: db.NotNull(m.Pronouns),
+		Fields:   db.NotNull(fields),
 
 		User: PartialUser{
 			ID:          u.ID,
 			Username:    u.Username,
 			DisplayName: u.DisplayName,
-			AvatarURLs:  u.AvatarURLs,
+			AvatarURLs:  db.NotNull(u.AvatarURLs),
 		},
 	}
 }

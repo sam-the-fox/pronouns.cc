@@ -95,10 +95,15 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 			return errors.Wrap(err, "saving token to database")
 		}
 
+		fields, err := s.DB.UserFields(ctx, u.ID)
+		if err != nil {
+			return errors.Wrap(err, "querying fields")
+		}
+
 		render.JSON(w, r, discordCallbackResponse{
 			HasAccount: true,
 			Token:      token,
-			User:       dbUserToUserResponse(u),
+			User:       dbUserToUserResponse(u, fields),
 		})
 
 		return nil
@@ -230,7 +235,7 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 
 	// return user
 	render.JSON(w, r, signupResponse{
-		User:  *dbUserToUserResponse(u),
+		User:  *dbUserToUserResponse(u, nil),
 		Token: token,
 	})
 	return nil

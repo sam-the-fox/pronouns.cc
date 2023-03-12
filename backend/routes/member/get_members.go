@@ -11,12 +11,14 @@ import (
 )
 
 type memberListResponse struct {
-	ID          xid.ID   `json:"id"`
-	Name        string   `json:"name"`
-	DisplayName *string  `json:"display_name"`
-	Bio         *string  `json:"bio"`
-	AvatarURLs  []string `json:"avatar_urls"`
-	Links       []string `json:"links"`
+	ID          xid.ID            `json:"id"`
+	Name        string            `json:"name"`
+	DisplayName *string           `json:"display_name"`
+	Bio         *string           `json:"bio"`
+	AvatarURLs  []string          `json:"avatar_urls"`
+	Links       []string          `json:"links"`
+	Names       []db.FieldEntry   `json:"names"`
+	Pronouns    []db.PronounEntry `json:"pronouns"`
 }
 
 func membersToMemberList(ms []db.Member) []memberListResponse {
@@ -26,8 +28,10 @@ func membersToMemberList(ms []db.Member) []memberListResponse {
 			ID:         ms[i].ID,
 			Name:       ms[i].Name,
 			Bio:        ms[i].Bio,
-			AvatarURLs: ms[i].AvatarURLs,
-			Links:      ms[i].Links,
+			AvatarURLs: db.NotNull(ms[i].AvatarURLs),
+			Links:      db.NotNull(ms[i].Links),
+			Names:      db.NotNull(ms[i].Names),
+			Pronouns:   db.NotNull(ms[i].Pronouns),
 		}
 	}
 
