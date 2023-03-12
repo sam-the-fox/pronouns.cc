@@ -2,9 +2,10 @@
   import { marked } from "marked";
   import sanitizeHtml from "sanitize-html";
 
-  import FieldCard from "$lib/components/FieldCard.svelte";
-
   import type { PageData } from "./$types";
+
+  import { Icon } from "sveltestrap";
+  import FieldCard from "$lib/components/FieldCard.svelte";
   import StatusIcon from "$lib/components/StatusIcon.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
@@ -26,7 +27,7 @@
       <div class="col-md text-center">
         <FallbackImage urls={data.avatar_urls} alt="Avatar for @{data.name}" />
       </div>
-      <div class="col-md">
+      <div class="col-md-8">
         {#if data.display_name}
           <h2>{data.display_name}</h2>
           <h5 class="text-body-secondary">@{data.name}</h5>
@@ -37,20 +38,19 @@
         {#if bio}
           <p>{@html bio}</p>
         {/if}
-      </div>
-      {#if data.links}
-        <div class="col-md">
-          <ul>
+        {#if data.links.length > 0}
+          <hr />
+          <ul class="list-unstyled">
             {#each data.links as link}
-              <li><a href={link}>{link}</a></li>
+              <li><Icon name="globe" /> <a href={link}>{link}</a></li>
             {/each}
           </ul>
-        </div>
-      {/if}
+        {/if}
+      </div>
     </div>
   </div>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-    {#if data.names}
+    {#if data.names.length > 0}
       <div class="col-md">
         <h4>Names</h4>
         <ul class="list-unstyled">
@@ -60,7 +60,7 @@
         </ul>
       </div>
     {/if}
-    {#if data.pronouns}
+    {#if data.pronouns.length > 0}
       <div class="col-md">
         <h4>Pronouns</h4>
         <ul class="list-unstyled">
@@ -79,7 +79,7 @@
       </div>
     {/each}
   </div>
-  {#if data.members}
+  {#if data.members.length > 0}
     <div class="row">
       <div class="col">
         <hr />

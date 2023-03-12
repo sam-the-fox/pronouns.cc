@@ -31,26 +31,25 @@
       <div class="col-md text-center">
         <FallbackImage urls={data.avatar_urls} alt="Avatar for @{data.name}" />
       </div>
-      <div class="col-md">
+      <div class="col-md-8">
         <h2>{data.display_name ?? data.name}</h2>
         <h5 class="text-body-secondary">{data.name} (@{data.user.name})</h5>
         <hr />
         {#if bio}
           <p>{@html bio}</p>
         {/if}
-      </div>
-      {#if data.links}
-        <div class="col-md">
-          <ul>
+        {#if data.links.length > 0}
+          <hr />
+          <ul class="list-unstyled">
             {#each data.links as link}
-              <li><a href={link}>{link}</a></li>
+              <li><Icon name="globe" /> <a href={link}>{link}</a></li>
             {/each}
           </ul>
-        </div>
-      {/if}
+        {/if}
+      </div>
     </div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-      {#if data.names}
+      {#if data.names.length > 0}
         <div class="col-md">
           <h4>Names</h4>
           <ul class="list-unstyled">
@@ -60,7 +59,7 @@
           </ul>
         </div>
       {/if}
-      {#if data.pronouns}
+      {#if data.pronouns.length > 0}
         <div class="col-md">
           <h4>Pronouns</h4>
           <ul class="list-unstyled">
