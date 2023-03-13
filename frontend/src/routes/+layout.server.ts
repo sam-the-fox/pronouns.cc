@@ -16,4 +16,5 @@ interface MetaResponse {
   git_commit: string;
   users: number;
   members: number;
+  require_invite: boolean;
 }

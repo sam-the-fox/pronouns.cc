@@ -1,5 +1,10 @@
-<script>
+<script lang="ts">
+  import { page } from "$app/stores";
+  import type { LayoutData } from "./$types";
+
   import { ListGroup, ListGroupItem } from "sveltestrap";
+
+  export let data: LayoutData;
 </script>
 
 <div class="grid">
@@ -8,9 +13,32 @@
       <h1>Settings</h1>
 
       <ListGroup>
-        <ListGroupItem tag="a" href="/settings">Your profile</ListGroupItem>
-        <ListGroupItem tag="a" href="/settings/invites">Invites</ListGroupItem>
-        <ListGroupItem tag="a" href="/settings/tokens">API tokens</ListGroupItem>
+        <ListGroupItem tag="a" active={$page.url.pathname === "/settings"} href="/settings">
+          Your profile
+        </ListGroupItem>
+        {#if data.require_invite}
+          <ListGroupItem
+            tag="a"
+            active={$page.url.pathname === "/settings/invites"}
+            href="/settings/invites"
+          >
+            Invites
+          </ListGroupItem>
+        {/if}
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/tokens"}
+          href="/settings/tokens"
+        >
+          API tokens
+        </ListGroupItem>
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/export"}
+          href="/settings/export"
+        >
+          Data export
+        </ListGroupItem>
       </ListGroup>
     </div>
     <div class="col-md m-3">

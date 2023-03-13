@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Alert } from "sveltestrap";
+  import { Alert, Icon } from "sveltestrap";
 
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
@@ -82,7 +82,8 @@
           aria-describedby="invite-help"
         />
         <div id="invite-help" class="form-text">
-          You currently need an invite code to sign up. You can get one from an existing user.
+          <Icon name="info" /> You currently need an invite code to sign up. You can get one from an
+          existing user.
         </div>
       </div>
     {/if}

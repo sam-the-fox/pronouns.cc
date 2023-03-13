@@ -11,7 +11,7 @@ import (
 )
 
 type inviteResponse struct {
-	Code    string    `json:"string"`
+	Code    string    `json:"code"`
 	Created time.Time `json:"created"`
 	Used    bool      `json:"used"`
 }

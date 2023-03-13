@@ -2,6 +2,7 @@ package meta
 
 import (
 	"net/http"
+	"os"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
@@ -24,6 +25,7 @@ type MetaResponse struct {
 	GitCommit     string `json:"git_commit"`
 	Users         int64  `json:"users"`
 	Members       int64  `json:"members"`
+	RequireInvite bool   `json:"require_invite"`
 }
 
 func (s *Server) meta(w http.ResponseWriter, r *http.Request) error {
@@ -45,6 +47,7 @@ func (s *Server) meta(w http.ResponseWriter, r *http.Request) error {
 		GitCommit:     server.Revision,
 		Users:         numUsers,
 		Members:       numMembers,
+		RequireInvite: os.Getenv("REQUIRE_INVITE") == "true",
 	})
 	return nil
 }
