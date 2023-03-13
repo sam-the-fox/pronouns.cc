@@ -14,8 +14,6 @@ export const load = async ({ params }) => {
       throw error(404, (e as APIError).message);
     }
 
-    console.log(e);
-
     throw e;
   }
 };

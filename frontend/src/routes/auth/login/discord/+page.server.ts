@@ -3,7 +3,7 @@ import { apiFetch } from "$lib/api/fetch";
 import type { PageServerLoad, Actions } from "./$types";
 import { PUBLIC_BASE_URL } from "$env/static/public";
 
-export const load = (async ({ locals, url }) => {
+export const load = (async ({ url }) => {
   try {
     const resp = await apiFetch<CallbackResponse>("/auth/discord/callback", {
       method: "POST",
@@ -18,8 +18,6 @@ export const load = (async ({ locals, url }) => {
       ...resp,
     };
   } catch (e) {
-    console.log(e);
-
     return { error: e as APIError };
   }
 }) satisfies PageServerLoad;

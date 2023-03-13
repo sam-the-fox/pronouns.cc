@@ -1,9 +1,16 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import type { APIError, Field, FieldEntry, MeUser, Pronoun } from "$lib/api/entities";
+  import {
+    WordStatus,
+    type APIError,
+    type Field,
+    type FieldEntry,
+    type MeUser,
+    type Pronoun,
+  } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { Alert, Button, FormGroup, Input } from "sveltestrap";
+  import { Alert, Button, FormGroup, Icon, Input } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
 
@@ -88,13 +95,10 @@
     if (!list || list.length === 0) return null;
     if (list[0].size > MAX_AVATAR_BYTES) return null;
 
-    console.log(list[0].type);
-
     const buffer = await list[0].arrayBuffer();
     const base64 = encode(buffer);
 
     const uri = `data:${dataTypeFromFilename(list[0].name)};base64,${base64}`;
-    console.log(uri.slice(0, 256));
 
     return uri;
   };
@@ -113,19 +117,30 @@
     }
   };
 
+  const moveName = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == names.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = names[index];
+    names[index] = names[newIndex];
+    names[newIndex] = temp;
+  };
+
+  const movePronoun = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == pronouns.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = pronouns[index];
+    pronouns[index] = pronouns[newIndex];
+    pronouns[newIndex] = temp;
+  };
+
   const updateUser = async () => {
     try {
-      console.log(
-        JSON.stringify({
-          display_name,
-          avatar,
-          bio,
-          names,
-          pronouns,
-          fields,
-        }),
-      );
-
       const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", {
         display_name,
         avatar,
@@ -138,6 +153,7 @@
       userStore.set(resp);
       localStorage.setItem("pronouns-user", JSON.stringify(resp));
 
+      avatar = null;
       error = null;
       modified = false;
     } catch (e) {
@@ -145,6 +161,10 @@
     }
   };
 </script>
+
+<svelte:head>
+  <title>Edit profile - pronouns.cc</title>
+</svelte:head>
 
 <h1>
   Edit profile
@@ -167,13 +187,9 @@
   <Alert color="danger" fade={false}>Error: No user object</Alert>
 {:else}
   <div class="grid">
-    <div class="row">
+    <div class="row m-1">
       <div class="col-md">
-        <FormGroup floating label="Username">
-          <Input value={$userStore.name} disabled />
-        </FormGroup>
-        <span>To change your username, go to <a href="/settings">settings</a>.</span>
-        <h3>Avatar</h3>
+        <h4>Avatar</h4>
         <div class="row">
           <div class="col-md">
             {#if avatar}
@@ -196,6 +212,115 @@
             <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
           </FormGroup>
         </div>
+      </div>
+    </div>
+    <div class="row m-1">
+      <div class="col-md">
+        <h4>Names</h4>
+        {#each names as _, index}
+          <div class="input-group m-1">
+            <Button color="secondary" on:click={() => moveName(index, true)}>
+              <Icon name="chevron-up" />
+            </Button>
+            <Button color="secondary" on:click={() => moveName(index, false)}>
+              <Icon name="chevron-down" />
+            </Button>
+            <input type="text" class="form-control" bind:value={names[index].value} />
+            <Button
+              color="secondary"
+              on:click={() => (names[index].status = WordStatus.Favourite)}
+              active={names[index].status === WordStatus.Favourite}
+            >
+              <Icon name="heart-fill" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (names[index].status = WordStatus.Okay)}
+              active={names[index].status === WordStatus.Okay}
+            >
+              <Icon name="hand-thumbs-up" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (names[index].status = WordStatus.Jokingly)}
+              active={names[index].status === WordStatus.Jokingly}
+            >
+              <Icon name="emoji-laughing" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (names[index].status = WordStatus.FriendsOnly)}
+              active={names[index].status === WordStatus.FriendsOnly}
+            >
+              <Icon name="people" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (names[index].status = WordStatus.Avoid)}
+              active={names[index].status === WordStatus.Avoid}
+            >
+              <Icon name="hand-thumbs-down" />
+            </Button>
+            <Button color="danger">
+              <Icon name="trash3" />
+            </Button>
+          </div>
+        {/each}
+      </div>
+    </div>
+    <div class="row m-1">
+      <div class="col-md">
+        <h4>Pronouns</h4>
+        {#each pronouns as _, index}
+          <div class="input-group m-1">
+            <Button color="secondary" on:click={() => movePronoun(index, true)}>
+              <Icon name="chevron-up" />
+            </Button>
+            <Button color="secondary" on:click={() => movePronoun(index, false)}>
+              <Icon name="chevron-down" />
+            </Button>
+            <input type="text" class="form-control" bind:value={pronouns[index].pronouns} />
+            <input type="text" class="form-control" bind:value={pronouns[index].display_text} />
+            <Button
+              color="secondary"
+              on:click={() => (pronouns[index].status = WordStatus.Favourite)}
+              active={pronouns[index].status === WordStatus.Favourite}
+            >
+              <Icon name="heart-fill" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (pronouns[index].status = WordStatus.Okay)}
+              active={pronouns[index].status === WordStatus.Okay}
+            >
+              <Icon name="hand-thumbs-up" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (pronouns[index].status = WordStatus.Jokingly)}
+              active={pronouns[index].status === WordStatus.Jokingly}
+            >
+              <Icon name="emoji-laughing" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (pronouns[index].status = WordStatus.FriendsOnly)}
+              active={pronouns[index].status === WordStatus.FriendsOnly}
+            >
+              <Icon name="people" />
+            </Button>
+            <Button
+              color="secondary"
+              on:click={() => (pronouns[index].status = WordStatus.Avoid)}
+              active={pronouns[index].status === WordStatus.Avoid}
+            >
+              <Icon name="hand-thumbs-down" />
+            </Button>
+            <Button color="danger">
+              <Icon name="trash3" />
+            </Button>
+          </div>
+        {/each}
       </div>
     </div>
   </div>
