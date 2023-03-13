@@ -1,5 +1,8 @@
 import { PUBLIC_BASE_URL } from "$env/static/public";
 
+export const MAX_MEMBERS = 500;
+export const MAX_DESCRIPTION_LENGTH = 1000;
+
 export interface User {
   id: string;
   name: string;
@@ -15,6 +18,7 @@ export interface User {
 }
 
 export interface MeUser extends User {
+  max_invites: number;
   discord: string | null;
   discord_username: string | null;
 }
@@ -66,6 +70,12 @@ export interface MemberPartialUser {
   name: string;
   display_name: string | null;
   avatar: string | null;
+}
+
+export interface Invite {
+  code: string;
+  created: Date;
+  used: boolean;
 }
 
 export interface APIError {

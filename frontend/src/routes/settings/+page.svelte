@@ -1,0 +1,159 @@
+<script lang="ts">
+  import { goto } from "$app/navigation";
+  import { type MeUser, userAvatars, type APIError, MAX_MEMBERS } from "$lib/api/entities";
+  import { apiFetchClient } from "$lib/api/fetch";
+  import FallbackImage from "$lib/components/FallbackImage.svelte";
+  import { userStore } from "$lib/store";
+  import {
+    Alert,
+    Button,
+    Icon,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    Table,
+  } from "sveltestrap";
+  import type { PageData } from "./$types";
+
+  export let data: PageData;
+
+  let username = data.user.name;
+  let error: APIError | null = null;
+
+  let deleteOpen = false;
+  const toggleDeleteOpen = () => (deleteOpen = !deleteOpen);
+  let deleteUsername = "";
+  let deleteError: APIError | null = null;
+
+  const changeUsername = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", { username });
+
+      data.user = resp;
+      userStore.set(resp);
+      localStorage.setItem("pronouns-user", JSON.stringify(resp));
+      error = null;
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      await apiFetchClient<any>("/users/@me", "DELETE");
+
+      toggleDeleteOpen();
+      goto("/auth/logout");
+    } catch (e) {
+      deleteUsername = "";
+      deleteError = e as APIError;
+    }
+  };
+</script>
+
+<svelte:head>
+  <title>Settings - pronouns.cc</title>
+</svelte:head>
+
+<h1>Your profile</h1>
+
+<div class="grid">
+  <div class="row">
+    <div class="col-lg">
+      <h4>Username</h4>
+      <div class="input-group m-1 w-75">
+        <input type="text" class="form-control" bind:value={username} />
+        <Button
+          color="secondary"
+          on:click={() => changeUsername()}
+          disabled={username === data.user.name}>Change username</Button
+        >
+      </div>
+      {#if username !== data.user.name}
+        <p class="text-muted">
+          <Icon name="info-circle-fill" /> Changing your username will make any existing links to your
+          or your members' profiles invalid.
+        </p>
+      {/if}
+      {#if error}
+        <Alert color="danger" fade={false}>
+          <h5 class="alert-heading">An error occurred</h5>
+          <b>{error.code}</b>: {error.message}
+        </Alert>
+      {/if}
+    </div>
+    <div class="col-lg-4">
+      <FallbackImage width={200} urls={userAvatars(data.user)} alt="Your avatar" />
+      <p>
+        To change your avatar, go to <a href="/edit/profile">edit profile</a>.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <h4>Account info</h4>
+      <Table bordered striped hover>
+        <tbody>
+          <tr>
+            <th scope="row">ID</th>
+            <td><code>{data.user.id}</code></td>
+          </tr>
+          <tr>
+            <th scope="row">Members</th>
+            <td>{data.members.length}/{MAX_MEMBERS}</td>
+          </tr>
+          {#if data.invitesEnabled}
+            <tr>
+              <th scope="row">Invites</th>
+              <td>{data.invites.length}/{data.user.max_invites}</td>
+            </tr>
+          {/if}
+        </tbody>
+      </Table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <h4>Delete account</h4>
+      <p>If you want to initiate the account deletion process, click the button below:</p>
+      <p>
+        <Button color="danger" on:click={toggleDeleteOpen}>Delete account</Button>
+      </p>
+      <p class="text-muted">
+        <Icon name="info-circle-fill" /> Your account will be deleted 30 days after initiating the deletion
+        process. If you want to cancel your account deletion within 30 days, log in again and confirm
+        that you want to cancel deletion.
+        <strong
+          >Simply logging in again will not cancel account deletion. Also, your account cannot be
+          recovered after the deletion period has passed.</strong
+        >
+      </p>
+      <Modal isOpen={deleteOpen} toggle={toggleDeleteOpen}>
+        <ModalHeader toggle={toggleDeleteOpen}>Delete account</ModalHeader>
+        <ModalBody>
+          <p>If you want to delete your account, type your current username below:</p>
+          <p>
+            <input type="text" class="form-control" bind:value={deleteUsername} />
+          </p>
+          {#if deleteError}
+            <Alert color="danger" fade={false}>
+              <h5 class="alert-heading">An error occurred</h5>
+              <b>{deleteError.code}</b>: {deleteError.message}
+            </Alert>
+          {/if}
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            color="danger"
+            disabled={deleteUsername !== data.user.name}
+            on:click={deleteAccount}
+          >
+            Delete account
+          </Button>
+          <Button color="secondary" on:click={toggleDeleteOpen}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
+    </div>
+  </div>
+</div>

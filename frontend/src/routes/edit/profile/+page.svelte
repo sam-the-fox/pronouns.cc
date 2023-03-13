@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import {
+    MAX_DESCRIPTION_LENGTH,
     userAvatars,
     WordStatus,
     type APIError,
@@ -265,7 +266,7 @@
           <Input bind:value={display_name} />
         </FormGroup>
         <div>
-          <FormGroup floating label="Bio ({bio.length}/1000)">
+          <FormGroup floating label="Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})">
             <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
           </FormGroup>
         </div>
