@@ -40,6 +40,13 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "deleting member")
 	}
 
+	if m.Avatar != nil {
+		err = s.DB.DeleteMemberAvatar(ctx, m.ID, *m.Avatar)
+		if err != nil {
+			return errors.Wrap(err, "deleting member avatar")
+		}
+	}
+
 	render.NoContent(w, r)
 	return nil
 }

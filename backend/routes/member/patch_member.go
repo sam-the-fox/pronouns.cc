@@ -129,30 +129,41 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	// update avatar
 	var avatarHash *string = nil
 	if req.Avatar != nil {
-		webp, jpg, err := s.DB.ConvertAvatar(*req.Avatar)
-		if err != nil {
-			if err == db.ErrInvalidDataURI {
-				return server.APIError{
-					Code:    server.ErrBadRequest,
-					Details: "invalid avatar data URI",
-				}
-			} else if err == db.ErrInvalidContentType {
-				return server.APIError{
-					Code:    server.ErrBadRequest,
-					Details: "invalid avatar content type",
+		if *req.Avatar == "" {
+			if m.Avatar != nil {
+				err = s.DB.DeleteMemberAvatar(ctx, m.ID, *m.Avatar)
+				if err != nil {
+					log.Errorf("deleting member avatar: %v", err)
+					return errors.Wrap(err, "deleting avatar")
 				}
 			}
+			avatarHash = req.Avatar
+		} else {
+			webp, jpg, err := s.DB.ConvertAvatar(*req.Avatar)
+			if err != nil {
+				if err == db.ErrInvalidDataURI {
+					return server.APIError{
+						Code:    server.ErrBadRequest,
+						Details: "invalid avatar data URI",
+					}
+				} else if err == db.ErrInvalidContentType {
+					return server.APIError{
+						Code:    server.ErrBadRequest,
+						Details: "invalid avatar content type",
+					}
+				}
 
-			log.Errorf("converting member avatar: %v", err)
-			return err
-		}
+				log.Errorf("converting member avatar: %v", err)
+				return err
+			}
 
-		hash, err := s.DB.WriteMemberAvatar(ctx, id, webp, jpg)
-		if err != nil {
-			log.Errorf("uploading member avatar: %v", err)
-			return err
+			hash, err := s.DB.WriteMemberAvatar(ctx, id, webp, jpg)
+			if err != nil {
+				log.Errorf("uploading member avatar: %v", err)
+				return err
+			}
+			avatarHash = &hash
 		}
-		avatarHash = &hash
 	}
 
 	// start transaction
