@@ -81,8 +81,8 @@ func (db *DB) SaveToken(ctx context.Context, userID xid.ID, tokenID xid.ID) (t T
 
 func (db *DB) InvalidateToken(ctx context.Context, userID xid.ID, tokenID xid.ID) (t Token, err error) {
 	sql, args, err := sq.Update("tokens").
-		Where("user_id = ?").
-		Where("token_id = ?").
+		Where("user_id = ?", userID).
+		Where("token_id = ?", tokenID).
 		Set("invalidated", true).
 		Suffix("RETURNING *").
 		ToSql()

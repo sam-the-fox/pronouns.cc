@@ -7,7 +7,9 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
 
@@ -53,8 +55,17 @@ func (s *Server) deleteToken(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
-	t, err := s.DB.InvalidateToken(ctx, claims.UserID, claims.TokenID)
+	tokenID, err := xid.FromString(chi.URLParam(r, "id"))
 	if err != nil {
+		return server.APIError{Code: server.ErrBadRequest}
+	}
+
+	t, err := s.DB.InvalidateToken(ctx, claims.UserID, tokenID)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return server.APIError{Code: server.ErrNotFound}
+		}
+
 		return errors.Wrap(err, "invalidating token")
 	}
 

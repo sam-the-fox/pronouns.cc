@@ -212,7 +212,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated user back on success
-	render.JSON(w, r, dbUserToResponse(u, fields, nil))
+	render.JSON(w, r, GetMeResponse{
+		GetUserResponse: dbUserToResponse(u, fields, nil),
+		MaxInvites:      u.MaxInvites,
+		Discord:         u.Discord,
+		DiscordUsername: u.DiscordUsername,
+	})
 	return nil
 }
 
