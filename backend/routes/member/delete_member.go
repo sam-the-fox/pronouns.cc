@@ -47,6 +47,6 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	render.NoContent(w, r)
+	render.JSON(w, r, map[string]any{"deleted": true})
 	return nil
 }

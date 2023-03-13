@@ -37,6 +37,6 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "committing transaction")
 	}
 
-	render.NoContent(w, r)
+	render.JSON(w, r, map[string]any{"deleted": true})
 	return nil
 }

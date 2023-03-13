@@ -84,7 +84,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 
 		// TODO: implement user + token permissions
 		tokenID := xid.New()
-		token, err := s.Auth.CreateToken(u.ID, tokenID, false, true, true)
+		token, err := s.Auth.CreateToken(u.ID, tokenID, false, false, true)
 		if err != nil {
 			return err
 		}
@@ -222,7 +222,7 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 	// create token
 	// TODO: implement user + token permissions
 	tokenID := xid.New()
-	token, err := s.Auth.CreateToken(u.ID, tokenID, false, true, true)
+	token, err := s.Auth.CreateToken(u.ID, tokenID, false, false, true)
 	if err != nil {
 		return errors.Wrap(err, "creating token")
 	}
