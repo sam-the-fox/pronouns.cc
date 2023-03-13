@@ -73,6 +73,7 @@ func (l *Limiter) handle(next http.Handler) http.Handler {
 			if err == nil && ip == l.frontendIP {
 				// frontend gets to bypass ratelimit
 				next.ServeHTTP(w, r)
+				return
 			}
 		}
 
