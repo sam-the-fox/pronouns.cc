@@ -125,13 +125,13 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 			return err
 		}
 
-		webpURL, jpgURL, err := s.DB.WriteMemberAvatar(ctx, m.ID, webp, jpg)
+		hash, err := s.DB.WriteMemberAvatar(ctx, m.ID, webp, jpg)
 		if err != nil {
 			log.Errorf("uploading member avatar: %v", err)
 			return err
 		}
 
-		err = tx.QueryRow(ctx, "UPDATE members SET avatar_urls = $1 WHERE id = $2", []string{webpURL, jpgURL}, m.ID).Scan(&m.AvatarURLs)
+		err = tx.QueryRow(ctx, "UPDATE members SET avatar = $1 WHERE id = $2", hash, m.ID).Scan(&m.Avatar)
 		if err != nil {
 			return errors.Wrap(err, "setting avatar urls in db")
 		}

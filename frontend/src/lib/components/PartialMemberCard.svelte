@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { WordStatus, type PartialMember, type User } from "$lib/api/entities";
+  import { memberAvatars, WordStatus, type PartialMember, type User } from "$lib/api/entities";
   import FallbackImage from "./FallbackImage.svelte";
 
   export let user: User;
@@ -31,7 +31,7 @@
 </script>
 
 <div>
-  <FallbackImage urls={member.avatar_urls} width={200} alt="Avatar for {member.name}" />
+  <FallbackImage urls={memberAvatars(member)} width={200} alt="Avatar for {member.name}" />
   <p class="m-2">
     <a class="text-reset fs-5" href="/@{user.name}/{member.name}">
       {member.display_name ?? member.name}

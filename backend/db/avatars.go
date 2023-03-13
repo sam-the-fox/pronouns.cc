@@ -3,7 +3,9 @@ package db
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"io"
 	"os/exec"
 	"strings"
@@ -23,8 +25,8 @@ const ErrInvalidContentType = errors.Sentinel("invalid avatar content type")
 
 // ConvertAvatar parses an avatar from a data URI, converts it to WebP and JPEG, and returns the results.
 func (db *DB) ConvertAvatar(data string) (
-	webp io.Reader,
-	jpg io.Reader,
+	webp *bytes.Buffer,
+	jpg *bytes.Buffer,
 	err error,
 ) {
 	data = strings.TrimSpace(data)
@@ -142,53 +144,59 @@ func (db *DB) ConvertAvatar(data string) (
 }
 
 func (db *DB) WriteUserAvatar(ctx context.Context,
-	userID xid.ID, webp io.Reader, jpeg io.Reader,
+	userID xid.ID, webp *bytes.Buffer, jpeg *bytes.Buffer,
 ) (
-	webpLocation string,
-	jpegLocation string,
-	err error,
+	hash string, err error,
 ) {
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+".webp", webp, -1, minio.PutObjectOptions{
+	hasher := sha256.New()
+	_, err = hasher.Write(webp.Bytes())
+	if err != nil {
+		return "", errors.Wrap(err, "hashing webp avatar")
+	}
+	hash = hex.EncodeToString(hasher.Sum(nil))
+
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
 		ContentType: "image/webp",
 	})
 	if err != nil {
-		return "", "", errors.Wrap(err, "uploading webp avatar")
+		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
 		ContentType: "image/jpeg",
 	})
 	if err != nil {
-		return "", "", errors.Wrap(err, "uploading jpeg avatar")
+		return "", errors.Wrap(err, "uploading jpeg avatar")
 	}
 
-	return db.baseURL.JoinPath("/media/users/" + userID.String() + ".webp").String(),
-		db.baseURL.JoinPath("/media/users/" + userID.String() + ".jpg").String(),
-		nil
+	return hash, nil
 }
 
 func (db *DB) WriteMemberAvatar(ctx context.Context,
-	memberID xid.ID, webp io.Reader, jpeg io.Reader,
+	memberID xid.ID, webp *bytes.Buffer, jpeg *bytes.Buffer,
 ) (
-	webpLocation string,
-	jpegLocation string,
-	err error,
+	hash string, err error,
 ) {
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".webp", webp, -1, minio.PutObjectOptions{
+	hasher := sha256.New()
+	_, err = hasher.Write(webp.Bytes())
+	if err != nil {
+		return "", errors.Wrap(err, "hashing webp avatar")
+	}
+	hash = hex.EncodeToString(hasher.Sum(nil))
+
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
 		ContentType: "image/webp",
 	})
 	if err != nil {
-		return "", "", errors.Wrap(err, "uploading webp avatar")
+		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+".jpg", jpeg, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
 		ContentType: "image/jpeg",
 	})
 	if err != nil {
-		return "", "", errors.Wrap(err, "uploading jpeg avatar")
+		return "", errors.Wrap(err, "uploading jpeg avatar")
 	}
 
-	return db.baseURL.JoinPath("/media/members/" + memberID.String() + ".webp").String(),
-		db.baseURL.JoinPath("/media/members/" + memberID.String() + ".jpg").String(),
-		nil
+	return hash, nil
 }

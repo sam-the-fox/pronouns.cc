@@ -101,7 +101,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// update avatar
-	var avatarURLs []string = nil
+	var avatarHash *string = nil
 	if req.Avatar != nil {
 		webp, jpg, err := s.DB.ConvertAvatar(*req.Avatar)
 		if err != nil {
@@ -121,12 +121,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		webpURL, jpgURL, err := s.DB.WriteUserAvatar(ctx, claims.UserID, webp, jpg)
+		hash, err := s.DB.WriteUserAvatar(ctx, claims.UserID, webp, jpg)
 		if err != nil {
 			log.Errorf("uploading user avatar: %v", err)
 			return err
 		}
-		avatarURLs = []string{webpURL, jpgURL}
+		avatarHash = &hash
 	}
 
 	// start transaction
@@ -152,7 +152,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links, avatarURLs)
+	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links, avatarHash)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err

@@ -11,6 +11,7 @@
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
+  import { userAvatars } from "$lib/api/entities";
 
   export let data: PageData;
 
@@ -32,7 +33,7 @@
   <div class="grid row-gap-3">
     <div class="row">
       <div class="col-md text-center">
-        <FallbackImage width={200} urls={data.avatar_urls} alt="Avatar for @{data.name}" />
+        <FallbackImage width={200} urls={userAvatars(data)} alt="Avatar for @{data.name}" />
       </div>
       <div class="col-md">
         {#if data.display_name}

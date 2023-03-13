@@ -15,7 +15,7 @@ type memberListResponse struct {
 	Name        string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
 	Bio         *string           `json:"bio"`
-	AvatarURLs  []string          `json:"avatar_urls"`
+	Avatar      *string           `json:"avatar"`
 	Links       []string          `json:"links"`
 	Names       []db.FieldEntry   `json:"names"`
 	Pronouns    []db.PronounEntry `json:"pronouns"`
@@ -25,13 +25,13 @@ func membersToMemberList(ms []db.Member) []memberListResponse {
 	resps := make([]memberListResponse, len(ms))
 	for i := range ms {
 		resps[i] = memberListResponse{
-			ID:         ms[i].ID,
-			Name:       ms[i].Name,
-			Bio:        ms[i].Bio,
-			AvatarURLs: db.NotNull(ms[i].AvatarURLs),
-			Links:      db.NotNull(ms[i].Links),
-			Names:      db.NotNull(ms[i].Names),
-			Pronouns:   db.NotNull(ms[i].Pronouns),
+			ID:       ms[i].ID,
+			Name:     ms[i].Name,
+			Bio:      ms[i].Bio,
+			Avatar:   ms[i].Avatar,
+			Links:    db.NotNull(ms[i].Links),
+			Names:    db.NotNull(ms[i].Names),
+			Pronouns: db.NotNull(ms[i].Pronouns),
 		}
 	}
 

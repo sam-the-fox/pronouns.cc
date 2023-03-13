@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import {
+    userAvatars,
     WordStatus,
     type APIError,
     type Field,
@@ -195,7 +196,7 @@
             {#if avatar}
               <img width={200} src={avatar} alt="New avatar" class="rounded-circle img-fluid" />
             {:else}
-              <FallbackImage alt="Current avatar" urls={$userStore.avatar_urls} width={200} />
+              <FallbackImage alt="Current avatar" urls={userAvatars($userStore)} width={200} />
             {/if}
           </div>
           <div class="col-md">

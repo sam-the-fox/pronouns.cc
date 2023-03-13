@@ -1,9 +1,11 @@
+import { PUBLIC_BASE_URL } from "$env/static/public";
+
 export interface User {
   id: string;
   name: string;
   display_name: string | null;
   bio: string | null;
-  avatar_urls: string[];
+  avatar: string | null;
   links: string[];
 
   names: FieldEntry[];
@@ -47,7 +49,7 @@ export interface PartialMember {
   name: string;
   display_name: string | null;
   bio: string | null;
-  avatar_urls: string[];
+  avatar: string | null;
   links: string[];
   names: FieldEntry[];
   pronouns: Pronoun[];
@@ -63,7 +65,7 @@ export interface MemberPartialUser {
   id: string;
   name: string;
   display_name: string | null;
-  avatar_urls: string[];
+  avatar: string | null;
 }
 
 export interface APIError {
@@ -98,3 +100,21 @@ export enum ErrorCode {
 
   RequestTooBig = 4001,
 }
+
+export const userAvatars = (user: User | MeUser | MemberPartialUser) => {
+  if (!user.avatar) return [];
+
+  return [
+    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.webp`,
+    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.webp`,
+  ];
+};
+
+export const memberAvatars = (member: Member | PartialMember) => {
+  if (!member.avatar) return [];
+
+  return [
+    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.webp`,
+    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.webp`,
+  ];
+};

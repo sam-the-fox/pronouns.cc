@@ -16,7 +16,7 @@ type GetMemberResponse struct {
 	Name        string   `json:"name"`
 	DisplayName *string  `json:"display_name"`
 	Bio         *string  `json:"bio"`
-	AvatarURLs  []string `json:"avatar_urls"`
+	Avatar      *string  `json:"avatar"`
 	Links       []string `json:"links"`
 
 	Names    []db.FieldEntry   `json:"names"`
@@ -32,7 +32,7 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field) GetMemberRespon
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
 		Bio:         m.Bio,
-		AvatarURLs:  db.NotNull(m.AvatarURLs),
+		Avatar:      m.Avatar,
 		Links:       db.NotNull(m.Links),
 
 		Names:    db.NotNull(m.Names),
@@ -43,16 +43,16 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field) GetMemberRespon
 			ID:          u.ID,
 			Username:    u.Username,
 			DisplayName: u.DisplayName,
-			AvatarURLs:  db.NotNull(u.AvatarURLs),
+			Avatar:      u.Avatar,
 		},
 	}
 }
 
 type PartialUser struct {
-	ID          xid.ID   `json:"id"`
-	Username    string   `json:"name"`
-	DisplayName *string  `json:"display_name"`
-	AvatarURLs  []string `json:"avatar_urls"`
+	ID          xid.ID  `json:"id"`
+	Username    string  `json:"name"`
+	DisplayName *string `json:"display_name"`
+	Avatar      *string `json:"avatar"`
 }
 
 func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {

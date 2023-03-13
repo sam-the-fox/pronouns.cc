@@ -21,7 +21,7 @@ type Member struct {
 	Name        string
 	DisplayName *string
 	Bio         *string
-	AvatarURLs  []string `db:"avatar_urls"`
+	Avatar      *string
 	Links       []string
 	Names       []FieldEntry
 	Pronouns    []PronounEntry
@@ -61,7 +61,7 @@ func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (
 
 // UserMembers returns all of a user's members, sorted by name.
 func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err error) {
-	sql, args, err := sq.Select("id", "user_id", "name", "display_name", "bio", "avatar_urls", "names", "pronouns").
+	sql, args, err := sq.Select("id", "user_id", "name", "display_name", "bio", "avatar", "names", "pronouns").
 		From("members").Where("user_id = ?", userID).
 		OrderBy("name", "id").ToSql()
 	if err != nil {
@@ -141,9 +141,9 @@ func (db *DB) UpdateMember(
 	tx pgx.Tx, id xid.ID,
 	name, displayName, bio *string,
 	links *[]string,
-	avatarURLs []string,
+	avatar *string,
 ) (m Member, err error) {
-	if name == nil && displayName == nil && bio == nil && links == nil && avatarURLs == nil {
+	if name == nil && displayName == nil && bio == nil && links == nil && avatar == nil {
 		// get member
 		sql, args, err := sq.Select("*").From("members").Where("id = ?", id).ToSql()
 		if err != nil {
@@ -183,8 +183,12 @@ func (db *DB) UpdateMember(
 		builder = builder.Set("links", *links)
 	}
 
-	if avatarURLs != nil {
-		builder = builder.Set("avatar_urls", avatarURLs)
+	if avatar != nil {
+		if *avatar == "" {
+			builder = builder.Set("avatar", nil)
+		} else {
+			builder = builder.Set("avatar", avatar)
+		}
 	}
 
 	sql, args, err := builder.ToSql()

@@ -9,6 +9,7 @@
   import PronounLink from "$lib/components/PronounLink.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { Button, Icon } from "sveltestrap";
+  import { memberAvatars } from "$lib/api/entities";
 
   export let data: PageData;
 
@@ -29,7 +30,7 @@
   <div class="grid">
     <div class="row">
       <div class="col-md text-center">
-        <FallbackImage width={200} urls={data.avatar_urls} alt="Avatar for @{data.name}" />
+        <FallbackImage width={200} urls={memberAvatars(data)} alt="Avatar for @{data.name}" />
       </div>
       <div class="col-md">
         <h2>{data.display_name ?? data.name}</h2>

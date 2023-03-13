@@ -19,8 +19,8 @@ type User struct {
 	DisplayName *string
 	Bio         *string
 
-	AvatarURLs []string `db:"avatar_urls"`
-	Links      []string
+	Avatar *string
+	Links  []string
 
 	Names    []FieldEntry
 	Pronouns []PronounEntry
@@ -208,9 +208,9 @@ func (db *DB) UpdateUser(
 	tx pgx.Tx, id xid.ID,
 	displayName, bio *string,
 	links *[]string,
-	avatarURLs []string,
+	avatar *string,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatarURLs == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -243,8 +243,12 @@ func (db *DB) UpdateUser(
 		builder = builder.Set("links", *links)
 	}
 
-	if avatarURLs != nil {
-		builder = builder.Set("avatar_urls", avatarURLs)
+	if avatar != nil {
+		if *avatar == "" {
+			builder = builder.Set("avatar", nil)
+		} else {
+			builder = builder.Set("avatar", avatar)
+		}
 	}
 
 	sql, args, err := builder.ToSql()

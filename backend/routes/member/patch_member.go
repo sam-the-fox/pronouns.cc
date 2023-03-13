@@ -127,7 +127,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// update avatar
-	var avatarURLs []string = nil
+	var avatarHash *string = nil
 	if req.Avatar != nil {
 		webp, jpg, err := s.DB.ConvertAvatar(*req.Avatar)
 		if err != nil {
@@ -147,12 +147,12 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		webpURL, jpgURL, err := s.DB.WriteMemberAvatar(ctx, id, webp, jpg)
+		hash, err := s.DB.WriteMemberAvatar(ctx, id, webp, jpg)
 		if err != nil {
 			log.Errorf("uploading member avatar: %v", err)
 			return err
 		}
-		avatarURLs = []string{webpURL, jpgURL}
+		avatarHash = &hash
 	}
 
 	// start transaction
@@ -163,7 +163,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	m, err = s.DB.UpdateMember(ctx, tx, id, req.Name, req.DisplayName, req.Bio, req.Links, avatarURLs)
+	m, err = s.DB.UpdateMember(ctx, tx, id, req.Name, req.DisplayName, req.Bio, req.Links, avatarHash)
 	if err != nil {
 		switch errors.Cause(err) {
 		case db.ErrNothingToUpdate:

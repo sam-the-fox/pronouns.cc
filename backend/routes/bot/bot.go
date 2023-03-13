@@ -23,6 +23,14 @@ type Bot struct {
 	baseURL   string
 }
 
+func (bot *Bot) UserAvatarURL(u db.User) string {
+	if u.Avatar == nil {
+		return ""
+	}
+
+	return bot.baseURL + "/media/users/" + u.ID.String() + "/" + *u.Avatar + ".webp"
+}
+
 func Mount(srv *server.Server, r chi.Router) {
 	publicKey, err := hex.DecodeString(os.Getenv("DISCORD_PUBLIC_KEY"))
 	if err != nil {
@@ -97,8 +105,8 @@ func (bot *Bot) userPronouns(w http.ResponseWriter, r *http.Request, ev *discord
 	}
 
 	avatarURL := du.AvatarURL("")
-	if len(u.AvatarURLs) > 0 {
-		avatarURL = u.AvatarURLs[0]
+	if url := bot.UserAvatarURL(u); url != "" {
+		avatarURL = url
 	}
 	name := u.Username
 	if u.DisplayName != nil {
