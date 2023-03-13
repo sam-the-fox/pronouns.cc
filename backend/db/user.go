@@ -55,6 +55,11 @@ const (
 	MaxLinkLength        = 256
 )
 
+const (
+	SelfDeleteAfter = 30 * 24 * time.Hour
+	ModDeleteAfter  = 180 * 24 * time.Hour
+)
+
 // CreateUser creates a user with the given username.
 func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u User, err error) {
 	// check if the username is valid
