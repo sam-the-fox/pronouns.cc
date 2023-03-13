@@ -16,6 +16,7 @@
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
+  import EditableField from "../EditableField.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -194,6 +195,13 @@
     else if (index === 0) links = links.slice(1);
     else if (index === links.length - 1) links = links.slice(0, links.length - 1);
     else links = [...links.slice(0, index - 1), ...links.slice(0, index + 1)];
+  };
+
+  const removeField = (index: number) => {
+    if (fields.length === 1) fields = [];
+    else if (index === 0) fields = fields.slice(1);
+    else if (index === fields.length - 1) fields = fields.slice(0, fields.length - 1);
+    else fields = [...fields.slice(0, index - 1), ...fields.slice(0, index + 1)];
   };
 
   const updateUser = async () => {
@@ -418,6 +426,19 @@
           />
         </div>
       </div>
+    </div>
+    <hr />
+    <h4>
+      Fields <Button on:click={() => (fields = [...fields, { name: "New field", entries: [] }])}>
+        Add new field
+      </Button>
+    </h4>
+  </div>
+  <div class="grid gap-3">
+    <div class="row row-cols-1 row-cols-md-2">
+      {#each fields as _, index}
+        <EditableField bind:field={fields[index]} deleteField={() => removeField(index)} />
+      {/each}
     </div>
   </div>
 {/if}
