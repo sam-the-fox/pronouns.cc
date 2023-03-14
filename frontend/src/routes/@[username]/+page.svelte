@@ -94,7 +94,7 @@
   {/if}
   <div class="grid row-gap-3">
     <div class="row">
-      <div class="col-md text-center">
+      <div class="col-md-4 text-center">
         <FallbackImage width={200} urls={userAvatars(data)} alt="Avatar for @{data.name}" />
       </div>
       <div class="col-md">
