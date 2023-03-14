@@ -115,15 +115,15 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if err := validateSlicePtr("name", req.Names); err != nil {
-		return err
+		return *err
 	}
 
 	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
-		return err
+		return *err
 	}
 
 	if err := validateSlicePtr("field", req.Fields); err != nil {
-		return err
+		return *err
 	}
 
 	// update avatar

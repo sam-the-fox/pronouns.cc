@@ -65,15 +65,15 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	}
 
 	if err := validateSlicePtr("name", &cmr.Names); err != nil {
-		return err
+		return *err
 	}
 
 	if err := validateSlicePtr("pronoun", &cmr.Pronouns); err != nil {
-		return err
+		return *err
 	}
 
 	if err := validateSlicePtr("field", &cmr.Fields); err != nil {
-		return err
+		return *err
 	}
 
 	tx, err := s.DB.Begin(ctx)
@@ -175,7 +175,7 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 		if s := pronouns.Validate(); s != "" {
 			return &server.APIError{
 				Code:    server.ErrBadRequest,
-				Details: fmt.Sprintf("%s %d: %s", typ, i, s),
+				Details: fmt.Sprintf("%s %d: %s", typ, i+1, s),
 			}
 		}
 	}

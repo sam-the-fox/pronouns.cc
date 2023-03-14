@@ -89,15 +89,15 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if err := validateSlicePtr("name", req.Names); err != nil {
-		return err
+		return *err
 	}
 
 	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
-		return err
+		return *err
 	}
 
 	if err := validateSlicePtr("field", req.Fields); err != nil {
-		return err
+		return *err
 	}
 
 	// update avatar
@@ -250,7 +250,7 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 		if s := pronouns.Validate(); s != "" {
 			return &server.APIError{
 				Code:    server.ErrBadRequest,
-				Details: fmt.Sprintf("%s %d: %s", typ, i, s),
+				Details: fmt.Sprintf("%s %d: %s", typ, i+1, s),
 			}
 		}
 	}
