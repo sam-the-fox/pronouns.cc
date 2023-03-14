@@ -16,7 +16,7 @@
   export let data: PageData;
 
   let bio: string | null;
-  $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio)) : null;
+  $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio, { breaks: true })) : null;
 
   const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
   const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);

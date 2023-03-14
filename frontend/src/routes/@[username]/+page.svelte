@@ -37,7 +37,7 @@
   export let data: PageData;
 
   let bio: string | null;
-  $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio)) : null;
+  $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio, { breaks: true })) : null;
 
   let memberPage: number = 0;
   let memberSlice: PartialMember[] = [];
