@@ -3,13 +3,18 @@ import { PUBLIC_BASE_URL } from "$env/static/public";
 
 export async function apiFetch<T>(
   path: string,
-  { method, body, token }: { method?: string; body?: any; token?: string },
+  {
+    method,
+    body,
+    token,
+    headers,
+  }: { method?: string; body?: any; token?: string; headers?: Record<string, string> },
 ) {
-
   const resp = await fetch(`${PUBLIC_BASE_URL}/api/v1${path}`, {
     method: method || "GET",
     headers: {
       ...(token ? { Authorization: token } : {}),
+      ...(headers ? headers : {}),
       "Content-Type": "application/json",
     },
     body: body ? JSON.stringify(body) : null,

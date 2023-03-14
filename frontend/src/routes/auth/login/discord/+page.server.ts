@@ -30,4 +30,7 @@ interface CallbackResponse {
   discord?: string;
   ticket?: string;
   require_invite: boolean;
+
+  is_deleted: boolean;
+  deleted_at?: Date;
 }

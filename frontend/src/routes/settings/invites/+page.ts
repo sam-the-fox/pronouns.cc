@@ -17,7 +17,7 @@ export const load = (async () => {
       data.invitesEnabled = false;
       data.invites = [];
     } else {
-      throw error(500, (e as APIError).message);
+      throw error((e as APIError).code, (e as APIError).message);
     }
   }
 

@@ -78,6 +78,10 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.With(server.MustAuth).Get("/tokens", server.WrapHandler(s.getTokens))
 		r.With(server.MustAuth).Post("/tokens", server.WrapHandler(s.createToken))
 		r.With(server.MustAuth).Delete("/tokens/{id}", server.WrapHandler(s.deleteToken))
+
+		// cancel user delete
+		// uses a special token, so handled in the function itself
+		r.Get("/cancel-delete", server.WrapHandler(s.cancelDelete))
 	})
 }
 

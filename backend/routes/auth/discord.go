@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
@@ -41,6 +42,9 @@ type discordCallbackResponse struct {
 	Discord       string `json:"discord,omitempty"` // username, for UI purposes
 	Ticket        string `json:"ticket,omitempty"`
 	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
+
+	IsDeleted bool       `json:"is_deleted"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
 func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
@@ -77,6 +81,25 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 
 	u, err := s.DB.DiscordUser(ctx, du.ID)
 	if err == nil {
+		if u.DeletedAt != nil && *u.SelfDelete {
+			// store cancel delete token
+			token := undeleteToken()
+			err = s.saveUndeleteToken(ctx, u.ID, token)
+			if err != nil {
+				log.Errorf("saving undelete token: %v", err)
+				return err
+			}
+
+			render.JSON(w, r, discordCallbackResponse{
+				HasAccount: true,
+				Token:      token,
+				User:       dbUserToUserResponse(u, []db.Field{}),
+				IsDeleted:  true,
+				DeletedAt:  u.DeletedAt,
+			})
+			return nil
+		}
+
 		err = u.UpdateFromDiscord(ctx, s.DB, du)
 		if err != nil {
 			log.Errorf("updating user %v with Discord info: %v", u.ID, err)

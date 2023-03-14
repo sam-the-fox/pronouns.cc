@@ -77,15 +77,15 @@ func New() (*Server, error) {
 	// set scopes
 	// users
 	rateLimiter.Scope("GET", "/users/*", 60)
-	rateLimiter.Scope("PATCH", "/users/@me", 5)
+	rateLimiter.Scope("PATCH", "/users/@me", 10)
 
 	// members
 	rateLimiter.Scope("GET", "/users/*/members", 60)
 	rateLimiter.Scope("GET", "/users/*/members/*", 60)
 
-	rateLimiter.Scope("POST", "/members", 5)
+	rateLimiter.Scope("POST", "/members", 10)
 	rateLimiter.Scope("GET", "/members/*", 60)
-	rateLimiter.Scope("PATCH", "/members/*", 5)
+	rateLimiter.Scope("PATCH", "/members/*", 20)
 	rateLimiter.Scope("DELETE", "/members/*", 5)
 
 	// auth

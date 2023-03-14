@@ -284,3 +284,20 @@ func (db *DB) DeleteUser(ctx context.Context, tx pgx.Tx, id xid.ID, selfDelete b
 	}
 	return nil
 }
+
+func (db *DB) UndoDeleteUser(ctx context.Context, id xid.ID) error {
+	sql, args, err := sq.Update("users").
+		Set("deleted_at", nil).
+		Set("self_delete", nil).
+		Set("delete_reason", nil).
+		Where("id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = db.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}

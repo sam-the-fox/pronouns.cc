@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Alert, Icon } from "sveltestrap";
+  import { Alert, Button, Icon } from "sveltestrap";
 
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
@@ -16,7 +16,7 @@
   export let data: PageData;
 
   onMount(() => {
-    if (data.token && data.user) {
+    if (!data.is_deleted && data.token && data.user) {
       localStorage.setItem("pronouns-token", data.token);
       localStorage.setItem("pronouns-user", JSON.stringify(data.user));
       userStore.set(data.user);
@@ -44,6 +44,25 @@
       goto("/");
     } catch (e) {
       data.error = e as APIError;
+    }
+  };
+
+  let deleteCancelled = false;
+  let deleteError: APIError | null = null;
+  const cancelDelete = async () => {
+    try {
+      await apiFetch<any>("/auth/cancel-delete", {
+        method: "GET",
+        headers: {
+          "X-Delete-Token": data.token!,
+        },
+      });
+
+      deleteCancelled = true;
+      deleteError = null;
+    } catch (e) {
+      deleteCancelled = false;
+      deleteError = e as APIError;
     }
   };
 </script>
@@ -91,8 +110,27 @@
       By signing up, you agree to the <a href="/page/tos">terms of service</a> and the
       <a href="/page/privacy">privacy policy</a>.
     </div>
-    <button type="submit" class="btn btn-primary">Sign up</button>
+    <Button type="submit" color="primary">Sign up</Button>
   </form>
+{:else if data.is_deleted && data.token}
+  <p>Your account is pending deletion since {data.deleted_at}.</p>
+  <p>If you wish to cancel deletion, press the button below.</p>
+  <p>
+    <Button color="primary" on:click={cancelDelete} disabled={deleteCancelled}
+      >Cancel account deletion</Button
+    >
+  </p>
+  {#if deleteCancelled}
+    <Alert color="secondary" fade={false}>
+      Account deletion cancelled! You can now <a href="/auth/login">log in</a> again.
+    </Alert>
+  {/if}
+  {#if deleteError}
+    <Alert color="danger" fade={false}>
+      <h4 class="alert-heading">An error occurred</h4>
+      <b>{deleteError.code}</b>: {deleteError.message}
+    </Alert>
+  {/if}
 {:else}
   Loading...
 {/if}
