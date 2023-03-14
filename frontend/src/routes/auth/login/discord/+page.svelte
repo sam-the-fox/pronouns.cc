@@ -7,6 +7,7 @@
   import { apiFetch } from "$lib/api/fetch";
   import { userStore } from "$lib/store";
   import type { PageData } from "./$types";
+  import ErrorAlert from "$lib/components/ErrorAlert.svelte";
 
   interface SignupResponse {
     user: MeUser;
@@ -74,11 +75,7 @@
 <h1>Log in with Discord</h1>
 
 {#if data.error}
-  <Alert color="danger" fade={false}>
-    <h4 class="alert-heading">An error occurred</h4>
-    <b>{data.error.code}:</b>
-    {data.error.message}
-  </Alert>
+  <ErrorAlert error={data.error} />
 {/if}
 {#if data.ticket}
   <form on:submit|preventDefault={signupForm}>
@@ -126,10 +123,7 @@
     </Alert>
   {/if}
   {#if deleteError}
-    <Alert color="danger" fade={false}>
-      <h4 class="alert-heading">An error occurred</h4>
-      <b>{deleteError.code}</b>: {deleteError.message}
-    </Alert>
+    <ErrorAlert error={deleteError} />
   {/if}
 {:else}
   Loading...

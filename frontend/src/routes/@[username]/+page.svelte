@@ -4,15 +4,34 @@
 
   import type { PageData } from "./$types";
 
-  import { Alert, Icon } from "sveltestrap";
+  import {
+    Alert,
+    Button,
+    ButtonGroup,
+    Icon,
+    Input,
+    Modal,
+    ModalBody,
+    ModalFooter,
+  } from "sveltestrap";
   import FieldCard from "$lib/components/FieldCard.svelte";
   import StatusIcon from "$lib/components/StatusIcon.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { pronounDisplay, userAvatars, WordStatus, type Member } from "$lib/api/entities";
+  import {
+    MAX_MEMBERS,
+    pronounDisplay,
+    userAvatars,
+    WordStatus,
+    type APIError,
+    type Member,
+    type PartialMember,
+  } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
+  import { apiFetchClient } from "$lib/api/fetch";
+  import ErrorAlert from "$lib/components/ErrorAlert.svelte";
 
   export let data: PageData;
 
@@ -20,8 +39,44 @@
   $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio)) : null;
 
   let memberPage: number = 0;
-  let memberSlice: Member[] = [];
-  $: member = data.members.slice(memberPage * 20, memberPage + 1 * 20);
+  let memberSlice: PartialMember[] = [];
+  $: memberSlice = data.members.slice(memberPage * 20, (memberPage + 1) * 20);
+  const totalPages = Math.floor(data.members.length / 20) + 1;
+
+  const prevPage = () => {
+    if (memberPage === 0) {
+      return;
+    }
+    memberPage = memberPage - 1;
+  };
+
+  const nextPage = () => {
+    if ((memberPage + 1) * 20 > data.members.length) {
+      return;
+    }
+    memberPage = memberPage + 1;
+  };
+
+  let modalOpen = false;
+  let toggleModal = () => (modalOpen = !modalOpen);
+  let newMemberName = "";
+  let newMemberError: APIError | null = null;
+
+  const createMember = async () => {
+    try {
+      const member = await apiFetchClient<Member>("/members", "POST", {
+        name: newMemberName,
+      });
+
+      newMemberName = "";
+      newMemberError = null;
+      data.members = [...data.members, member];
+
+      toggleModal();
+    } catch (e) {
+      newMemberError = e as APIError;
+    }
+  };
 
   const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
   const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
@@ -97,15 +152,49 @@
       <div class="row">
         <div class="col">
           <hr />
-          <h2>Members</h2>
+          <h2>
+            Members
+            {#if $userStore && $userStore.id === data.id}
+              <Button
+                color="success"
+                disabled={data.members.length >= MAX_MEMBERS}
+                on:click={toggleModal}><Icon name="person-plus-fill" /> Create member</Button
+              >
+            {/if}
+            {#if totalPages > 1}
+              <ButtonGroup>
+                <Button on:click={prevPage} disabled={memberPage === 0}
+                  ><Icon name="chevron-left" /> Previous page</Button
+                >
+                <Button disabled>Page {memberPage + 1}/{totalPages}</Button>
+                <Button on:click={nextPage} disabled={memberPage === totalPages - 1}
+                  >Next page <Icon name="chevron-right" /></Button
+                >
+              </ButtonGroup>
+            {/if}
+          </h2>
         </div>
       </div>
       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 text-center">
-        {#each data.members as member}
+        {#each memberSlice as member}
           <PartialMemberCard user={data} {member} />
         {/each}
       </div>
     {/if}
+    <Modal header="Create member" isOpen={modalOpen} toggle={toggleModal}>
+      <ModalBody>
+        <Input bind:value={newMemberName} />
+        {#if newMemberError}
+          <ErrorAlert error={newMemberError} />
+        {/if}
+      </ModalBody>
+      <ModalFooter>
+        <Button color="primary" on:click={createMember} disabled={newMemberName.length === 0}
+          >Create member</Button
+        >
+        <Button color="secondary" on:click={toggleModal}>Cancel</Button>
+      </ModalFooter>
+    </Modal>
   </div>
 </div>
 

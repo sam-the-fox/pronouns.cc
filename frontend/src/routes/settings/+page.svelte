@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { type MeUser, userAvatars, type APIError, MAX_MEMBERS } from "$lib/api/entities";
   import { apiFetchClient } from "$lib/api/fetch";
+  import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
   import {
@@ -77,10 +78,7 @@
         </p>
       {/if}
       {#if error}
-        <Alert color="danger" fade={false}>
-          <h5 class="alert-heading">An error occurred</h5>
-          <b>{error.code}</b>: {error.message}
-        </Alert>
+        <ErrorAlert {error} />
       {/if}
     </div>
     <div class="col-lg-4">
@@ -137,10 +135,7 @@
             <input type="text" class="form-control" bind:value={deleteUsername} />
           </p>
           {#if deleteError}
-            <Alert color="danger" fade={false}>
-              <h5 class="alert-heading">An error occurred</h5>
-              <b>{deleteError.code}</b>: {deleteError.message}
-            </Alert>
+            <ErrorAlert error={deleteError} />
           {/if}
         </ModalBody>
         <ModalFooter>

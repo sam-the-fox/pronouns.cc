@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { APIError, Invite } from "$lib/api/entities";
   import { apiFetchClient } from "$lib/api/fetch";
+  import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { Alert, Button, Modal, Table } from "sveltestrap";
   import type { PageData } from "./$types";
 
@@ -54,10 +55,7 @@
       </div>
       <div class="col-md">
         {#if error}
-          <Alert color="danger" fade={false}>
-            <h4 class="alert-heading">An error occurred</h4>
-            <b>{error.code}</b>: {error.message}
-          </Alert>
+          <ErrorAlert {error} />
         {/if}
       </div>
     </div>

@@ -27,6 +27,7 @@
   import EditableField from "../EditableField.svelte";
   import EditableName from "../EditableName.svelte";
   import EditablePronouns from "../EditablePronouns.svelte";
+  import ErrorAlert from "$lib/components/ErrorAlert.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -250,13 +251,7 @@
 </h1>
 
 {#if error}
-  <Alert color="danger" fade={false}>
-    <h4 class="alert-header">An error occurred</h4>
-    <p>
-      <b>{error.code}</b>: {error.message}
-      {#if error.details}{error.details}{/if}
-    </p>
-  </Alert>
+  <ErrorAlert {error} />
 {/if}
 
 {#if !$userStore}
