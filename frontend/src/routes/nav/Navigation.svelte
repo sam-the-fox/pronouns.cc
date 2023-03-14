@@ -85,9 +85,6 @@
         <NavItem>
           <NavLink href="/settings">Settings</NavLink>
         </NavItem>
-        <NavItem>
-          <NavLink href="/auth/logout">Log out</NavLink>
-        </NavItem>
       {:else}
         <NavItem>
           <NavLink href="/auth/login">Log in</NavLink>
