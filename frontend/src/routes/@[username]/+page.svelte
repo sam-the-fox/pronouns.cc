@@ -11,16 +11,56 @@
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { userAvatars } from "$lib/api/entities";
+  import { pronounDisplay, userAvatars, WordStatus } from "$lib/api/entities";
+  import { PUBLIC_BASE_URL } from "$env/static/public";
 
   export let data: PageData;
 
   let bio: string | null;
   $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio)) : null;
+
+  const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
+  const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
 </script>
 
 <svelte:head>
   <title>@{data.name} - pronouns.cc</title>
+
+  <meta
+    property="og:title"
+    content={data.display_name ? `${data.display_name} (@${data.name})` : `@${data.name}`}
+  />
+  <meta property="og:url" content="{PUBLIC_BASE_URL}/@{data.name}" />
+
+  {#if data.avatar}
+    <meta property="og:image" content={userAvatars(data)[0]} />
+  {/if}
+
+  {#if favNames.length !== 0 && favPronouns.length !== 0}
+    <meta
+      property="og:description"
+      content="@{data.name} goes by {favNames.map((x) => x.value).join(', ')} and uses {favPronouns
+        .map((x) => pronounDisplay(x))
+        .join(', ')} pronouns."
+    />
+  {:else if favNames.length !== 0}
+    <meta
+      property="og:description"
+      content="@{data.name} goes by {favNames.map((x) => x.value).join(', ')}."
+    />
+  {:else if favPronouns.length !== 0}
+    <meta
+      property="og:description"
+      content="@{data.name} uses {favPronouns.map((x) => pronounDisplay(x)).join(', ')} pronouns."
+    />
+  {:else if data.bio && data.bio !== ""}
+    <meta
+      property="og:description"
+      content="{data.bio.slice(0, 500)}${data.bio.length > 500 ? '…' : ''}"
+    />
+  {:else}
+    <meta property="og:description" content="@{data.name} on pronouns.cc" />
+  {/if}
 </svelte:head>
 
 <div class="container">

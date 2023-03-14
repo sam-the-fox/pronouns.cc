@@ -111,6 +111,14 @@ export enum ErrorCode {
   RequestTooBig = 4001,
 }
 
+export const pronounDisplay = (entry: Pronoun) => {
+  if (entry.display_text) return entry.display_text;
+
+  const split = entry.pronouns.split("/");
+  if (split.length < 2) return split.join("/");
+  else return split.slice(0, 2).join("/");
+};
+
 export const userAvatars = (user: User | MeUser | MemberPartialUser) => {
   if (!user.avatar) return [];
 

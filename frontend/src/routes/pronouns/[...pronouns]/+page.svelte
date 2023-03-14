@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { PUBLIC_BASE_URL } from "$env/static/public";
   import type { PageData } from "../../$types";
 
   export let data: PageData;
@@ -7,6 +8,15 @@
 
   const displayText = data.displayText || `${subjective}/${objective}`;
 </script>
+
+<svelte:head>
+  <meta property="og:title" content={displayText} />
+  <meta property="og:description" content="How to use {displayText} pronouns" />
+  <meta
+    property="og:url"
+    content="{PUBLIC_BASE_URL}/pronouns/{subjective}/{objective}/{possessiveDeterminer}/{possessivePronoun}/{reflexive}"
+  />
+</svelte:head>
 
 <h1>{displayText}</h1>
 

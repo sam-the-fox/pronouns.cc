@@ -5,11 +5,19 @@
   import Navigation from "./nav/Navigation.svelte";
   import type { LayoutData } from "./$types";
   import { version } from "$app/environment";
+  import { PUBLIC_BASE_URL } from "$env/static/public";
 
   export let data: LayoutData;
 
   const versionMismatch = data.git_commit !== version && data.git_commit !== "[unknown]";
 </script>
+
+<svelte:head>
+  <title>pronouns.cc</title>
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#aa8ed6" />
+  <meta property="og:site_name" content="pronouns.cc" />
+</svelte:head>
 
 <Navigation />
 <div class="container">

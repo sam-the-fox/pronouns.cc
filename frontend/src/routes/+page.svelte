@@ -1,5 +1,12 @@
+<script lang="ts">
+  import { PUBLIC_BASE_URL } from "$env/static/public";
+</script>
+
 <svelte:head>
   <title>pronouns.cc</title>
+  <meta property="og:title" content="pronouns.cc" />
+  <meta property="og:description" content="Name and pronoun cards!" />
+  <meta property="og:url" content={PUBLIC_BASE_URL} />
 </svelte:head>
 
 <h1>pronouns.cc</h1>

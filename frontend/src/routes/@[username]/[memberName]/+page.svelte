@@ -9,16 +9,58 @@
   import PronounLink from "$lib/components/PronounLink.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { Button, Icon } from "sveltestrap";
-  import { memberAvatars } from "$lib/api/entities";
+  import { memberAvatars, pronounDisplay, WordStatus } from "$lib/api/entities";
+  import { PUBLIC_BASE_URL } from "$env/static/public";
 
   export let data: PageData;
 
   let bio: string | null;
   $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio)) : null;
+
+  const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
+  const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
 </script>
 
 <svelte:head>
   <title>{data.display_name ?? data.name} - @{data.user.name} - pronouns.cc</title>
+
+  <meta
+    property="og:title"
+    content={data.display_name
+      ? `${data.display_name} (${data.name})`
+      : `${data.name} (@${data.user.name})`}
+  />
+  <meta property="og:url" content="{PUBLIC_BASE_URL}/@{data.user.name}/{data.name}" />
+
+  {#if data.avatar}
+    <meta property="og:image" content={memberAvatars(data)[0]} />
+  {/if}
+
+  {#if favNames.length !== 0 && favPronouns.length !== 0}
+    <meta
+      property="og:description"
+      content="{data.name} goes by {favNames.map((x) => x.value).join(', ')} and uses {favPronouns
+        .map((x) => pronounDisplay(x))
+        .join(', ')} pronouns."
+    />
+  {:else if favNames.length !== 0}
+    <meta
+      property="og:description"
+      content="{data.name} goes by {favNames.map((x) => x.value).join(', ')}."
+    />
+  {:else if favPronouns.length !== 0}
+    <meta
+      property="og:description"
+      content="{data.name} uses {favPronouns.map((x) => pronounDisplay(x)).join(', ')} pronouns."
+    />
+  {:else if data.bio && data.bio !== ""}
+    <meta
+      property="og:description"
+      content="{data.bio.slice(0, 500)}${data.bio.length > 500 ? '…' : ''}"
+    />
+  {:else}
+    <meta property="og:description" content="{data.name} (@{data.user.name}) on pronouns.cc" />
+  {/if}
 </svelte:head>
 
 <div class="container">
