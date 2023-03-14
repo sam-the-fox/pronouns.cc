@@ -109,24 +109,26 @@
   {#if favNames.length !== 0 && favPronouns.length !== 0}
     <meta
       property="og:description"
-      content="{data.name} goes by {favNames.map((x) => x.value).join(', ')} and uses {favPronouns
-        .map((x) => pronounDisplay(x))
-        .join(', ')} pronouns."
+      content="{data.display_name ?? data.name} goes by {favNames
+        .map((x) => x.value)
+        .join(', ')} and uses {favPronouns.map((x) => pronounDisplay(x)).join(', ')} pronouns."
     />
   {:else if favNames.length !== 0}
     <meta
       property="og:description"
-      content="{data.name} goes by {favNames.map((x) => x.value).join(', ')}."
+      content="{data.display_name ?? data.name} goes by {favNames.map((x) => x.value).join(', ')}."
     />
   {:else if favPronouns.length !== 0}
     <meta
       property="og:description"
-      content="{data.name} uses {favPronouns.map((x) => pronounDisplay(x)).join(', ')} pronouns."
+      content="{data.display_name ?? data.name} uses {favPronouns
+        .map((x) => pronounDisplay(x))
+        .join(', ')} pronouns."
     />
   {:else if data.bio && data.bio !== ""}
     <meta
       property="og:description"
-      content="{data.bio.slice(0, 500)}${data.bio.length > 500 ? '…' : ''}"
+      content="{data.bio.slice(0, 500)}{data.bio.length > 500 ? '…' : ''}"
     />
   {:else}
     <meta property="og:description" content="{data.name} (@{data.user.name}) on pronouns.cc" />

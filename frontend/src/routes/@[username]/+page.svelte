@@ -234,7 +234,7 @@
   {:else if data.bio && data.bio !== ""}
     <meta
       property="og:description"
-      content="{data.bio.slice(0, 500)}${data.bio.length > 500 ? '…' : ''}"
+      content="{data.bio.slice(0, 500)}{data.bio.length > 500 ? '…' : ''}"
     />
   {:else}
     <meta property="og:description" content="@{data.name} on pronouns.cc" />
