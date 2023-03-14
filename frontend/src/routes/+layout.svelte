@@ -5,6 +5,8 @@
   import Navigation from "./nav/Navigation.svelte";
   import type { LayoutData } from "./$types";
   import { version } from "$app/environment";
+  import { toastStore } from "$lib/toast";
+  import Toast from "$lib/components/Toast.svelte";
 
   export let data: LayoutData;
 
@@ -24,6 +26,11 @@
 <Navigation />
 <div class="container">
   <slot />
+  <div class="position-absolute top-0 end-0">
+    {#each $toastStore as toast}
+      <Toast header={toast.header} body={toast.body} />
+    {/each}
+  </div>
   <footer>
     <hr />
     <p>
