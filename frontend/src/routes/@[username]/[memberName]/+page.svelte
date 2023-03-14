@@ -8,9 +8,10 @@
   import StatusIcon from "$lib/components/StatusIcon.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
-  import { Button, Icon } from "sveltestrap";
+  import { Alert, Button, Icon } from "sveltestrap";
   import { memberAvatars, pronounDisplay, WordStatus } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
+  import { userStore } from "$lib/store";
 
   export let data: PageData;
 
@@ -22,6 +23,12 @@
 </script>
 
 <div class="container">
+  {#if $userStore && $userStore.id === data.user.id}
+    <Alert color="secondary" fade={false}>
+      You are currently viewing the <strong>public</strong> profile of {data.name}.
+      <br /><a href="/edit/member/{data.id}">Edit profile</a>
+    </Alert>
+  {/if}
   <div>
     <Button color="secondary" href="/@{data.user.name}">
       <Icon name="arrow-left" /> Back to {data.user.display_name ?? data.user.name}

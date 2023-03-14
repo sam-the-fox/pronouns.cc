@@ -32,6 +32,7 @@
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
+  import { goto } from "$app/navigation";
 
   export let data: PageData;
 
@@ -73,6 +74,8 @@
       data.members = [...data.members, member];
 
       toggleModal();
+
+      goto(`/@${data.name}/${member.name}`);
     } catch (e) {
       newMemberError = e as APIError;
     }

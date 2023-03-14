@@ -160,9 +160,9 @@ func (db *DB) UpdateMember(
 	builder := sq.Update("members").Where("id = ?", id).Suffix("RETURNING *")
 	if name != nil {
 		if *name == "" {
-			builder = builder.Set("name", nil)
+			return m, errors.Wrap(err, "name was empty")
 		} else {
-			builder = builder.Set("name", *displayName)
+			builder = builder.Set("name", *name)
 		}
 	}
 	if displayName != nil {

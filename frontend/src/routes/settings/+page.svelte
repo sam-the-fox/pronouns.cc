@@ -44,8 +44,11 @@
     try {
       await apiFetchClient<any>("/users/@me", "DELETE");
 
+      userStore.set(null);
+      localStorage.removeItem("pronouns-token");
+      localStorage.removeItem("pronouns-user");
       toggleDeleteOpen();
-      goto("/auth/logout");
+      goto("/");
     } catch (e) {
       deleteUsername = "";
       deleteError = e as APIError;
