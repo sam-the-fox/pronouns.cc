@@ -28,7 +28,7 @@
   <p><b class="text-capitalize">{subjective}</b> brought <b>{possessiveDeterminer}</b> frisbee.</p>
   <p>At least, I think it was <b>{possessivePronoun}</b>.</p>
   <p>
-    <b class="text-capitalize">{objective}</b> threw the frisbee to
+    <b class="text-capitalize">{subjective}</b> threw the frisbee to
     <b>{reflexive}</b>.
   </p>
 </blockquote>
