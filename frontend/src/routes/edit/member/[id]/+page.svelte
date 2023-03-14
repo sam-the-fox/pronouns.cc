@@ -125,23 +125,9 @@
     const buffer = await list[0].arrayBuffer();
     const base64 = encode(buffer);
 
-    const uri = `data:${dataTypeFromFilename(list[0].name)};base64,${base64}`;
+    const uri = `data:${list[0].type};base64,${base64}`;
 
     return uri;
-  };
-
-  const dataTypeFromFilename = (filename: string) => {
-    if (filename.endsWith(".webp")) {
-      return "image/webp";
-    } else if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
-      return "image/jpeg";
-    } else if (filename.endsWith(".png")) {
-      return "image/png";
-    } else if (filename.endsWith(".gif")) {
-      return "image/gif";
-    } else {
-      return "application/octet-stream";
-    }
   };
 
   const moveName = (index: number, up: boolean) => {
@@ -317,15 +303,25 @@
       <div class="col-md">
         <h4>Avatar</h4>
         <div class="row">
-          <div class="col-md">
+          <div class="col-md text-center">
             {#if avatar}
               <img width={200} src={avatar} alt="New avatar" class="rounded-circle img-fluid" />
             {:else}
               <FallbackImage alt="Current avatar" urls={memberAvatars(data.member)} width={200} />
             {/if}
           </div>
-          <div class="col-md">
-            <input class="form-control" id="avatar" type="file" bind:files={avatar_files} />
+          <div class="col-md mt-2">
+            <input
+              class="form-control"
+              id="avatar"
+              type="file"
+              bind:files={avatar_files}
+              accept="image/png, image/jpeg, image/gif, image/webp"
+            />
+            <p class="text-muted mt-3">
+              <Icon name="info-circle-fill" /> Only PNG, JPEG, GIF, and WebP can be used as avatars.
+              Avatars cannot be larger than 1 MB, and animated avatars will be made static.
+            </p>
           </div>
         </div>
       </div>
