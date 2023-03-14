@@ -8,7 +8,11 @@
 
   export let data: LayoutData;
 
-  const versionMismatch = data.git_commit !== version && data.git_commit !== "[unknown]";
+  const versionParts = version.split("-");
+  let commit = "[unknown]";
+  if (versionParts.length >= 3) commit = versionParts[2];
+
+  const versionMismatch = data.git_commit !== commit && data.git_commit !== "[unknown]";
 </script>
 
 <svelte:head>
@@ -23,7 +27,7 @@
   <footer>
     <hr />
     <p>
-      pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{version}">{version}</a>
+      pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
       {#if versionMismatch}
         (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}">
           {data.git_commit}
