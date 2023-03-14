@@ -25,7 +25,8 @@
 <div class="container">
   {#if $userStore && $userStore.id === data.user.id}
     <Alert color="secondary" fade={false}>
-      You are currently viewing the <strong>public</strong> profile of {data.name}.
+      You are currently viewing the <strong>public</strong> profile of {data.display_name ??
+        data.name}.
       <br /><a href="/edit/member/{data.id}">Edit profile</a>
     </Alert>
   {/if}

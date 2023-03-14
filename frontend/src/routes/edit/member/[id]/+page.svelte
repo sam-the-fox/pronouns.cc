@@ -252,22 +252,26 @@
 </script>
 
 <svelte:head>
-  <title>Edit profile - pronouns.cc</title>
+  <title>Edit member profile - pronouns.cc</title>
 </svelte:head>
 
 <h1>
-  Edit profile
+  Edit member profile
   <ButtonGroup>
     {#if modified}
       <Button color="success" on:click={() => updateMember()}>Save changes</Button>
     {/if}
-    <Button color="danger" on:click={toggleDeleteOpen}>Delete {data.member.name}</Button>
+    <Button color="danger" on:click={toggleDeleteOpen}
+      >Delete {data.member.display_name ?? data.member.name}</Button
+    >
   </ButtonGroup>
 </h1>
 
 <Modal header="Delete member" isOpen={deleteOpen} toggle={toggleDeleteOpen}>
   <ModalBody>
-    <p>If you want to delete this member, type their name below:</p>
+    <p>
+      If you want to delete this member, type their name (<code>{data.member.name}</code>) below:
+    </p>
     <p>
       <input type="text" class="form-control" bind:value={deleteName} />
     </p>
