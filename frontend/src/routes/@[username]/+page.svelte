@@ -151,7 +151,7 @@
         </div>
       {/each}
     </div>
-    {#if data.members.length > 0}
+    {#if data.members.length > 0 || ($userStore && $userStore.id === data.id)}
       <div class="row">
         <div class="col">
           <hr />
