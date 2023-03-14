@@ -12,11 +12,14 @@
     else pronounText = split.slice(0, 2).join("/");
   }
 
+  const link = pronouns.display_text
+    ? `${pronouns.pronouns},${pronouns.display_text}`
+    : pronouns.pronouns;
   const shouldLink = pronouns.pronouns.split("/").length === 5;
 </script>
 
 {#if shouldLink}
-  <a href="/pronouns/{pronouns.pronouns}">{pronounText}</a>
+  <a href="/pronouns/{link}">{pronounText}</a>
 {:else}
   {pronounText}
 {/if}

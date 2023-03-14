@@ -1,0 +1,12 @@
+{
+  "pronouns": {
+    "they": { "pronouns": ["they", "them", "their", "theirs", "themself"] },
+    "they/them": { "pronouns": ["they", "them", "their", "theirs", "themself"] },
+    "he": { "pronouns": ["he", "him", "his", "his", "himself"] },
+    "he/him": { "pronouns": ["he", "him", "his", "his", "himself"] },
+    "she": { "pronouns": ["she", "her", "her", "hers", "herself"] },
+    "she/her": { "pronouns": ["she", "her", "her", "hers", "herself"] },
+    "it": { "pronouns": ["it", "it", "its", "its", "itself"], "display": "it/its" },
+    "it/its": { "pronouns": ["it", "it", "its", "its", "itself"], "display": "it/its" }
+  }
+}
