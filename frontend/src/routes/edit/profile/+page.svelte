@@ -12,11 +12,21 @@
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { Alert, Button, FormGroup, Icon, Input } from "sveltestrap";
+  import {
+    Alert,
+    Button,
+    ButtonDropdown,
+    DropdownToggle,
+    FormGroup,
+    Icon,
+    Input,
+  } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../EditableField.svelte";
+  import EditableName from "../EditableName.svelte";
+  import EditablePronouns from "../EditablePronouns.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -284,56 +294,13 @@
       <div class="col-md">
         <h4>Names</h4>
         {#each names as _, index}
-          <div class="input-group m-1">
-            <Button color="secondary" on:click={() => moveName(index, true)}>
-              <Icon name="chevron-up" />
-            </Button>
-            <Button color="secondary" on:click={() => moveName(index, false)}>
-              <Icon name="chevron-down" />
-            </Button>
-            <input type="text" class="form-control" bind:value={names[index].value} />
-            <IconButton
-              color="secondary"
-              icon="heart-fill"
-              tooltip="Favourite"
-              click={() => (names[index].status = WordStatus.Favourite)}
-              active={names[index].status === WordStatus.Favourite}
-            />
-            <IconButton
-              color="secondary"
-              icon="hand-thumbs-up"
-              tooltip="Okay"
-              click={() => (names[index].status = WordStatus.Okay)}
-              active={names[index].status === WordStatus.Okay}
-            />
-            <IconButton
-              color="secondary"
-              icon="emoji-laughing"
-              tooltip="Jokingly"
-              click={() => (names[index].status = WordStatus.Jokingly)}
-              active={names[index].status === WordStatus.Jokingly}
-            />
-            <IconButton
-              color="secondary"
-              icon="people"
-              tooltip="Friends only"
-              click={() => (names[index].status = WordStatus.FriendsOnly)}
-              active={names[index].status === WordStatus.FriendsOnly}
-            />
-            <IconButton
-              color="secondary"
-              icon="hand-thumbs-down"
-              tooltip="Avoid"
-              click={() => (names[index].status = WordStatus.Avoid)}
-              active={names[index].status === WordStatus.Avoid}
-            />
-            <IconButton
-              color="danger"
-              icon="trash3"
-              tooltip="Remove name"
-              click={() => removeName(index)}
-            />
-          </div>
+          <EditableName
+            bind:value={names[index].value}
+            bind:status={names[index].status}
+            moveUp={() => moveName(index, true)}
+            moveDown={() => moveName(index, false)}
+            remove={() => removeName(index)}
+          />
         {/each}
         <div class="input-group m-1">
           <input type="text" class="form-control" bind:value={newName} />
@@ -363,61 +330,27 @@
       <div class="col-md">
         <h4>Pronouns</h4>
         {#each pronouns as _, index}
-          <div class="input-group m-1">
-            <Button color="secondary" on:click={() => movePronoun(index, true)}>
-              <Icon name="chevron-up" />
-            </Button>
-            <Button color="secondary" on:click={() => movePronoun(index, false)}>
-              <Icon name="chevron-down" />
-            </Button>
-            <input type="text" class="form-control" bind:value={pronouns[index].pronouns} />
-            <input type="text" class="form-control" bind:value={pronouns[index].display_text} />
-            <IconButton
-              color="secondary"
-              icon="heart-fill"
-              tooltip="Favourite"
-              click={() => (pronouns[index].status = WordStatus.Favourite)}
-              active={pronouns[index].status === WordStatus.Favourite}
-            />
-            <IconButton
-              color="secondary"
-              icon="hand-thumbs-up"
-              tooltip="Okay"
-              click={() => (pronouns[index].status = WordStatus.Okay)}
-              active={pronouns[index].status === WordStatus.Okay}
-            />
-            <IconButton
-              color="secondary"
-              icon="emoji-laughing"
-              tooltip="Jokingly"
-              click={() => (pronouns[index].status = WordStatus.Jokingly)}
-              active={pronouns[index].status === WordStatus.Jokingly}
-            />
-            <IconButton
-              color="secondary"
-              icon="people"
-              tooltip="Friends only"
-              click={() => (pronouns[index].status = WordStatus.FriendsOnly)}
-              active={pronouns[index].status === WordStatus.FriendsOnly}
-            />
-            <IconButton
-              color="secondary"
-              icon="hand-thumbs-down"
-              tooltip="Avoid"
-              click={() => (pronouns[index].status = WordStatus.Avoid)}
-              active={pronouns[index].status === WordStatus.Avoid}
-            />
-            <IconButton
-              color="danger"
-              icon="trash3"
-              tooltip="Remove pronouns"
-              click={() => removePronoun(index)}
-            />
-          </div>
+          <EditablePronouns
+            bind:pronoun={pronouns[index]}
+            moveUp={() => movePronoun(index, true)}
+            moveDown={() => movePronoun(index, false)}
+            remove={() => removePronoun(index)}
+          />
         {/each}
         <div class="input-group m-1">
-          <input type="text" class="form-control" bind:value={newPronouns} />
-          <input type="text" class="form-control" bind:value={newPronounsDisplay} />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Full set (e.g. it/it/its/its/itself)"
+            bind:value={newPronouns}
+            required
+          />
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Optional display text (e.g. it/its)"
+            bind:value={newPronounsDisplay}
+          />
           <IconButton
             color="success"
             icon="plus"

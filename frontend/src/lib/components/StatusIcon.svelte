@@ -4,6 +4,7 @@
   import { WordStatus } from "$lib/api/entities";
 
   export let status: WordStatus;
+  export let className: string | null = null;
 
   const iconFor = (wordStatus: WordStatus) => {
     switch (wordStatus) {
@@ -48,5 +49,5 @@
   let iconElement: HTMLElement;
 </script>
 
-<span bind:this={iconElement} tabindex={0}><Icon name={statusIcon} /></span>
+<span bind:this={iconElement} tabindex={0}><Icon name={statusIcon} class={className} /></span>
 <Tooltip target={iconElement} placement="top">{statusText}</Tooltip>

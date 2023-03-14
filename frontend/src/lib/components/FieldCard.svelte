@@ -9,8 +9,8 @@
 </script>
 
 <div>
-  <h4>{field.name}</h4>
-  <ul class="list-unstyled">
+  <h3>{field.name}</h3>
+  <ul class="list-unstyled fs-5">
     {#each field.entries as entry}
       <li><StatusIcon status={entry.status} /> {entry.value}</li>
     {/each}
