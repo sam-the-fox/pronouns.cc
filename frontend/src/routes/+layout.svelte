@@ -12,7 +12,7 @@
 
   const versionParts = version.split("-");
   let commit = "[unknown]";
-  if (versionParts.length >= 3) commit = versionParts[2];
+  if (versionParts.length >= 3) commit = versionParts[2].slice(1);
 
   const versionMismatch = data.git_commit !== commit && data.git_commit !== "[unknown]";
 </script>
