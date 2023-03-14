@@ -28,6 +28,7 @@
   import EditableName from "../EditableName.svelte";
   import EditablePronouns from "../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
+  import { addToast, delToast } from "$lib/toast";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -216,6 +217,12 @@
   };
 
   const updateUser = async () => {
+    const toastId = addToast({
+      header: "Saving changes",
+      body: "Saving changes, please wait...",
+      duration: -1,
+    });
+
     try {
       const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", {
         display_name,
@@ -230,11 +237,15 @@
       userStore.set(resp);
       localStorage.setItem("pronouns-user", JSON.stringify(resp));
 
+      addToast({ header: "Success", body: "Successfully saved changes!" });
+
       avatar = null;
       error = null;
       modified = false;
     } catch (e) {
       error = e as APIError;
+    } finally {
+      delToast(toastId);
     }
   };
 </script>

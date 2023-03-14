@@ -31,6 +31,7 @@
   import EditablePronouns from "../../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import type { PageData } from "./$types";
+  import { addToast, delToast } from "$lib/toast";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -213,6 +214,12 @@
   };
 
   const updateMember = async () => {
+    const toastId = addToast({
+      header: "Saving changes",
+      body: "Saving changes, please wait...",
+      duration: -1,
+    });
+
     try {
       const resp = await apiFetchClient<Member>(`/members/${data.member.id}`, "PATCH", {
         name,
@@ -225,12 +232,16 @@
         fields,
       });
 
+      addToast({ header: "Success", body: "Successfully saved changes!" });
+
       data.member = resp;
       avatar = null;
       error = null;
       modified = false;
     } catch (e) {
       error = e as APIError;
+    } finally {
+      delToast(toastId);
     }
   };
 
