@@ -98,8 +98,8 @@
           aria-describedby="invite-help"
         />
         <div id="invite-help" class="form-text">
-          <Icon name="info" /> You currently need an invite code to sign up. You can get one from an
-          existing user.
+          <Icon name="info-circle-fill" /> You currently need an invite code to sign up. You can get
+          one from an existing user.
         </div>
       </div>
     {/if}
