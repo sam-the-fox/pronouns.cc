@@ -30,7 +30,7 @@
       <br /><a href="/edit/member/{data.id}">Edit profile</a>
     </Alert>
   {/if}
-  <div>
+  <div class="m-3">
     <Button color="secondary" href="/@{data.user.name}">
       <Icon name="arrow-left" /> Back to {data.user.display_name ?? data.user.name}
     </Button>

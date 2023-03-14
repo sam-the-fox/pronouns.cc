@@ -17,6 +17,7 @@
     Button,
     ButtonGroup,
     FormGroup,
+    Icon,
     Input,
     Modal,
     ModalBody,
@@ -258,6 +259,12 @@
 <h1>
   Edit member profile
   <ButtonGroup>
+    <IconButton
+      color="secondary"
+      icon="chevron-left"
+      href="/@{data.member.user.name}/{data.member.name}"
+      tooltip="Back to member"
+    />
     {#if modified}
       <Button color="success" on:click={() => updateMember()}>Save changes</Button>
     {/if}
