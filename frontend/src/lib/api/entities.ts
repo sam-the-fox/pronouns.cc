@@ -74,7 +74,7 @@ export interface MemberPartialUser {
 
 export interface Invite {
   code: string;
-  created: Date;
+  created: string;
   used: boolean;
 }
 

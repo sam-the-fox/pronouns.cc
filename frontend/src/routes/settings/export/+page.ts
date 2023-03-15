@@ -15,5 +15,5 @@ export const load = async () => {
 
 interface ExportResponse {
   path: string;
-  created_at: Date;
+  created_at: string;
 }

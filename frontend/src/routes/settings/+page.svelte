@@ -5,16 +5,7 @@
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import {
-    Alert,
-    Button,
-    Icon,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    ModalHeader,
-    Table,
-  } from "sveltestrap";
+  import { Button, Icon, Modal, ModalBody, ModalFooter, ModalHeader, Table } from "sveltestrap";
   import type { PageData } from "./$types";
 
   export let data: PageData;

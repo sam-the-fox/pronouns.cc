@@ -32,5 +32,5 @@ interface CallbackResponse {
   require_invite: boolean;
 
   is_deleted: boolean;
-  deleted_at?: Date;
+  deleted_at?: string;
 }

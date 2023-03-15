@@ -46,7 +46,7 @@
           active={$page.url.pathname === "/settings/tokens"}
           href="/settings/tokens"
         >
-          API tokens
+          Tokens
         </ListGroupItem>
         <ListGroupItem
           tag="a"

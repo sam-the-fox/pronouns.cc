@@ -2,7 +2,8 @@
   import type { APIError, Invite } from "$lib/api/entities";
   import { apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
-  import { Alert, Button, Modal, Table } from "sveltestrap";
+  import { DateTime } from "luxon";
+  import { Button, Modal, Table } from "sveltestrap";
   import type { PageData } from "./$types";
 
   export let data: PageData;
@@ -43,7 +44,11 @@
         {#each data.invites as invite}
           <tr>
             <td><code>{invite.code}</code></td>
-            <td>{invite.created}</td>
+            <td
+              >{DateTime.fromISO(invite.created)
+                .toLocal()
+                .toLocaleString(DateTime.DATETIME_MED)}</td
+            >
             <td>{invite.used ? "yes" : "no"}</td>
           </tr>
         {/each}

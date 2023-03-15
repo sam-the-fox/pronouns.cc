@@ -20,6 +20,7 @@ specifiers:
   eslint: ^8.28.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte3: ^4.0.0
+  jose: ^4.13.1
   luxon: ^3.3.0
   marked: ^4.2.12
   postcss: ^8.4.21
@@ -40,6 +41,7 @@ dependencies:
   base64-arraybuffer: 1.0.2
   bootstrap: 5.3.0-alpha1_@popperjs+core@2.11.6
   bootstrap-icons: 1.10.3
+  jose: 4.13.1
   luxon: 3.3.0
   marked: 4.2.12
   sanitize-html: 2.10.0
@@ -1545,6 +1547,10 @@ packages:
   /isexe/2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
     dev: true
+
+  /jose/4.13.1:
+    resolution: {integrity: sha512-MSJQC5vXco5Br38mzaQKiq9mwt7lwj2eXpgpRyQYNHYt2lq1PjkWa7DLXX0WVcQLE9HhMh3jPiufS7fhJf+CLQ==}
+    dev: false
 
   /js-sdsl/4.3.0:
     resolution: {integrity: sha512-mifzlm2+5nZ+lEcLJMoBK0/IH/bDg8XnJfd/Wq6IP+xoCjLZsTOnV2QpxlVbX9bMnkl5PdEjNtBJ9Cj1NjifhQ==}
