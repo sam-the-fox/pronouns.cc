@@ -1,0 +1,19 @@
+[Unit]
+Description=pronouns.cc data exporter service
+After=syslog.target
+After=network.target
+Requires=postgresql.service redis.service
+
+[Service]
+RestartSec=2s
+Type=simple
+User=pronouns
+Group=pronouns
+AmbientCapabilities=
+WorkingDirectory=/home/pronouns/src
+ExecStart=/home/pronouns/src/pronouns exporter
+Restart=always
+Environment=USER=pronouns HOME=/home/pronouns
+
+[Install]
+WantedBy=multi-user.target

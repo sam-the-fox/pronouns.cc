@@ -1,0 +1,19 @@
+[Unit]
+Description=Clean pronouns.cc database
+After=syslog.target
+After=network.target
+Requires=postgresql.service redis.service
+
+[Service]
+RestartSec=2s
+Type=oneshot
+User=pronouns
+Group=pronouns
+AmbientCapabilities=
+WorkingDirectory=/home/pronouns/src
+ExecStart=/home/pronouns/src/pronouns database clean
+Restart=no
+Environment=USER=pronouns HOME=/home/pronouns
+
+[Install]
+WantedBy=multi-user.target

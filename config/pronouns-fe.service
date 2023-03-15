@@ -1,0 +1,19 @@
+[Unit]
+Description=pronouns.cc frontend
+After=syslog.target
+After=network.target
+Requires=pronouns-api.service
+
+[Service]
+RestartSec=2s
+Type=simple
+User=pronouns
+Group=pronouns
+AmbientCapabilities=
+WorkingDirectory=/home/pronouns/src/frontend
+ExecStart=node build/index.js
+Restart=always
+Environment=USER=pronouns HOME=/home/pronouns
+
+[Install]
+WantedBy=multi-user.target
