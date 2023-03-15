@@ -8,6 +8,7 @@ specifiers:
   '@sveltejs/kit': ^1.5.0
   '@tailwindcss/forms': ^0.5.3
   '@tailwindcss/typography': ^0.5.9
+  '@types/luxon': ^3.2.0
   '@types/marked': ^4.0.8
   '@types/sanitize-html': ^2.8.1
   '@typescript-eslint/eslint-plugin': ^5.45.0
@@ -19,6 +20,7 @@ specifiers:
   eslint: ^8.28.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte3: ^4.0.0
+  luxon: ^3.3.0
   marked: ^4.2.12
   postcss: ^8.4.21
   prettier: ^2.8.0
@@ -38,6 +40,7 @@ dependencies:
   base64-arraybuffer: 1.0.2
   bootstrap: 5.3.0-alpha1_@popperjs+core@2.11.6
   bootstrap-icons: 1.10.3
+  luxon: 3.3.0
   marked: 4.2.12
   sanitize-html: 2.10.0
   sveltestrap: 5.10.0_svelte@3.55.1
@@ -48,6 +51,7 @@ devDependencies:
   '@sveltejs/kit': 1.11.0_svelte@3.55.1+vite@4.1.4
   '@tailwindcss/forms': 0.5.3_tailwindcss@3.2.7
   '@tailwindcss/typography': 0.5.9_tailwindcss@3.2.7
+  '@types/luxon': 3.2.0
   '@types/marked': 4.0.8
   '@types/sanitize-html': 2.8.1
   '@typescript-eslint/eslint-plugin': 5.54.1_mlk7dnz565t663n4razh6a6v6i
@@ -553,6 +557,10 @@ packages:
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
+    dev: true
+
+  /@types/luxon/3.2.0:
+    resolution: {integrity: sha512-lGmaGFoaXHuOLXFvuju2bfvZRqxAqkHPx9Y9IQdQABrinJJshJwfNCKV+u7rR3kJbiqfTF/NhOkcxxAFrObyaA==}
     dev: true
 
   /@types/marked/4.0.8:
@@ -1603,6 +1611,11 @@ packages:
 
   /lru_map/0.3.3:
     resolution: {integrity: sha512-Pn9cox5CsMYngeDbmChANltQl+5pi6XmTrraMSzhPmMBbmgcxmqWry0U3PGapCU1yB4/LqCcom7qhHZiF/jGfQ==}
+    dev: false
+
+  /luxon/3.3.0:
+    resolution: {integrity: sha512-An0UCfG/rSiqtAIiBPO0Y9/zAnHUZxAMiCpTd5h2smgsj7GGmcenvrvww2cqNA8/4A5ZrD1gJpHN2mIHZQF+Mg==}
+    engines: {node: '>=12'}
     dev: false
 
   /magic-string/0.27.0:
