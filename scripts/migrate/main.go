@@ -1,5 +1,5 @@
 // migrate runs (forward) migrations
-package main
+package migrate
 
 import (
 	"database/sql"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	migrate "github.com/rubenv/sql-migrate"
+	"github.com/urfave/cli/v2"
 
 	// SQL driver
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -17,7 +18,13 @@ import (
 //go:embed *.sql
 var migrations embed.FS
 
-func main() {
+var Command = &cli.Command{
+	Name:   "migrate",
+	Usage:  "Migrate the database",
+	Action: run,
+}
+
+func run(c *cli.Context) error {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("error loading .env file:", err)
@@ -42,7 +49,7 @@ func main() {
 
 	if err := db.Ping(); err != nil {
 		fmt.Println("error pinging database:", err)
-		return
+		return nil
 	}
 
 	src := &migrate.EmbedFileSystemMigrationSource{
@@ -54,7 +61,7 @@ func main() {
 	n, err := migrate.Exec(db, "postgres", src, migrate.Up)
 	if err != nil {
 		fmt.Println("error executing migrations:", err)
-		return
+		return nil
 	}
 
 	if n == 0 {
@@ -62,4 +69,5 @@ func main() {
 	} else {
 		fmt.Printf("executed %v migrations!\n", n)
 	}
+	return nil
 }

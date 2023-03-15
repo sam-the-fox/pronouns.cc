@@ -1,28 +1,34 @@
-package main
+package seeddb
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/urfave/cli/v2"
 )
 
-func main() {
+var Command = &cli.Command{
+	Name:   "seed",
+	Usage:  "Seed the database with test data",
+	Action: run,
+}
+
+func run(c *cli.Context) error {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("error loading .env file:", err)
-		os.Exit(1)
+		return err
 	}
 
-	ctx := context.Background()
+	ctx := c.Context
 
 	pool, err := pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println("error opening database:", err)
-		os.Exit(1)
+		return err
 	}
 	defer pool.Close()
 
@@ -33,19 +39,19 @@ func main() {
 	tx, err := pg.Begin(ctx)
 	if err != nil {
 		fmt.Println("error beginning transaction:", err)
-		os.Exit(1)
+		return err
 	}
 
 	u, err := pg.CreateUser(ctx, tx, "test")
 	if err != nil {
 		fmt.Println("error creating user:", err)
-		os.Exit(1)
+		return err
 	}
 
 	_, err = pg.UpdateUser(ctx, tx, u.ID, ptr("testing"), ptr("This is a bio!"), &[]string{"https://pronouns.cc"}, nil)
 	if err != nil {
 		fmt.Println("error setting user info:", err)
-		os.Exit(1)
+		return err
 	}
 
 	err = pg.SetUserNamesPronouns(ctx, tx, u.ID, []db.FieldEntry{
@@ -57,7 +63,7 @@ func main() {
 	})
 	if err != nil {
 		fmt.Println("error setting pronouns:", err)
-		os.Exit(1)
+		return err
 	}
 
 	err = pg.SetUserFields(ctx, tx, u.ID, []db.Field{
@@ -114,16 +120,17 @@ func main() {
 	})
 	if err != nil {
 		fmt.Println("error setting fields:", err)
-		os.Exit(1)
+		return err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		fmt.Println("error committing transaction:", err)
-		os.Exit(1)
+		return err
 	}
 
 	fmt.Println("Created testing user with ID", u.ID, "and name", u.Username)
+	return nil
 }
 
 func ptr[T any](v T) *T {

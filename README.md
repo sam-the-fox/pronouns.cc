@@ -63,6 +63,14 @@ PORT=8080 # Port the API will listen on. Default is 8080, this is also default f
 MINIO_ENDPOINT=localhost:9000 # This always needs to be set, it *does not* need to point to a running MinIO server.
 ```
 
+## Updating in production
+
+1. Build the backend with `make backend`
+2. Build the frontend with `cd frontend && pnpm install && pnpm build`
+3. Stop the servers: `systemctl stop pronouns-api pronouns-fe`
+4. Run migrations: `./pronouns database migrate`
+5. Start the servers: `systemctl start pronouns-api pronouns-fe`
+
 ## License
 
     Copyright (C) 2022  Sam <u1f320>

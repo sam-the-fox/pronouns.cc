@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"codeberg.org/u1f320/pronouns.cc/backend/routes/auth"

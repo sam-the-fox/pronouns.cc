@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"context"
@@ -12,14 +12,22 @@ import (
 
 	"github.com/go-chi/render"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/urfave/cli/v2"
 )
 
-func main() {
+var Command = &cli.Command{
+	Name:   "web",
+	Usage:  "Run the API server",
+	Action: run,
+}
+
+func run(c *cli.Context) error {
 	port := ":" + os.Getenv("PORT")
 
 	s, err := server.New()
 	if err != nil {
 		log.Fatalf("Error creating server: %v", err)
+		return nil
 	}
 
 	// set render.Decode to a custom one that checks content length
@@ -44,10 +52,12 @@ func main() {
 	case <-ctx.Done():
 		log.Info("Interrupt signal received, shutting down...")
 		s.DB.Close()
-		return
+		return nil
 	case err := <-e:
 		log.Fatalf("Error running server: %v", err)
 	}
+
+	return nil
 }
 
 const MaxContentLength = 2 * 1024 * 1024

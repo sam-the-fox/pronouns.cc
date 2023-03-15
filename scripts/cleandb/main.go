@@ -1,22 +1,28 @@
-package main
+package cleandb
 
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	dbpkg "codeberg.org/u1f320/pronouns.cc/backend/db"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/joho/godotenv"
 	"github.com/rs/xid"
+	"github.com/urfave/cli/v2"
 )
 
-func main() {
+var Command = &cli.Command{
+	Name:   "clean",
+	Usage:  "Clean deleted tokens + users daily",
+	Action: run,
+}
+
+func run(c *cli.Context) error {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("error loading .env file:", err)
-		os.Exit(1)
+		return err
 	}
 
 	ctx := context.Background()
@@ -24,7 +30,7 @@ func main() {
 	db, err := dbpkg.New()
 	if err != nil {
 		fmt.Println("error opening database:", err)
-		os.Exit(1)
+		return err
 	}
 	defer db.Close()
 
@@ -35,7 +41,7 @@ func main() {
 	ct, err := db.Exec(ctx, "DELETE FROM tokens WHERE invalidated = true OR expires < $1", time.Now())
 	if err != nil {
 		fmt.Println("executing query:", err)
-		os.Exit(1)
+		return err
 	}
 
 	fmt.Printf("deleted %v invalidated or expired tokens\n", ct.RowsAffected())
@@ -48,12 +54,12 @@ func main() {
 	ORDER BY id`, time.Now().Add(-dbpkg.SelfDeleteAfter), time.Now().Add(-dbpkg.ModDeleteAfter))
 	if err != nil {
 		fmt.Println("error getting to-be-deleted users:", err)
-		os.Exit(1)
+		return err
 	}
 
 	if len(users) == 0 {
 		fmt.Println("there are no users pending deletion")
-		os.Exit(0)
+		return nil
 	}
 
 	for _, u := range users {
@@ -102,8 +108,9 @@ func main() {
 	ct, err = db.Exec(ctx, "DELETE FROM users WHERE id = ANY($1)", ids)
 	if err != nil {
 		fmt.Printf("error deleting users: %v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	fmt.Printf("deleted %v users!\n", ct.RowsAffected())
+	return nil
 }
