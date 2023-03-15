@@ -56,10 +56,6 @@
   };
 </script>
 
-<svelte:head>
-  <title>Settings - pronouns.cc</title>
-</svelte:head>
-
 <h1>Your profile</h1>
 
 <div class="grid">

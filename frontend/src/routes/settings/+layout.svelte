@@ -19,6 +19,10 @@
   };
 </script>
 
+<svelte:head>
+  <title>Settings - pronouns.cc</title>
+</svelte:head>
+
 <div class="grid">
   <div class="row">
     <div class="col-md-3 m-3">
