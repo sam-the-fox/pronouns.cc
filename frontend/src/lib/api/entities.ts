@@ -102,6 +102,7 @@ export enum ErrorCode {
   InvitesDisabled = 1008,
   InviteLimitReached = 1009,
   InviteAlreadyUsed = 1010,
+  RecentExport = 1012,
 
   UserNotFound = 2001,
 
@@ -109,6 +110,7 @@ export enum ErrorCode {
   MemberLimitReached = 3002,
 
   RequestTooBig = 4001,
+  MissingPermissions = 4002,
 }
 
 export const pronounDisplay = (entry: Pronoun) => {

@@ -12,7 +12,7 @@ var SugaredLogger *zap.SugaredLogger
 func init() {
 	zcfg := zap.NewProductionConfig()
 
-	zcfg.Level.SetLevel(zap.InfoLevel)
+	zcfg.Level.SetLevel(zap.DebugLevel)
 	zcfg.Encoding = "console"
 	zcfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	zcfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder

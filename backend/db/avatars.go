@@ -221,10 +221,26 @@ func (db *DB) DeleteMemberAvatar(ctx context.Context, memberID xid.ID, hash stri
 		return errors.Wrap(err, "deleting webp avatar")
 	}
 
-	err = db.minio.RemoveObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
+	err = db.minio.RemoveObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting jpeg avatar")
 	}
 
 	return nil
+}
+
+func (db *DB) UserAvatar(ctx context.Context, userID xid.ID, hash string) (io.ReadCloser, error) {
+	obj, err := db.minio.GetObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "getting object")
+	}
+	return obj, nil
+}
+
+func (db *DB) MemberAvatar(ctx context.Context, memberID xid.ID, hash string) (io.ReadCloser, error) {
+	obj, err := db.minio.GetObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "getting object")
+	}
+	return obj, nil
 }

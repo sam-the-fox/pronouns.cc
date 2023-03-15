@@ -92,6 +92,7 @@ const (
 	ErrInviteLimitReached = 1009 // invite limit reached (when creating invites)
 	ErrInviteAlreadyUsed  = 1010 // invite already used (when signing up)
 	ErrDeletionPending    = 1011 // own user deletion pending, returned with undo code
+	ErrRecentExport       = 1012 // latest export is too recent
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -126,6 +127,7 @@ var errCodeMessages = map[int]string{
 	ErrInviteLimitReached: "Your account has reached the invite limit",
 	ErrInviteAlreadyUsed:  "That invite code has already been used",
 	ErrDeletionPending:    "Your account is pending deletion",
+	ErrRecentExport:       "Your latest data export is less than 1 day old",
 
 	ErrUserNotFound: "User not found",
 
@@ -157,6 +159,7 @@ var errCodeStatuses = map[int]int{
 	ErrInviteLimitReached: http.StatusForbidden,
 	ErrInviteAlreadyUsed:  http.StatusBadRequest,
 	ErrDeletionPending:    http.StatusBadRequest,
+	ErrRecentExport:       http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 

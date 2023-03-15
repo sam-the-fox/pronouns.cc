@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"codeberg.org/u1f320/pronouns.cc/backend"
+	"codeberg.org/u1f320/pronouns.cc/backend/exporter"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"codeberg.org/u1f320/pronouns.cc/scripts/cleandb"
 	"codeberg.org/u1f320/pronouns.cc/scripts/migrate"
@@ -18,6 +19,7 @@ var app = &cli.App{
 	Version:  server.Tag,
 	Commands: []*cli.Command{
 		backend.Command,
+		exporter.Command,
 		{
 			Name:    "database",
 			Aliases: []string{"db"},

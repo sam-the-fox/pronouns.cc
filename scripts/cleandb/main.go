@@ -46,6 +46,26 @@ func run(c *cli.Context) error {
 
 	fmt.Printf("deleted %v invalidated or expired tokens\n", ct.RowsAffected())
 
+	fmt.Println("deleting expired export files")
+	var exports []dbpkg.DataExport
+	err = pgxscan.Select(ctx, db, &exports, "SELECT * FROM data_exports WHERE created_at < $1", time.Now().Add(-dbpkg.KeepExportTime))
+	if err != nil {
+		fmt.Println("error getting to-be-deleted export files:", err)
+		return err
+	}
+
+	for _, de := range exports {
+		err = db.DeleteExport(ctx, de)
+		if err != nil {
+			fmt.Printf("error deleting export %v: %v\n", de.ID, err)
+			continue
+		}
+
+		fmt.Println("deleted export", de.ID)
+	}
+
+	fmt.Printf("deleted %v expired exports\n", len(exports))
+
 	var users []dbpkg.User
 	err = pgxscan.Select(ctx, db, &users, `SELECT * FROM users WHERE
 	deleted_at IS NOT NULL AND

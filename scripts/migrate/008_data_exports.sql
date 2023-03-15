@@ -5,6 +5,6 @@
 create table data_exports (
     id         serial primary key,
     user_id    text not null references users (id) on delete cascade,
-    hash       text not null,
+    filename   text not null,
     created_at timestamptz not null default now()
 );

@@ -61,7 +61,7 @@ func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (
 
 // UserMembers returns all of a user's members, sorted by name.
 func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err error) {
-	sql, args, err := sq.Select("id", "user_id", "name", "display_name", "bio", "avatar", "names", "pronouns").
+	sql, args, err := sq.Select("*").
 		From("members").Where("user_id = ?", userID).
 		OrderBy("name", "id").ToSql()
 	if err != nil {
