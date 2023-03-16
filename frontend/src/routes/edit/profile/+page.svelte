@@ -33,6 +33,7 @@
   const MAX_AVATAR_BYTES = 1_000_000;
 
   if (!$userStore) {
+    addToast({ header: "Error", body: "You are not logged in." });
     goto("/");
   }
 
@@ -55,15 +56,8 @@
 
   let modified = false;
 
-  $: redirectIfNoAuth($userStore);
   $: modified = isModified(bio, display_name, links, names, pronouns, fields, avatar);
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
-
-  const redirectIfNoAuth = (user: MeUser | null) => {
-    if (!user) {
-      goto("/");
-    }
-  };
 
   const isModified = (
     bio: string,

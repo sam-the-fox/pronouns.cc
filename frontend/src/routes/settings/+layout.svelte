@@ -4,6 +4,7 @@
   import { Button, ListGroup, ListGroupItem, Modal, ModalBody, ModalFooter } from "sveltestrap";
   import { userStore } from "$lib/store";
   import { goto } from "$app/navigation";
+  import { addToast } from "$lib/toast";
 
   export let data: LayoutData;
 
@@ -15,6 +16,8 @@
     localStorage.removeItem("pronouns-token");
     localStorage.removeItem("pronouns-user");
     toggle();
+
+    addToast({ header: "Logged out", body: "Successfully logged out!" });
     goto("/");
   };
 </script>

@@ -8,6 +8,7 @@
   import { userStore } from "$lib/store";
   import type { PageData } from "./$types";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
+  import { addToast } from "$lib/toast";
 
   interface SignupResponse {
     user: MeUser;
@@ -21,6 +22,7 @@
       localStorage.setItem("pronouns-token", data.token);
       localStorage.setItem("pronouns-user", JSON.stringify(data.user));
       userStore.set(data.user);
+      addToast({ header: "Logged in", body: "Successfully logged in!" });
       goto("/");
     }
   });
@@ -42,6 +44,7 @@
       localStorage.setItem("pronouns-token", resp.token);
       localStorage.setItem("pronouns-user", JSON.stringify(resp.user));
       userStore.set(resp.user);
+      addToast({ header: "Welcome!", body: "Signed up successfully!" });
       goto("/");
     } catch (e) {
       data.error = e as APIError;

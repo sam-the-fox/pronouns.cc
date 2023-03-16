@@ -5,6 +5,7 @@
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
+  import { addToast } from "$lib/toast";
   import { Button, Icon, Modal, ModalBody, ModalFooter, ModalHeader, Table } from "sveltestrap";
   import type { PageData } from "./$types";
 
@@ -39,6 +40,7 @@
       localStorage.removeItem("pronouns-token");
       localStorage.removeItem("pronouns-user");
       toggleDeleteOpen();
+      addToast({ header: "Deleted account", body: "Your account is now pending deletion." });
       goto("/");
     } catch (e) {
       deleteUsername = "";
