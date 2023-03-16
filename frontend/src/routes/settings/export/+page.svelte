@@ -23,7 +23,7 @@
 
   const requestExport = async () => {
     try {
-      await apiFetchClient<any>("/auth/export/start");
+      await apiFetchClient<any>("/users/@me/export/start");
 
       addToast({
         header: "Export in progress",

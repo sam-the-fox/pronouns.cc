@@ -18,7 +18,6 @@ type Server struct {
 
 	RequireInvite bool
 	BaseURL       string
-	ExporterPath  string
 }
 
 type userResponse struct {
@@ -57,7 +56,6 @@ func Mount(srv *server.Server, r chi.Router) {
 		Server:        srv,
 		RequireInvite: os.Getenv("REQUIRE_INVITE") == "true",
 		BaseURL:       os.Getenv("BASE_URL"),
-		ExporterPath:  "http://127.0.0.1:" + os.Getenv("EXPORTER_PORT"),
 	}
 
 	r.Route("/auth", func(r chi.Router) {
@@ -91,9 +89,6 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.With(server.MustAuth).Get("/tokens", server.WrapHandler(s.getTokens))
 		r.With(server.MustAuth).Post("/tokens", server.WrapHandler(s.createToken))
 		r.With(server.MustAuth).Delete("/tokens/{id}", server.WrapHandler(s.deleteToken))
-
-		r.With(server.MustAuth).Get("/export/start", server.WrapHandler(s.startExport))
-		r.With(server.MustAuth).Get("/export", server.WrapHandler(s.getExport))
 
 		// cancel user delete
 		// uses a special token, so handled in the function itself

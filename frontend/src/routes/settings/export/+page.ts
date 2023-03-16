@@ -4,7 +4,7 @@ import { error } from "@sveltejs/kit";
 
 export const load = async () => {
   try {
-    const data = await apiFetchClient<ExportResponse>("/auth/export");
+    const data = await apiFetchClient<ExportResponse>("/users/@me/export");
     return { exportData: data };
   } catch (e) {
     if ((e as APIError).code === ErrorCode.NotFound) return { exportData: null };
