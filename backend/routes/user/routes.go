@@ -27,8 +27,8 @@ func Mount(srv *server.Server, r chi.Router) {
 			r.Patch("/@me", server.WrapHandler(s.patchUser))
 			r.Delete("/@me", server.WrapHandler(s.deleteUser))
 
-			r.Get("/export/start", server.WrapHandler(s.startExport))
-			r.Get("/export", server.WrapHandler(s.getExport))
+			r.Get("/@me/export/start", server.WrapHandler(s.startExport))
+			r.Get("/@me/export", server.WrapHandler(s.getExport))
 		})
 	})
 }
