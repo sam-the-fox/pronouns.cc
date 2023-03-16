@@ -17,6 +17,7 @@ type Server struct {
 	*server.Server
 
 	RequireInvite bool
+	BaseURL       string
 	ExporterPath  string
 }
 
@@ -55,6 +56,7 @@ func Mount(srv *server.Server, r chi.Router) {
 	s := &Server{
 		Server:        srv,
 		RequireInvite: os.Getenv("REQUIRE_INVITE") == "true",
+		BaseURL:       os.Getenv("BASE_URL"),
 		ExporterPath:  "http://127.0.0.1:" + os.Getenv("EXPORTER_PORT"),
 	}
 
@@ -64,12 +66,21 @@ func Mount(srv *server.Server, r chi.Router) {
 
 		// generate csrf token, returns all supported OAuth provider URLs
 		r.Post("/urls", server.WrapHandler(s.oauthURLs))
+		r.Get("/urls/fediverse", server.WrapHandler(s.getFediverseURL))
 
 		r.Route("/discord", func(r chi.Router) {
 			// takes code + state, validates it, returns token OR discord signup ticket
 			r.Post("/callback", server.WrapHandler(s.discordCallback))
 			// takes discord signup ticket to register account
 			r.Post("/signup", server.WrapHandler(s.discordSignup))
+			// takes discord signup ticket to link to existing account
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(nil))
+		})
+
+		r.Route("/mastodon", func(r chi.Router) {
+			r.Post("/callback", server.WrapHandler(nil))
+			r.Post("/signup", server.WrapHandler(nil))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(nil))
 		})
 
 		// invite routes

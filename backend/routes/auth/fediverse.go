@@ -1,0 +1,114 @@
+package auth
+
+import (
+	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"emperror.dev/errors"
+	"github.com/go-chi/render"
+)
+
+type FediResponse struct {
+	URL string `json:"url"`
+}
+
+func (s *Server) getFediverseURL(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	instance := r.FormValue("instance")
+	if instance == "" {
+		return server.APIError{Code: server.ErrBadRequest, Details: "Instance URL is empty"}
+	}
+
+	app, err := s.DB.FediverseApp(ctx, instance)
+	if err != nil {
+		return s.noAppFediverseURL(ctx, w, r, instance)
+	}
+
+	state, err := s.setCSRFState(r.Context())
+	if err != nil {
+		return errors.Wrap(err, "setting CSRF state")
+	}
+
+	render.JSON(w, r, FediResponse{
+		URL: app.ClientConfig().AuthCodeURL(state),
+	})
+	return nil
+}
+
+func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r *http.Request, instance string) error {
+	softwareName, err := nodeinfo(ctx, instance)
+	if err != nil {
+		log.Errorf("querying instance %q nodeinfo: %v", instance, err)
+	}
+
+	switch softwareName {
+	case "mastodon", "pleroma", "akkoma", "pixelfed", "calckey":
+	default:
+		// sorry, misskey :( TODO: support misskey
+		return server.APIError{Code: server.ErrUnsupportedInstance}
+	}
+
+	log.Debugf("creating application on mastodon-compatible instance %q", instance)
+
+	formData := url.Values{
+		"client_name":   {"pronouns.cc (+" + s.BaseURL + ")"},
+		"redirect_uris": {s.BaseURL + "/auth/login/mastodon"},
+		"scopes":        {"read:accounts"},
+		"website":       {s.BaseURL},
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://"+instance+"/api/v1/apps", strings.NewReader(formData.Encode()))
+	if err != nil {
+		log.Errorf("creating POST apps request for %q: %v", instance, err)
+		return errors.Wrap(err, "creating POST apps request")
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", "pronouns.cc/"+server.Tag)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Errorf("sending POST apps request for %q: %v", instance, err)
+		return errors.Wrap(err, "sending POST apps request")
+	}
+	defer resp.Body.Close()
+
+	jb, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("reading response for request: %v", err)
+		return errors.Wrap(err, "reading response")
+	}
+
+	var ma mastodonApplication
+	err = json.Unmarshal(jb, &ma)
+	if err != nil {
+		return errors.Wrap(err, "unmarshaling mastodon app")
+	}
+
+	app, err := s.DB.CreateFediverseApp(ctx, instance, softwareName, ma.ClientID, ma.ClientSecret)
+	if err != nil {
+		log.Errorf("saving app for %q: %v", instance, err)
+		return errors.Wrap(err, "creating app")
+	}
+
+	state, err := s.setCSRFState(r.Context())
+	if err != nil {
+		return errors.Wrap(err, "setting CSRF state")
+	}
+
+	render.JSON(w, r, FediResponse{
+		URL: app.ClientConfig().AuthCodeURL(state),
+	})
+	return nil
+}
+
+type mastodonApplication struct {
+	Name         string `json:"name"`
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}

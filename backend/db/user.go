@@ -28,6 +28,10 @@ type User struct {
 	Discord         *string
 	DiscordUsername *string
 
+	Fediverse         *string
+	FediverseUsername *string
+	FediverseAppID    *int64
+
 	MaxInvites int
 
 	DeletedAt    *time.Time

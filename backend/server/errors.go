@@ -81,18 +81,19 @@ const (
 	ErrInternalServerError = 500 // catch-all code for unknown errors
 
 	// Login/authorize error codes
-	ErrInvalidState       = 1001
-	ErrInvalidOAuthCode   = 1002
-	ErrInvalidToken       = 1003 // a token was supplied, but it is invalid
-	ErrInviteRequired     = 1004
-	ErrInvalidTicket      = 1005 // invalid signup ticket
-	ErrInvalidUsername    = 1006 // invalid username (when signing up)
-	ErrUsernameTaken      = 1007 // username taken (when signing up)
-	ErrInvitesDisabled    = 1008 // invites are disabled (unneeded)
-	ErrInviteLimitReached = 1009 // invite limit reached (when creating invites)
-	ErrInviteAlreadyUsed  = 1010 // invite already used (when signing up)
-	ErrDeletionPending    = 1011 // own user deletion pending, returned with undo code
-	ErrRecentExport       = 1012 // latest export is too recent
+	ErrInvalidState        = 1001
+	ErrInvalidOAuthCode    = 1002
+	ErrInvalidToken        = 1003 // a token was supplied, but it is invalid
+	ErrInviteRequired      = 1004
+	ErrInvalidTicket       = 1005 // invalid signup ticket
+	ErrInvalidUsername     = 1006 // invalid username (when signing up)
+	ErrUsernameTaken       = 1007 // username taken (when signing up)
+	ErrInvitesDisabled     = 1008 // invites are disabled (unneeded)
+	ErrInviteLimitReached  = 1009 // invite limit reached (when creating invites)
+	ErrInviteAlreadyUsed   = 1010 // invite already used (when signing up)
+	ErrDeletionPending     = 1011 // own user deletion pending, returned with undo code
+	ErrRecentExport        = 1012 // latest export is too recent
+	ErrUnsupportedInstance = 1013 // unsupported fediverse software
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -116,18 +117,19 @@ var errCodeMessages = map[int]string{
 	ErrTooManyRequests:     "Rate limit reached",
 	ErrMethodNotAllowed:    "Method not allowed",
 
-	ErrInvalidState:       "Invalid OAuth state",
-	ErrInvalidOAuthCode:   "Invalid OAuth code",
-	ErrInvalidToken:       "Supplied token was invalid",
-	ErrInviteRequired:     "A valid invite code is required",
-	ErrInvalidTicket:      "Invalid signup ticket",
-	ErrInvalidUsername:    "Invalid username",
-	ErrUsernameTaken:      "Username is already taken",
-	ErrInvitesDisabled:    "Invites are disabled",
-	ErrInviteLimitReached: "Your account has reached the invite limit",
-	ErrInviteAlreadyUsed:  "That invite code has already been used",
-	ErrDeletionPending:    "Your account is pending deletion",
-	ErrRecentExport:       "Your latest data export is less than 1 day old",
+	ErrInvalidState:        "Invalid OAuth state",
+	ErrInvalidOAuthCode:    "Invalid OAuth code",
+	ErrInvalidToken:        "Supplied token was invalid",
+	ErrInviteRequired:      "A valid invite code is required",
+	ErrInvalidTicket:       "Invalid signup ticket",
+	ErrInvalidUsername:     "Invalid username",
+	ErrUsernameTaken:       "Username is already taken",
+	ErrInvitesDisabled:     "Invites are disabled",
+	ErrInviteLimitReached:  "Your account has reached the invite limit",
+	ErrInviteAlreadyUsed:   "That invite code has already been used",
+	ErrDeletionPending:     "Your account is pending deletion",
+	ErrRecentExport:        "Your latest data export is less than 1 day old",
+	ErrUnsupportedInstance: "Unsupported instance software",
 
 	ErrUserNotFound: "User not found",
 
@@ -148,18 +150,19 @@ var errCodeStatuses = map[int]int{
 	ErrTooManyRequests:     http.StatusTooManyRequests,
 	ErrMethodNotAllowed:    http.StatusMethodNotAllowed,
 
-	ErrInvalidState:       http.StatusBadRequest,
-	ErrInvalidOAuthCode:   http.StatusForbidden,
-	ErrInvalidToken:       http.StatusUnauthorized,
-	ErrInviteRequired:     http.StatusBadRequest,
-	ErrInvalidTicket:      http.StatusBadRequest,
-	ErrInvalidUsername:    http.StatusBadRequest,
-	ErrUsernameTaken:      http.StatusBadRequest,
-	ErrInvitesDisabled:    http.StatusForbidden,
-	ErrInviteLimitReached: http.StatusForbidden,
-	ErrInviteAlreadyUsed:  http.StatusBadRequest,
-	ErrDeletionPending:    http.StatusBadRequest,
-	ErrRecentExport:       http.StatusBadRequest,
+	ErrInvalidState:        http.StatusBadRequest,
+	ErrInvalidOAuthCode:    http.StatusForbidden,
+	ErrInvalidToken:        http.StatusUnauthorized,
+	ErrInviteRequired:      http.StatusBadRequest,
+	ErrInvalidTicket:       http.StatusBadRequest,
+	ErrInvalidUsername:     http.StatusBadRequest,
+	ErrUsernameTaken:       http.StatusBadRequest,
+	ErrInvitesDisabled:     http.StatusForbidden,
+	ErrInviteLimitReached:  http.StatusForbidden,
+	ErrInviteAlreadyUsed:   http.StatusBadRequest,
+	ErrDeletionPending:     http.StatusBadRequest,
+	ErrRecentExport:        http.StatusBadRequest,
+	ErrUnsupportedInstance: http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 
