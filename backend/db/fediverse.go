@@ -30,7 +30,7 @@ func (f FediverseApp) ClientConfig() *oauth2.Config {
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
 		Scopes:      []string{"read:accounts"},
-		RedirectURL: os.Getenv("BASE_URL") + "/auth/login/mastodon",
+		RedirectURL: os.Getenv("BASE_URL") + "/auth/login/mastodon/" + f.Instance,
 	}
 	// }
 

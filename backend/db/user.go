@@ -98,6 +98,47 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 	return u, nil
 }
 
+func (db *DB) FediverseUser(ctx context.Context, userID string, instanceAppID int64) (u User, err error) {
+	sql, args, err := sq.Select("*").From("users").
+		Where("fediverse = ?", userID).Where("fediverse_app_id = ?", instanceAppID).
+		ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "executing query")
+	}
+	return u, nil
+}
+
+func (u *User) UpdateFromFedi(ctx context.Context, ex Execer, userID, username string, appID int64) error {
+	sql, args, err := sq.Update("users").
+		Set("fediverse", userID).
+		Set("fediverse_username", username).
+		Set("fediverse_app_id", appID).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Fediverse = &userID
+	u.FediverseUsername = &username
+	u.FediverseAppID = &appID
+	return nil
+}
+
 // DiscordUser fetches a user by Discord user ID.
 func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err error) {
 	sql, args, err := sq.Select("*").From("users").Where("discord = ?", discordID).ToSql()

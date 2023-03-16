@@ -76,8 +76,8 @@ func Mount(srv *server.Server, r chi.Router) {
 		})
 
 		r.Route("/mastodon", func(r chi.Router) {
-			r.Post("/callback", server.WrapHandler(nil))
-			r.Post("/signup", server.WrapHandler(nil))
+			r.Post("/callback", server.WrapHandler(s.mastodonCallback))
+			r.Post("/signup", server.WrapHandler(s.mastodonSignup))
 			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(nil))
 		})
 

@@ -58,7 +58,7 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 
 	formData := url.Values{
 		"client_name":   {"pronouns.cc (+" + s.BaseURL + ")"},
-		"redirect_uris": {s.BaseURL + "/auth/login/mastodon"},
+		"redirect_uris": {s.BaseURL + "/auth/login/mastodon/" + instance},
 		"scopes":        {"read:accounts"},
 		"website":       {s.BaseURL},
 	}
