@@ -17,6 +17,7 @@
     ModalFooter,
   } from "sveltestrap";
   import type { PageData } from "./$types";
+  import fediverse from "./fediverse.svg";
 
   export let data: PageData;
 
@@ -57,10 +58,10 @@
 <div class="container">
   <h1>Log in or sign up</h1>
   <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-4 mb-1">
       <ListGroup>
         <ListGroupItem tag="button" on:click={toggleModal}>
-          <Icon name="mastodon" /> Log in with Fediverse
+          <img height="16px" src={fediverse} alt="Fediverse logo" aria-hidden /> Log in with the Fediverse
         </ListGroupItem>
         <ListGroupItem tag="a" href={data.discord}>
           <Icon name="discord" /> Log in with Discord
@@ -68,6 +69,9 @@
       </ListGroup>
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
         <ModalBody>
+          <p>
+            <strong>Note:</strong> Misskey (and derivatives) are not supported yet, sorry.
+          </p>
           <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
           {#if error}
             <div class="mt-2">
@@ -77,7 +81,7 @@
         </ModalBody>
         <ModalFooter>
           <Button color="primary" disabled={fediDisabled || instance === ""} on:click={fediLogin}
-            >Fediverse login</Button
+            >Log in</Button
           >
         </ModalFooter>
       </Modal>

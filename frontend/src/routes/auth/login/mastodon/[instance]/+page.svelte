@@ -70,10 +70,10 @@
 </script>
 
 <svelte:head>
-  <title>Log in with Mastodon - pronouns.cc</title>
+  <title>Log in with the Fediverse - pronouns.cc</title>
 </svelte:head>
 
-<h1>Log in with Mastodon</h1>
+<h1>Log in with the Fediverse</h1>
 
 {#if data.error}
   <ErrorAlert error={data.error} />
