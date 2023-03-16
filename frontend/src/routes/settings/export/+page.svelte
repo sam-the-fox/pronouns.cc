@@ -12,7 +12,7 @@
 
   const createdAt = data.exportData?.created_at
     ? DateTime.fromISO(data.exportData.created_at).toLocal()
-    : DateTime.now();
+    : DateTime.fromSeconds(0);
   const now = DateTime.now().toLocal();
 
   const availableFor = Duration.fromObject({ days: 7 });
