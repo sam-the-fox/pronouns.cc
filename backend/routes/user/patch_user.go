@@ -211,12 +211,24 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// get fedi instance name if the user has a linked fedi account
+	var fediInstance *string
+	if u.FediverseAppID != nil {
+		app, err := s.DB.FediverseAppByID(ctx, *u.FediverseAppID)
+		if err == nil {
+			fediInstance = &app.Instance
+		}
+	}
+
 	// echo the updated user back on success
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse: dbUserToResponse(u, fields, nil),
-		MaxInvites:      u.MaxInvites,
-		Discord:         u.Discord,
-		DiscordUsername: u.DiscordUsername,
+		GetUserResponse:   dbUserToResponse(u, fields, nil),
+		MaxInvites:        u.MaxInvites,
+		Discord:           u.Discord,
+		DiscordUsername:   u.DiscordUsername,
+		Fediverse:         u.Fediverse,
+		FediverseUsername: u.FediverseUsername,
+		FediverseInstance: fediInstance,
 	})
 	return nil
 }

@@ -59,6 +59,19 @@ func (db *DB) FediverseApp(ctx context.Context, instance string) (fa FediverseAp
 	return fa, nil
 }
 
+func (db *DB) FediverseAppByID(ctx context.Context, id int64) (fa FediverseApp, err error) {
+	sql, args, err := sq.Select("*").From("fediverse_apps").Where("id = ?", id).ToSql()
+	if err != nil {
+		return fa, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &fa, sql, args...)
+	if err != nil {
+		return fa, errors.Wrap(err, "executing query")
+	}
+	return fa, nil
+}
+
 func (db *DB) CreateFediverseApp(ctx context.Context, instance, instanceType, clientID, clientSecret string) (fa FediverseApp, err error) {
 	sql, args, err := sq.Insert("fediverse_apps").
 		Columns("instance", "instance_type", "client_id", "client_secret").

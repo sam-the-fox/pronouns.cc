@@ -30,6 +30,10 @@ type GetMeResponse struct {
 	MaxInvites      int     `json:"max_invites"`
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
+
+	Fediverse         *string `json:"fediverse"`
+	FediverseUsername *string `json:"fediverse_username"`
+	FediverseInstance *string `json:"fediverse_instance"`
 }
 
 type PartialMember struct {
@@ -155,11 +159,23 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// get fedi instance name if the user has a linked fedi account
+	var fediInstance *string
+	if u.FediverseAppID != nil {
+		app, err := s.DB.FediverseAppByID(ctx, *u.FediverseAppID)
+		if err == nil {
+			fediInstance = &app.Instance
+		}
+	}
+
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse: dbUserToResponse(u, fields, members),
-		MaxInvites:      u.MaxInvites,
-		Discord:         u.Discord,
-		DiscordUsername: u.DiscordUsername,
+		GetUserResponse:   dbUserToResponse(u, fields, members),
+		MaxInvites:        u.MaxInvites,
+		Discord:           u.Discord,
+		DiscordUsername:   u.DiscordUsername,
+		Fediverse:         u.Fediverse,
+		FediverseUsername: u.FediverseUsername,
+		FediverseInstance: fediInstance,
 	})
 	return nil
 }
