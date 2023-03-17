@@ -1,3 +1,5 @@
+all: generate backend frontend
+
 .PHONY: migrate
 migrate:
 	go run -v ./scripts/migrate
@@ -13,3 +15,11 @@ backend:
 .PHONY: generate
 generate:
 	go generate ./...
+
+.PHONY: frontend
+frontend:
+	cd frontend && pnpm install && pnpm build
+
+.PHONY: dev
+dev:
+	cd frontend && pnpm dev
