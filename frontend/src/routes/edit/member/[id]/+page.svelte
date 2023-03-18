@@ -61,11 +61,12 @@
 
   let modified = false;
 
-  $: modified = isModified(bio, display_name, links, names, pronouns, fields, avatar);
+  $: modified = isModified(bio, name, display_name, links, names, pronouns, fields, avatar);
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
   const isModified = (
     bio: string,
+    name: string,
     display_name: string,
     links: string[],
     names: FieldEntry[],
@@ -73,6 +74,7 @@
     fields: Field[],
     avatar: string | null,
   ) => {
+    if (name !== data.member.name) return true;
     if (bio !== data.member.bio) return true;
     if (display_name !== data.member.display_name) return true;
     if (!linksEqual(links, data.member.links)) return true;

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"regexp"
 
 	"emperror.dev/errors"
 	"github.com/georgysavva/scany/pgxscan"
@@ -31,6 +32,13 @@ const (
 	ErrMemberNotFound  = errors.Sentinel("member not found")
 	ErrMemberNameInUse = errors.Sentinel("member name already in use")
 )
+
+// member names must match this regex
+var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"'$%&()+<=>^|~`,]{1,100}$")
+
+func MemberNameValid(name string) bool {
+	return memberNameRegex.MatchString(name)
+}
 
 func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
 	sql, args, err := sq.Select("*").From("members").Where("id = ?", id).ToSql()

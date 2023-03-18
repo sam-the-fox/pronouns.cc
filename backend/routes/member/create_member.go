@@ -3,6 +3,7 @@ package member
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
@@ -51,6 +52,13 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		return server.APIError{Code: server.ErrBadRequest}
 	}
 
+	// remove whitespace from all fields
+	cmr.Name = strings.TrimSpace(cmr.Name)
+	cmr.Bio = strings.TrimSpace(cmr.Bio)
+	if cmr.DisplayName != nil {
+		*cmr.DisplayName = strings.TrimSpace(*cmr.DisplayName)
+	}
+
 	// validate everything
 	if cmr.Name == "" {
 		return server.APIError{
@@ -61,6 +69,13 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Name may not be longer than 100 characters",
+		}
+	}
+
+	if !db.MemberNameValid(cmr.Name) {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: "Member name cannot contain any of the following: @, \\, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
 		}
 	}
 
