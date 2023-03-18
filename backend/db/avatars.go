@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	webpArgs = []string{"-resize", "512x512", "-quality", "80", "webp:-"}
-	jpgArgs  = []string{"-resize", "512x512", "-quality", "80", "jpg:-"}
+	webpArgs = []string{"-thumbnail", "512x512^", "-gravity", "center", "-extent", "512x512", "-quality", "90", "webp:-"}
+	jpgArgs  = []string{"-thumbnail", "512x512^", "-gravity", "center", "-extent", "512x512", "-quality", "80", "jpg:-"}
 )
 
 const ErrInvalidDataURI = errors.Sentinel("invalid data URI")
