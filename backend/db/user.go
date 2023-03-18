@@ -141,6 +141,28 @@ func (u *User) UpdateFromFedi(ctx context.Context, ex Execer, userID, username s
 	return nil
 }
 
+func (u *User) UnlinkFedi(ctx context.Context, ex Execer) error {
+	sql, args, err := sq.Update("users").
+		Set("fediverse", nil).
+		Set("fediverse_username", nil).
+		Set("fediverse_app_id", nil).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Fediverse = nil
+	u.FediverseUsername = nil
+	u.FediverseAppID = nil
+	return nil
+}
+
 // DiscordUser fetches a user by Discord user ID.
 func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err error) {
 	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
@@ -178,6 +200,27 @@ func (u *User) UpdateFromDiscord(ctx context.Context, ex Execer, du *discordgo.U
 	u.Discord = &du.ID
 	username := du.String()
 	u.DiscordUsername = &username
+
+	return nil
+}
+
+func (u *User) UnlinkDiscord(ctx context.Context, ex Execer) error {
+	sql, args, err := sq.Update("users").
+		Set("discord", nil).
+		Set("discord_username", nil).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Discord = nil
+	u.DiscordUsername = nil
 
 	return nil
 }

@@ -106,11 +106,16 @@ export enum ErrorCode {
   InviteLimitReached = 1009,
   InviteAlreadyUsed = 1010,
   RecentExport = 1012,
+  UnsupportedInstance = 1013,
+  AlreadyLinked = 1014,
+  NotLinked = 1015,
 
   UserNotFound = 2001,
 
   MemberNotFound = 3001,
   MemberLimitReached = 3002,
+  MemberNameInUse = 3003,
+  NotOwnMember = 3004,
 
   RequestTooBig = 4001,
   MissingPermissions = 4002,

@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { APIError } from "$lib/api/entities";
-  import { apiFetch } from "$lib/api/fetch";
+  import type { APIError, MeUser } from "$lib/api/entities";
+  import { apiFetch, apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
+  import { addToast } from "$lib/toast";
   import {
     Button,
     Card,
@@ -31,6 +32,12 @@
   let fediLinkModalOpen = false;
   let toggleFediLinkModal = () => (fediLinkModalOpen = !fediLinkModalOpen);
 
+  let fediUnlinkModalOpen = false;
+  let toggleFediUnlinkModal = () => (fediUnlinkModalOpen = !fediUnlinkModalOpen);
+
+  let discordUnlinkModalOpen = false;
+  let toggleDiscordUnlinkModal = () => (discordUnlinkModalOpen = !discordUnlinkModalOpen);
+
   const fediLogin = async () => {
     fediDisabled = true;
     try {
@@ -43,6 +50,28 @@
       error = e as APIError;
     } finally {
       fediDisabled = false;
+    }
+  };
+
+  const fediUnlink = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/auth/mastodon/remove-provider", "POST");
+      data.user = resp;
+      addToast({ header: "Unlinked account", body: "Successfully unlinked fediverse account!" });
+      toggleFediUnlinkModal();
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const discordUnlink = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/auth/discord/remove-provider", "POST");
+      data.user = resp;
+      addToast({ header: "Unlinked account", body: "Successfully unlinked Discord account!" });
+      toggleDiscordUnlinkModal();
+    } catch (e) {
+      error = e as APIError;
     }
   };
 </script>
@@ -66,7 +95,9 @@
             {/if}
           </CardText>
           {#if data.user.fediverse}
-            <Button color="danger" disabled={!canUnlink}>Unlink account</Button>
+            <Button color="danger" disabled={!canUnlink} on:click={toggleFediUnlinkModal}
+              >Unlink account</Button
+            >
           {:else}
             <Button color="secondary" on:click={toggleFediLinkModal}>Link account</Button>
           {/if}
@@ -86,7 +117,9 @@
             {/if}
           </CardText>
           {#if data.user.discord}
-            <Button color="danger" disabled={!canUnlink}>Unlink account</Button>
+            <Button color="danger" disabled={!canUnlink} on:click={toggleDiscordUnlinkModal}
+              >Unlink account</Button
+            >
           {:else}
             <Button color="secondary" href={data.urls.discord}>Link account</Button>
           {/if}
@@ -109,6 +142,50 @@
         <Button color="primary" disabled={fediDisabled || instance === ""} on:click={fediLogin}
           >Log in</Button
         >
+      </ModalFooter>
+    </Modal>
+
+    <Modal
+      header="Unlink fediverse account"
+      isOpen={fediUnlinkModalOpen}
+      toggle={toggleFediUnlinkModal}
+    >
+      <ModalBody>
+        <p>
+          Are you sure you want to unlink your fediverse account? You will no longer be able to use
+          it to log in.
+        </p>
+        {#if error}
+          <div class="mt-2">
+            <ErrorAlert {error} />
+          </div>
+        {/if}
+      </ModalBody>
+      <ModalFooter>
+        <Button color="danger" on:click={fediUnlink}>Unlink account</Button>
+        <Button color="secondary" on:click={toggleFediUnlinkModal}>Cancel</Button>
+      </ModalFooter>
+    </Modal>
+
+    <Modal
+      header="Unlink Discord account"
+      isOpen={discordUnlinkModalOpen}
+      toggle={toggleDiscordUnlinkModal}
+    >
+      <ModalBody>
+        <p>
+          Are you sure you want to unlink your Discord account? You will no longer be able to use it
+          to log in.
+        </p>
+        {#if error}
+          <div class="mt-2">
+            <ErrorAlert {error} />
+          </div>
+        {/if}
+      </ModalBody>
+      <ModalFooter>
+        <Button color="danger" on:click={discordUnlink}>Unlink account</Button>
+        <Button color="secondary" on:click={toggleDiscordUnlinkModal}>Cancel</Button>
       </ModalFooter>
     </Modal>
   </div>

@@ -80,12 +80,15 @@ func Mount(srv *server.Server, r chi.Router) {
 			r.Post("/signup", server.WrapHandler(s.discordSignup))
 			// takes discord signup ticket to link to existing account
 			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.discordLink))
+			// removes discord link from existing account
+			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.discordUnlink))
 		})
 
 		r.Route("/mastodon", func(r chi.Router) {
 			r.Post("/callback", server.WrapHandler(s.mastodonCallback))
 			r.Post("/signup", server.WrapHandler(s.mastodonSignup))
 			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.mastodonLink))
+			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.mastodonUnlink))
 		})
 
 		// invite routes

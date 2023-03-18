@@ -203,6 +203,39 @@ func (s *Server) discordLink(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func (s *Server) discordUnlink(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	// only site tokens can be used for this endpoint
+	if claims.APIToken || !claims.TokenWrite {
+		return server.APIError{Code: server.ErrInvalidToken}
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
+	if u.Discord == nil {
+		return server.APIError{Code: server.ErrNotLinked}
+	}
+
+	err = u.UnlinkDiscord(ctx, s.DB)
+	if err != nil {
+		return errors.Wrap(err, "updating user in db")
+	}
+
+	fields, err := s.DB.UserFields(ctx, u.ID)
+	if err != nil {
+		return errors.Wrap(err, "getting user fields")
+	}
+
+	render.JSON(w, r, dbUserToUserResponse(u, fields))
+	return nil
+}
+
 type discordSignupRequest struct {
 	Ticket     string `json:"ticket"`
 	Username   string `json:"username"`

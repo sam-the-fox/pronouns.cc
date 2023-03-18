@@ -95,6 +95,7 @@ const (
 	ErrRecentExport        = 1012 // latest export is too recent
 	ErrUnsupportedInstance = 1013 // unsupported fediverse software
 	ErrAlreadyLinked       = 1014 // user already has linked account of the same type
+	ErrNotLinked           = 1015 // user already doesn't have a linked account
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -132,6 +133,7 @@ var errCodeMessages = map[int]string{
 	ErrRecentExport:        "Your latest data export is less than 1 day old",
 	ErrUnsupportedInstance: "Unsupported instance software",
 	ErrAlreadyLinked:       "Your account is already linked to an account of this type",
+	ErrNotLinked:           "Your account is already not linked to an account of this type",
 
 	ErrUserNotFound: "User not found",
 
@@ -166,6 +168,7 @@ var errCodeStatuses = map[int]int{
 	ErrRecentExport:        http.StatusBadRequest,
 	ErrUnsupportedInstance: http.StatusBadRequest,
 	ErrAlreadyLinked:       http.StatusBadRequest,
+	ErrNotLinked:           http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 
