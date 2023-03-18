@@ -184,6 +184,11 @@ func (s *Server) mastodonLink(w http.ResponseWriter, r *http.Request) error {
 
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	// only site tokens can be used for this endpoint
+	if claims.APIToken || !claims.TokenWrite {
+		return server.APIError{Code: server.ErrInvalidToken}
+	}
+
 	req, err := Decode[fediLinkRequest](r)
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest}

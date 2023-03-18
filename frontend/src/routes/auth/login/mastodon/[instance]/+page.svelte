@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Alert, Button, Icon } from "sveltestrap";
+  import { Alert, Button, FormGroup, Icon, Input } from "sveltestrap";
 
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
@@ -79,7 +79,7 @@
       localStorage.setItem("pronouns-user", JSON.stringify(resp));
       userStore.set(resp);
       addToast({ header: "Linked account", body: "Successfully linked account!" });
-      goto("/settings/auth");
+      await goto("/settings/auth");
     } catch (e) {
       data.error = e as APIError;
     }
@@ -97,24 +97,14 @@
 {/if}
 {#if data.ticket && $userStore}
   <div>
-    <label for="fediverse">Fediverse username</label>
-    <input
-      id="fediverse"
-      class="form-control"
-      name="fediverse"
-      readonly
-      value="{data.fediverse}@{data.instance}"
-    />
+    <FormGroup floating label="Fediverse username">
+      <Input readonly value="{data.fediverse}@{data.instance}" />
+    </FormGroup>
   </div>
-  <div>
-    <label for="fediverse">pronouns.cc username</label>
-    <input
-      id="pronounscc"
-      class="form-control"
-      name="pronounscc"
-      readonly
-      value={$userStore.name}
-    />
+  <div class="my-2">
+    <FormGroup floating label="pronouns.cc username">
+      <Input readonly value={$userStore.name} />
+    </FormGroup>
   </div>
   <div>
     <Button on:click={linkAccount}>Link account</Button>
@@ -123,36 +113,27 @@
 {:else if data.ticket}
   <form on:submit|preventDefault={signupForm}>
     <div>
-      <label for="fediverse">Fediverse username</label>
-      <input
-        id="fediverse"
-        class="form-control"
-        name="fediverse"
-        readonly
-        value="{data.fediverse}@{data.instance}"
-      />
+      <FormGroup floating label="Fediverse username">
+        <Input readonly value="{data.fediverse}@{data.instance}" />
+      </FormGroup>
     </div>
     <div>
-      <label for="username">Username</label>
-      <input id="username" class="form-control" name="username" bind:value={username} />
+      <FormGroup floating label="Username">
+        <Input id="username" name="username" bind:value={username} />
+      </FormGroup>
     </div>
     {#if data.require_invite}
       <div>
-        <label for="invite">Invite code</label>
-        <input
-          id="invite"
-          class="form-control"
-          name="invite"
-          bind:value={invite}
-          aria-describedby="invite-help"
-        />
+        <FormGroup floating label="Invite code">
+          <Input id="invite" name="invite" aria-describedby="invite-help" bind:value={invite} />
+        </FormGroup>
         <div id="invite-help" class="form-text">
           <Icon name="info-circle-fill" /> You currently need an invite code to sign up. You can get
           one from an existing user.
         </div>
       </div>
     {/if}
-    <div class="form-text">
+    <div class="form-text mb-1">
       By signing up, you agree to the <a href="/page/tos">terms of service</a> and the
       <a href="/page/privacy">privacy policy</a>.
     </div>

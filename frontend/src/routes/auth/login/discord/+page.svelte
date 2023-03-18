@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Alert, Button, Icon } from "sveltestrap";
+  import { Alert, Button, FormGroup, Icon, Input } from "sveltestrap";
 
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
-  import { apiFetch } from "$lib/api/fetch";
+  import { apiFetch, apiFetchClient } from "$lib/api/fetch";
   import { userStore } from "$lib/store";
   import type { PageData } from "./$types";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
@@ -69,6 +69,21 @@
       deleteError = e as APIError;
     }
   };
+
+  const linkAccount = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/auth/discord/add-provider", "POST", {
+        ticket: data.ticket,
+      });
+
+      localStorage.setItem("pronouns-user", JSON.stringify(resp));
+      userStore.set(resp);
+      addToast({ header: "Linked account", body: "Successfully linked account!" });
+      await goto("/settings/auth");
+    } catch (e) {
+      data.error = e as APIError;
+    }
+  };
 </script>
 
 <svelte:head>
@@ -80,33 +95,45 @@
 {#if data.error}
   <ErrorAlert error={data.error} />
 {/if}
-{#if data.ticket}
+{#if data.ticket && $userStore}
+  <div>
+    <FormGroup floating label="Discord username">
+      <Input readonly value={data.discord} />
+    </FormGroup>
+  </div>
+  <div class="my-2">
+    <FormGroup floating label="pronouns.cc username">
+      <Input readonly value={$userStore.name} />
+    </FormGroup>
+  </div>
+  <div>
+    <Button on:click={linkAccount}>Link account</Button>
+    <Button color="secondary" href="/settings/auth">Cancel</Button>
+  </div>
+{:else if data.ticket}
   <form on:submit|preventDefault={signupForm}>
     <div>
-      <label for="discord">Discord username</label>
-      <input id="discord" class="form-control" name="discord" disabled value={data.discord} />
+      <FormGroup floating label="Discord username">
+        <Input readonly value={data.discord} />
+      </FormGroup>
     </div>
     <div>
-      <label for="username">Username</label>
-      <input id="username" class="form-control" name="username" bind:value={username} />
+      <FormGroup floating label="Username">
+        <Input id="username" name="username" bind:value={username} />
+      </FormGroup>
     </div>
     {#if data.require_invite}
       <div>
-        <label for="invite">Invite code</label>
-        <input
-          id="invite"
-          class="form-control"
-          name="invite"
-          bind:value={invite}
-          aria-describedby="invite-help"
-        />
+        <FormGroup floating label="Invite code">
+          <Input id="invite" name="invite" aria-describedby="invite-help" bind:value={invite} />
+        </FormGroup>
         <div id="invite-help" class="form-text">
           <Icon name="info-circle-fill" /> You currently need an invite code to sign up. You can get
           one from an existing user.
         </div>
       </div>
     {/if}
-    <div class="form-text">
+    <div class="form-text mb-1">
       By signing up, you agree to the <a href="/page/tos">terms of service</a> and the
       <a href="/page/privacy">privacy policy</a>.
     </div>

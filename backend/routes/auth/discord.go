@@ -153,6 +153,56 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+type linkRequest struct {
+	Ticket string `json:"ticket"`
+}
+
+func (s *Server) discordLink(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	// only site tokens can be used for this endpoint
+	if claims.APIToken || !claims.TokenWrite {
+		return server.APIError{Code: server.ErrInvalidToken}
+	}
+
+	req, err := Decode[linkRequest](r)
+	if err != nil {
+		return server.APIError{Code: server.ErrBadRequest}
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
+	if u.Discord != nil {
+		return server.APIError{Code: server.ErrAlreadyLinked}
+	}
+
+	du := new(discordgo.User)
+	err = s.DB.GetJSON(ctx, "discord:"+req.Ticket, &du)
+	if err != nil {
+		log.Errorf("getting discord user for ticket: %v", err)
+
+		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	err = u.UpdateFromDiscord(ctx, s.DB, du)
+	if err != nil {
+		return errors.Wrap(err, "updating user from discord")
+	}
+
+	fields, err := s.DB.UserFields(ctx, u.ID)
+	if err != nil {
+		return errors.Wrap(err, "getting user fields")
+	}
+
+	render.JSON(w, r, dbUserToUserResponse(u, fields))
+	return nil
+}
+
 type discordSignupRequest struct {
 	Ticket     string `json:"ticket"`
 	Username   string `json:"username"`

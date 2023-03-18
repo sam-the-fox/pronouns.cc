@@ -79,7 +79,7 @@ func Mount(srv *server.Server, r chi.Router) {
 			// takes discord signup ticket to register account
 			r.Post("/signup", server.WrapHandler(s.discordSignup))
 			// takes discord signup ticket to link to existing account
-			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(nil))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.discordLink))
 		})
 
 		r.Route("/mastodon", func(r chi.Router) {
