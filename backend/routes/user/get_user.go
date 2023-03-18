@@ -159,15 +159,6 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// get fedi instance name if the user has a linked fedi account
-	var fediInstance *string
-	if u.FediverseAppID != nil {
-		app, err := s.DB.FediverseAppByID(ctx, *u.FediverseAppID)
-		if err == nil {
-			fediInstance = &app.Instance
-		}
-	}
-
 	render.JSON(w, r, GetMeResponse{
 		GetUserResponse:   dbUserToResponse(u, fields, members),
 		MaxInvites:        u.MaxInvites,
@@ -175,7 +166,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		DiscordUsername:   u.DiscordUsername,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,
-		FediverseInstance: fediInstance,
+		FediverseInstance: u.FediverseInstance,
 	})
 	return nil
 }

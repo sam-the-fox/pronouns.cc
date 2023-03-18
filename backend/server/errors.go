@@ -94,6 +94,7 @@ const (
 	ErrDeletionPending     = 1011 // own user deletion pending, returned with undo code
 	ErrRecentExport        = 1012 // latest export is too recent
 	ErrUnsupportedInstance = 1013 // unsupported fediverse software
+	ErrAlreadyLinked       = 1014 // user already has linked account of the same type
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -130,6 +131,7 @@ var errCodeMessages = map[int]string{
 	ErrDeletionPending:     "Your account is pending deletion",
 	ErrRecentExport:        "Your latest data export is less than 1 day old",
 	ErrUnsupportedInstance: "Unsupported instance software",
+	ErrAlreadyLinked:       "Your account is already linked to an account of this type",
 
 	ErrUserNotFound: "User not found",
 
@@ -163,6 +165,7 @@ var errCodeStatuses = map[int]int{
 	ErrDeletionPending:     http.StatusBadRequest,
 	ErrRecentExport:        http.StatusBadRequest,
 	ErrUnsupportedInstance: http.StatusBadRequest,
+	ErrAlreadyLinked:       http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 

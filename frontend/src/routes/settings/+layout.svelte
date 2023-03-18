@@ -35,7 +35,14 @@
         <ListGroupItem tag="a" active={$page.url.pathname === "/settings"} href="/settings">
           Your profile
         </ListGroupItem>
-        {#if data.require_invite}
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/auth"}
+          href="/settings/auth"
+        >
+          Authentication
+        </ListGroupItem>
+        {#if data.invitesEnabled}
           <ListGroupItem
             tag="a"
             active={$page.url.pathname === "/settings/invites"}

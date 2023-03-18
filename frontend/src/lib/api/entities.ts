@@ -21,6 +21,9 @@ export interface MeUser extends User {
   max_invites: number;
   discord: string | null;
   discord_username: string | null;
+  fediverse: string | null;
+  fediverse_username: string | null;
+  fediverse_instance: string | null;
 }
 
 export interface Field {

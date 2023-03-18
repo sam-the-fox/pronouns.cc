@@ -203,15 +203,15 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)
 	if err != nil {
+		if errors.Cause(err) == db.ErrUsernameTaken {
+			return server.APIError{Code: server.ErrUsernameTaken}
+		}
+
 		return errors.Wrap(err, "creating user")
 	}
 
 	err = u.UpdateFromDiscord(ctx, tx, du)
 	if err != nil {
-		if errors.Cause(err) == db.ErrUsernameTaken {
-			return server.APIError{Code: server.ErrUsernameTaken}
-		}
-
 		return errors.Wrap(err, "updating user from discord")
 	}
 

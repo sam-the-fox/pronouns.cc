@@ -33,21 +33,28 @@ type userResponse struct {
 
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
+
+	Fediverse         *string `json:"fediverse"`
+	FediverseUsername *string `json:"fediverse_username"`
+	FediverseInstance *string `json:"fediverse_instance"`
 }
 
 func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 	return &userResponse{
-		ID:              u.ID,
-		Username:        u.Username,
-		DisplayName:     u.DisplayName,
-		Bio:             u.Bio,
-		Avatar:          u.Avatar,
-		Links:           db.NotNull(u.Links),
-		Names:           db.NotNull(u.Names),
-		Pronouns:        db.NotNull(u.Pronouns),
-		Fields:          db.NotNull(fields),
-		Discord:         u.Discord,
-		DiscordUsername: u.DiscordUsername,
+		ID:                u.ID,
+		Username:          u.Username,
+		DisplayName:       u.DisplayName,
+		Bio:               u.Bio,
+		Avatar:            u.Avatar,
+		Links:             db.NotNull(u.Links),
+		Names:             db.NotNull(u.Names),
+		Pronouns:          db.NotNull(u.Pronouns),
+		Fields:            db.NotNull(fields),
+		Discord:           u.Discord,
+		DiscordUsername:   u.DiscordUsername,
+		Fediverse:         u.Fediverse,
+		FediverseUsername: u.FediverseUsername,
+		FediverseInstance: u.FediverseInstance,
 	}
 }
 
@@ -78,7 +85,7 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.Route("/mastodon", func(r chi.Router) {
 			r.Post("/callback", server.WrapHandler(s.mastodonCallback))
 			r.Post("/signup", server.WrapHandler(s.mastodonSignup))
-			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(nil))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.mastodonLink))
 		})
 
 		// invite routes

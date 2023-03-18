@@ -174,6 +174,57 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
+type fediLinkRequest struct {
+	Instance string `json:"instance"`
+	Ticket   string `json:"ticket"`
+}
+
+func (s *Server) mastodonLink(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	req, err := Decode[fediLinkRequest](r)
+	if err != nil {
+		return server.APIError{Code: server.ErrBadRequest}
+	}
+
+	app, err := s.DB.FediverseApp(ctx, req.Instance)
+	if err != nil {
+		return errors.Wrap(err, "getting instance application")
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
+	if u.Fediverse != nil {
+		return server.APIError{Code: server.ErrAlreadyLinked}
+	}
+
+	mu := new(partialMastodonAccount)
+	err = s.DB.GetJSON(ctx, "mastodon:"+req.Ticket, &mu)
+	if err != nil {
+		log.Errorf("getting mastoAPI user for ticket: %v", err)
+
+		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	err = u.UpdateFromFedi(ctx, s.DB, mu.ID, mu.Username, app.ID)
+	if err != nil {
+		return errors.Wrap(err, "updating user from mastoAPI")
+	}
+
+	fields, err := s.DB.UserFields(ctx, u.ID)
+	if err != nil {
+		return errors.Wrap(err, "getting user fields")
+	}
+
+	render.JSON(w, r, dbUserToUserResponse(u, fields))
+	return nil
+}
+
 type fediSignupRequest struct {
 	Instance   string `json:"instance"`
 	Ticket     string `json:"ticket"`
@@ -225,15 +276,15 @@ func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)
 	if err != nil {
+		if errors.Cause(err) == db.ErrUsernameTaken {
+			return server.APIError{Code: server.ErrUsernameTaken}
+		}
+
 		return errors.Wrap(err, "creating user")
 	}
 
 	err = u.UpdateFromFedi(ctx, tx, mu.ID, mu.Username, app.ID)
 	if err != nil {
-		if errors.Cause(err) == db.ErrUsernameTaken {
-			return server.APIError{Code: server.ErrUsernameTaken}
-		}
-
 		return errors.Wrap(err, "updating user from mastoAPI")
 	}
 

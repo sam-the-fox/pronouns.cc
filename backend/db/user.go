@@ -31,6 +31,7 @@ type User struct {
 	Fediverse         *string
 	FediverseUsername *string
 	FediverseAppID    *int64
+	FediverseInstance *string
 
 	MaxInvites int
 
@@ -99,7 +100,8 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 }
 
 func (db *DB) FediverseUser(ctx context.Context, userID string, instanceAppID int64) (u User, err error) {
-	sql, args, err := sq.Select("*").From("users").
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").
 		Where("fediverse = ?", userID).Where("fediverse_app_id = ?", instanceAppID).
 		ToSql()
 	if err != nil {
@@ -141,7 +143,8 @@ func (u *User) UpdateFromFedi(ctx context.Context, ex Execer, userID, username s
 
 // DiscordUser fetches a user by Discord user ID.
 func (db *DB) DiscordUser(ctx context.Context, discordID string) (u User, err error) {
-	sql, args, err := sq.Select("*").From("users").Where("discord = ?", discordID).ToSql()
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("discord = ?", discordID).ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
@@ -181,7 +184,8 @@ func (u *User) UpdateFromDiscord(ctx context.Context, ex Execer, du *discordgo.U
 
 // User gets a user by ID.
 func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
-	sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("id = ?", id).ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}

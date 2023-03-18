@@ -4,10 +4,11 @@
 
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
-  import { apiFetch } from "$lib/api/fetch";
+  import { apiFetch, apiFetchClient } from "$lib/api/fetch";
   import { userStore } from "$lib/store";
   import type { PageData } from "./$types";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
+  import { addToast } from "$lib/toast";
 
   interface SignupResponse {
     user: MeUser;
@@ -67,6 +68,22 @@
       deleteError = e as APIError;
     }
   };
+
+  const linkAccount = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/auth/mastodon/add-provider", "POST", {
+        instance: data.instance,
+        ticket: data.ticket,
+      });
+
+      localStorage.setItem("pronouns-user", JSON.stringify(resp));
+      userStore.set(resp);
+      addToast({ header: "Linked account", body: "Successfully linked account!" });
+      goto("/settings/auth");
+    } catch (e) {
+      data.error = e as APIError;
+    }
+  };
 </script>
 
 <svelte:head>
@@ -78,7 +95,32 @@
 {#if data.error}
   <ErrorAlert error={data.error} />
 {/if}
-{#if data.ticket}
+{#if data.ticket && $userStore}
+  <div>
+    <label for="fediverse">Fediverse username</label>
+    <input
+      id="fediverse"
+      class="form-control"
+      name="fediverse"
+      readonly
+      value="{data.fediverse}@{data.instance}"
+    />
+  </div>
+  <div>
+    <label for="fediverse">pronouns.cc username</label>
+    <input
+      id="pronounscc"
+      class="form-control"
+      name="pronounscc"
+      readonly
+      value={$userStore.name}
+    />
+  </div>
+  <div>
+    <Button on:click={linkAccount}>Link account</Button>
+    <Button color="secondary" href="/settings/auth">Cancel</Button>
+  </div>
+{:else if data.ticket}
   <form on:submit|preventDefault={signupForm}>
     <div>
       <label for="fediverse">Fediverse username</label>
@@ -86,7 +128,7 @@
         id="fediverse"
         class="form-control"
         name="fediverse"
-        disabled
+        readonly
         value="{data.fediverse}@{data.instance}"
       />
     </div>
