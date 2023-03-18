@@ -6,6 +6,7 @@
 
   export let field: Field;
   export let deleteField: () => void;
+  export let moveField: (up: boolean) => void;
 
   let newEntry: string = "";
 
@@ -31,12 +32,26 @@
   };
 </script>
 
-<div>
+<div class="p-3">
+  <h5>{field.name}</h5>
   <InputGroup class="m-1">
-    <InputGroupText>Name</InputGroupText>
+    <IconButton
+      color="secondary"
+      icon="chevron-left"
+      tooltip="Move field left"
+      click={() => moveField(true)}
+    />
+    <IconButton
+      color="secondary"
+      icon="chevron-right"
+      tooltip="Move field right"
+      click={() => moveField(false)}
+    />
+    <!-- <InputGroupText>Name</InputGroupText> -->
     <Input bind:value={field.name} />
     <Button color="danger" on:click={() => deleteField()}>Delete field</Button>
   </InputGroup>
+  <hr />
   {#each field.entries as _, index}
     <FieldEntry
       bind:value={field.entries[index].value}

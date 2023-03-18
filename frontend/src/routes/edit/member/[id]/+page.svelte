@@ -154,6 +154,17 @@
     pronouns[newIndex] = temp;
   };
 
+  const moveField = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == fields.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = fields[index];
+    fields[index] = fields[newIndex];
+    fields[newIndex] = temp;
+  };
+
   const addName = () => {
     names = [...names, { value: newName, status: WordStatus.Okay }];
     newName = "";
@@ -425,7 +436,11 @@
   <div class="grid gap-3">
     <div class="row row-cols-1 row-cols-md-2">
       {#each fields as _, index}
-        <EditableField bind:field={fields[index]} deleteField={() => removeField(index)} />
+        <EditableField
+          bind:field={fields[index]}
+          deleteField={() => removeField(index)}
+          moveField={(up) => moveField(index, up)}
+        />
       {/each}
     </div>
   </div>
