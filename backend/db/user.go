@@ -40,6 +40,16 @@ type User struct {
 	DeleteReason *string
 }
 
+func (u User) NumProviders() (numProviders int) {
+	if u.Discord != nil {
+		numProviders++
+	}
+	if u.Fediverse != nil {
+		numProviders++
+	}
+	return numProviders
+}
+
 // usernames must match this regex
 var usernameRegex = regexp.MustCompile(`^[\w-.]{2,40}$`)
 

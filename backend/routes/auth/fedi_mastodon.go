@@ -249,6 +249,11 @@ func (s *Server) mastodonUnlink(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrNotLinked}
 	}
 
+	// cannot unlink last auth provider
+	if u.NumProviders() <= 1 {
+		return server.APIError{Code: server.ErrLastProvider}
+	}
+
 	err = u.UnlinkFedi(ctx, s.DB)
 	if err != nil {
 		return errors.Wrap(err, "updating user in db")

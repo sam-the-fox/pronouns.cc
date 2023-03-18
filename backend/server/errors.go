@@ -96,6 +96,7 @@ const (
 	ErrUnsupportedInstance = 1013 // unsupported fediverse software
 	ErrAlreadyLinked       = 1014 // user already has linked account of the same type
 	ErrNotLinked           = 1015 // user already doesn't have a linked account
+	ErrLastProvider        = 1016 // unlinking provider would leave account with no authentication method
 
 	// User-related error codes
 	ErrUserNotFound = 2001
@@ -134,6 +135,7 @@ var errCodeMessages = map[int]string{
 	ErrUnsupportedInstance: "Unsupported instance software",
 	ErrAlreadyLinked:       "Your account is already linked to an account of this type",
 	ErrNotLinked:           "Your account is already not linked to an account of this type",
+	ErrLastProvider:        "This is your account's only authentication provider",
 
 	ErrUserNotFound: "User not found",
 
@@ -169,6 +171,7 @@ var errCodeStatuses = map[int]int{
 	ErrUnsupportedInstance: http.StatusBadRequest,
 	ErrAlreadyLinked:       http.StatusBadRequest,
 	ErrNotLinked:           http.StatusBadRequest,
+	ErrLastProvider:        http.StatusBadRequest,
 
 	ErrUserNotFound: http.StatusNotFound,
 

@@ -109,6 +109,7 @@ export enum ErrorCode {
   UnsupportedInstance = 1013,
   AlreadyLinked = 1014,
   NotLinked = 1015,
+  LastProvider = 1016,
 
   UserNotFound = 2001,
 
