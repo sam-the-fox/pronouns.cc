@@ -74,7 +74,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		*req.Name = strings.TrimSpace(*req.Name)
 	}
 	if req.DisplayName != nil {
-		*req.DisplayName = strings.TrimSpace(*req.Name)
+		*req.DisplayName = strings.TrimSpace(*req.DisplayName)
 	}
 	if req.Bio != nil {
 		*req.Bio = strings.TrimSpace(*req.Bio)
