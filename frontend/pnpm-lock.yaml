@@ -10,6 +10,7 @@ specifiers:
   '@tailwindcss/typography': ^0.5.9
   '@types/luxon': ^3.2.0
   '@types/marked': ^4.0.8
+  '@types/node': ^18.15.3
   '@types/sanitize-html': ^2.8.1
   '@typescript-eslint/eslint-plugin': ^5.45.0
   '@typescript-eslint/parser': ^5.45.0
@@ -55,6 +56,7 @@ devDependencies:
   '@tailwindcss/typography': 0.5.9_tailwindcss@3.2.7
   '@types/luxon': 3.2.0
   '@types/marked': 4.0.8
+  '@types/node': 18.15.3
   '@types/sanitize-html': 2.8.1
   '@typescript-eslint/eslint-plugin': 5.54.1_mlk7dnz565t663n4razh6a6v6i
   '@typescript-eslint/parser': 5.54.1_ycpbpc6yetojsgtrx3mwntkhsu
@@ -70,7 +72,7 @@ devDependencies:
   tailwindcss: 3.2.7_postcss@8.4.21
   tslib: 2.5.0
   typescript: 4.9.5
-  vite: 4.1.4
+  vite: 4.1.4_@types+node@18.15.3
 
 packages:
 
@@ -504,7 +506,7 @@ packages:
       svelte: 3.55.1
       tiny-glob: 0.2.9
       undici: 5.20.0
-      vite: 4.1.4
+      vite: 4.1.4_@types+node@18.15.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -522,7 +524,7 @@ packages:
       magic-string: 0.29.0
       svelte: 3.55.1
       svelte-hmr: 0.15.1_svelte@3.55.1
-      vite: 4.1.4
+      vite: 4.1.4_@types+node@18.15.3
       vitefu: 0.2.4_vite@4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -567,6 +569,10 @@ packages:
 
   /@types/marked/4.0.8:
     resolution: {integrity: sha512-HVNzMT5QlWCOdeuBsgXP8EZzKUf0+AXzN+sLmjvaB3ZlLqO+e4u0uXrdw9ub69wBKFs+c6/pA4r9sy6cCDvImw==}
+    dev: true
+
+  /@types/node/18.15.3:
+    resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
     dev: true
 
   /@types/pug/2.0.6:
@@ -2349,7 +2355,7 @@ packages:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: true
 
-  /vite/4.1.4:
+  /vite/4.1.4_@types+node@18.15.3:
     resolution: {integrity: sha512-3knk/HsbSTKEin43zHu7jTwYWv81f8kgAL99G5NWBcA1LKvtvcVAC4JjBH1arBunO9kQka+1oGbrMKOjk4ZrBg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -2374,6 +2380,7 @@ packages:
       terser:
         optional: true
     dependencies:
+      '@types/node': 18.15.3
       esbuild: 0.16.17
       postcss: 8.4.21
       resolve: 1.22.1
@@ -2390,7 +2397,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 4.1.4
+      vite: 4.1.4_@types+node@18.15.3
     dev: true
 
   /which/2.0.2:
