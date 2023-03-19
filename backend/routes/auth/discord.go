@@ -107,7 +107,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 
 		// TODO: implement user + token permissions
 		tokenID := xid.New()
-		token, err := s.Auth.CreateToken(u.ID, tokenID, false, false, true)
+		token, err := s.Auth.CreateToken(u.ID, tokenID, u.IsAdmin, false, true)
 		if err != nil {
 			return err
 		}

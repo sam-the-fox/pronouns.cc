@@ -34,6 +34,7 @@ type User struct {
 	FediverseInstance *string
 
 	MaxInvites int
+	IsAdmin    bool
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool

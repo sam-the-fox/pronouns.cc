@@ -5,6 +5,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/routes/bot"
 	"codeberg.org/u1f320/pronouns.cc/backend/routes/member"
 	"codeberg.org/u1f320/pronouns.cc/backend/routes/meta"
+	"codeberg.org/u1f320/pronouns.cc/backend/routes/mod"
 	"codeberg.org/u1f320/pronouns.cc/backend/routes/user"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
@@ -20,5 +21,6 @@ func mountRoutes(s *server.Server) {
 		member.Mount(s, r)
 		bot.Mount(s, r)
 		meta.Mount(s, r)
+		mod.Mount(s, r)
 	})
 }
