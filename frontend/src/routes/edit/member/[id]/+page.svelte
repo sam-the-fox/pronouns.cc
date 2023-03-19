@@ -317,7 +317,9 @@
         <h4>Avatar</h4>
         <div class="row">
           <div class="col-md text-center">
-            {#if avatar}
+            {#if avatar === ""}
+              <FallbackImage alt="Current avatar" urls={[]} width={200} />
+            {:else if avatar}
               <img width={200} src={avatar} alt="New avatar" class="rounded-circle img-fluid" />
             {:else}
               <FallbackImage alt="Current avatar" urls={memberAvatars(data.member)} width={200} />
@@ -335,6 +337,7 @@
               <Icon name="info-circle-fill" /> Only PNG, JPEG, GIF, and WebP can be used as avatars.
               Avatars cannot be larger than 1 MB, and animated avatars will be made static.
             </p>
+            <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
           </div>
         </div>
       </div>

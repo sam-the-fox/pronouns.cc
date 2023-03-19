@@ -12,15 +12,7 @@
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import {
-    Alert,
-    Button,
-    ButtonDropdown,
-    DropdownToggle,
-    FormGroup,
-    Icon,
-    Input,
-  } from "sveltestrap";
+  import { Alert, Button, ButtonGroup, FormGroup, Icon, Input } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
@@ -248,9 +240,15 @@
 
 <h1>
   Edit profile
-  {#if modified}
-    <Button color="success" on:click={() => updateUser()}>Save changes</Button>
-  {/if}
+  <ButtonGroup>
+    <Button color="secondary" href="/@{$userStore?.name}">
+      <Icon name="chevron-left" />
+      Back to your profile
+    </Button>
+    {#if modified}
+      <Button color="success" on:click={() => updateUser()}>Save changes</Button>
+    {/if}
+  </ButtonGroup>
 </h1>
 
 {#if error}
@@ -266,7 +264,9 @@
         <h4>Avatar</h4>
         <div class="row">
           <div class="col-md text-center">
-            {#if avatar}
+            {#if avatar === ""}
+              <FallbackImage alt="Current avatar" urls={[]} width={200} />
+            {:else if avatar}
               <img width={200} src={avatar} alt="New avatar" class="rounded-circle img-fluid" />
             {:else}
               <FallbackImage alt="Current avatar" urls={userAvatars($userStore)} width={200} />
@@ -283,6 +283,9 @@
             <p class="text-muted mt-3">
               <Icon name="info-circle-fill" /> Only PNG, JPEG, GIF, and WebP images can be used as avatars.
               Avatars cannot be larger than 1 MB, and animated avatars will be made static.
+            </p>
+            <p>
+              <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
             </p>
           </div>
         </div>

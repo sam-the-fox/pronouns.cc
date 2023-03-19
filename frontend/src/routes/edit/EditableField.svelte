@@ -47,7 +47,6 @@
       tooltip="Move field right"
       click={() => moveField(false)}
     />
-    <!-- <InputGroupText>Name</InputGroupText> -->
     <Input bind:value={field.name} />
     <Button color="danger" on:click={() => deleteField()}>Delete field</Button>
   </InputGroup>
