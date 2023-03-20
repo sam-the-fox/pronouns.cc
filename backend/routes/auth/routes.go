@@ -103,6 +103,9 @@ func Mount(srv *server.Server, r chi.Router) {
 		// cancel user delete
 		// uses a special token, so handled in the function itself
 		r.Get("/cancel-delete", server.WrapHandler(s.cancelDelete))
+		// force user delete
+		// uses a special token (same as above)
+		r.Get("/force-delete", server.WrapHandler(s.forceDelete))
 	})
 }
 

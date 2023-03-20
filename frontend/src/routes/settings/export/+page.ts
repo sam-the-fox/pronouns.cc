@@ -1,5 +1,6 @@
 import { ErrorCode, type APIError } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
+import type { ExportResponse } from "$lib/api/responses";
 import { error } from "@sveltejs/kit";
 
 export const load = async () => {
@@ -12,8 +13,3 @@ export const load = async () => {
     throw error((e as APIError).code, (e as APIError).message);
   }
 };
-
-interface ExportResponse {
-  path: string;
-  created_at: string;
-}
