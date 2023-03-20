@@ -1,10 +1,13 @@
 .vscode
 node_modules
 *.log*
-.nuxt
-.nitro
-.cache
-.output
 .env
+.env.*
+!.env.example
 dist
 dump.rdb
+build
+.svelte-kit
+package
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
