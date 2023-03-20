@@ -403,3 +403,16 @@ func (db *DB) UndoDeleteUser(ctx context.Context, id xid.ID) error {
 	}
 	return nil
 }
+
+func (db *DB) ForceDeleteUser(ctx context.Context, id xid.ID) error {
+	sql, args, err := sq.Delete("users").Where("id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = db.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}
