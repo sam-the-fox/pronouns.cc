@@ -1,5 +1,6 @@
 import { PUBLIC_BASE_URL } from "$env/static/public";
 import { apiFetch } from "$lib/api/fetch";
+import type { UrlsResponse } from "$lib/api/responses";
 
 export const load = async () => {
   const resp = await apiFetch<UrlsResponse>("/auth/urls", {
@@ -11,7 +12,3 @@ export const load = async () => {
 
   return { urls: resp };
 };
-
-interface UrlsResponse {
-  discord: string;
-}
