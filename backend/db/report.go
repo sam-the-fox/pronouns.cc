@@ -22,14 +22,57 @@ type Report struct {
 	AdminComment *string
 }
 
-const reportPageSize = 100
+const ReportPageSize = 100
 
-func (db *DB) Reports(ctx context.Context, closed bool, page int) (rs []Report, err error) {
-	builder := sq.Select("*").From("reports").Offset(uint64(reportPageSize * page)).Limit(reportPageSize).OrderBy("id ASC")
+func (db *DB) Reports(ctx context.Context, closed bool, before int) (rs []Report, err error) {
+	builder := sq.Select("*").From("reports").Limit(ReportPageSize).OrderBy("id DESC")
+	if before != 0 {
+		builder = builder.Where("id < ?", before)
+	}
 	if closed {
 		builder = builder.Where("resolved_at IS NOT NULL")
 	} else {
 		builder = builder.Where("resolved_at IS NULL")
+	}
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Select(ctx, db, &rs, sql, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing query")
+	}
+	if len(rs) == 0 {
+		return []Report{}, nil
+	}
+	return rs, nil
+}
+
+func (db *DB) ReportsByUser(ctx context.Context, userID xid.ID, before int) (rs []Report, err error) {
+	builder := sq.Select("*").From("reports").Where("user_id = ?", userID).Limit(ReportPageSize).OrderBy("id DESC")
+	if before != 0 {
+		builder = builder.Where("id < ?", before)
+	}
+	sql, args, err := builder.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Select(ctx, db, &rs, sql, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing query")
+	}
+	if len(rs) == 0 {
+		return []Report{}, nil
+	}
+	return rs, nil
+}
+
+func (db *DB) ReportsByReporter(ctx context.Context, reporterID xid.ID, before int) (rs []Report, err error) {
+	builder := sq.Select("*").From("reports").Where("reporter_id = ?", reporterID).Limit(ReportPageSize).OrderBy("id DESC")
+	if before != 0 {
+		builder = builder.Where("id < ?", before)
 	}
 	sql, args, err := builder.ToSql()
 	if err != nil {

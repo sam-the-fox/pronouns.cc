@@ -17,8 +17,8 @@ func Mount(srv *server.Server, r chi.Router) {
 
 	r.With(MustAdmin).Route("/admin", func(r chi.Router) {
 		r.Get("/reports", server.WrapHandler(s.getReports))
-		r.Get("/reports/by-user/{id}", nil)
-		r.Get("/reports/by-reporter/{id}", nil)
+		r.Get("/reports/by-user/{id}", server.WrapHandler(s.getReportsByUser))
+		r.Get("/reports/by-reporter/{id}", server.WrapHandler(s.getReportsByReporter))
 
 		r.Patch("/reports/{id}", nil)
 	})
