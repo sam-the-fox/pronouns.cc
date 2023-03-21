@@ -75,6 +75,7 @@
 
   const fieldsEqual = (arr1: Field[], arr2: Field[]) => {
     if (arr1?.length !== arr2?.length) return false;
+    if (!arr1.every((_, i) => arr1[i].entries.length === arr2[i].entries.length)) return false;
     if (!arr1.every((_, i) => arr1[i].name === arr2[i].name)) return false;
 
     return arr1.every((_, i) =>
