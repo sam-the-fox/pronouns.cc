@@ -5,8 +5,8 @@
 
   export let data: PageData;
 
-  import * as jose from "jose";
-  const claims = jose.decodeJwt(localStorage.getItem("pronouns-token")!);
+  import { decodeJwt } from "jose";
+  const claims = decodeJwt(localStorage.getItem("pronouns-token")!);
 </script>
 
 <h1>Tokens ({data.tokens.length})</h1>

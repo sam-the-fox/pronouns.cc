@@ -1,10 +1,4 @@
-import {
-  ErrorCode,
-  type APIError,
-  type Invite,
-  type MeUser,
-  type PartialMember,
-} from "$lib/api/entities";
+import { ErrorCode, type APIError, type Invite, type MeUser } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
 import type { LayoutLoad } from "./$types";
 
@@ -12,7 +6,6 @@ export const ssr = false;
 
 export const load = (async ({ parent }) => {
   const user = await apiFetchClient<MeUser>("/users/@me");
-  const members = await apiFetchClient<PartialMember[]>("/users/@me/members");
 
   let invites: Invite[] = [];
   let invitesEnabled = true;
@@ -29,7 +22,6 @@ export const load = (async ({ parent }) => {
   return {
     ...data,
     user,
-    members,
     invites,
     invitesEnabled,
   };
