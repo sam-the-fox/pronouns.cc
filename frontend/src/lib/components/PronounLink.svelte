@@ -4,18 +4,25 @@
   export let pronouns: Pronoun;
 
   let pronounText: string;
-  if (pronouns.display_text) {
-    pronounText = pronouns.display_text;
-  } else {
-    const split = pronouns.pronouns.split("/");
-    if (split.length < 2) pronounText = split.join("/");
-    else pronounText = split.slice(0, 2).join("/");
-  }
+  $: pronounText = updatePronouns(pronouns);
 
-  const link = pronouns.display_text
+  const updatePronouns = (pronouns: Pronoun) => {
+    if (pronouns.display_text) {
+      return pronouns.display_text;
+    } else {
+      const split = pronouns.pronouns.split("/");
+      if (split.length < 2) return split.join("/");
+      else return split.slice(0, 2).join("/");
+    }
+  };
+
+  let link: string;
+  let shouldLink: boolean;
+
+  $: link = pronouns.display_text
     ? `${pronouns.pronouns},${pronouns.display_text}`
     : pronouns.pronouns;
-  const shouldLink = pronouns.pronouns.split("/").length === 5;
+  $: shouldLink = pronouns.pronouns.split("/").length === 5;
 </script>
 
 {#if shouldLink}
