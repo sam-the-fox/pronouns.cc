@@ -10,16 +10,16 @@ import (
 )
 
 type Report struct {
-	ID         int64
-	UserID     xid.ID
-	MemberID   *xid.ID
-	Reason     string
-	ReporterID xid.ID
+	ID         int64   `json:"id"`
+	UserID     xid.ID  `json:"user_id"`
+	MemberID   *xid.ID `json:"member_id"`
+	Reason     string  `json:"reason"`
+	ReporterID xid.ID  `json:"reporter_id"`
 
-	CreatedAt    time.Time
-	ResolvedAt   *time.Time
-	AdminID      *xid.ID
-	AdminComment *string
+	CreatedAt    time.Time  `json:"created_at"`
+	ResolvedAt   *time.Time `json:"resolved_at"`
+	AdminID      *xid.ID    `json:"admin_id"`
+	AdminComment *string    `json:"admin_comment"`
 }
 
 const ReportPageSize = 100
@@ -87,4 +87,22 @@ func (db *DB) ReportsByReporter(ctx context.Context, reporterID xid.ID, before i
 		return []Report{}, nil
 	}
 	return rs, nil
+}
+
+func (db *DB) CreateReport(ctx context.Context, reporterID, userID xid.ID, memberID *xid.ID, reason string) (r Report, err error) {
+	sql, args, err := sq.Insert("reports").SetMap(map[string]any{
+		"user_id":     userID,
+		"reporter_id": reporterID,
+		"member_id":   memberID,
+		"reason":      reason,
+	}).Suffix("RETURNING *").ToSql()
+	if err != nil {
+		return r, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &r, sql, args...)
+	if err != nil {
+		return r, errors.Wrap(err, "executing query")
+	}
+	return r, nil
 }
