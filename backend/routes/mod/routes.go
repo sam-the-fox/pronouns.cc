@@ -24,7 +24,7 @@ func Mount(srv *server.Server, r chi.Router) {
 	})
 
 	r.With(server.MustAuth).Post("/users/{id}/reports", server.WrapHandler(s.createUserReport))
-	r.With(server.MustAuth).Post("/members/{id}/reports", nil)
+	r.With(server.MustAuth).Post("/members/{id}/reports", server.WrapHandler(s.createMemberReport))
 }
 
 func MustAdmin(next http.Handler) http.Handler {
