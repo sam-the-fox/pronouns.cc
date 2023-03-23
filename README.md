@@ -17,21 +17,6 @@ When working on the frontend, run the API and then use `pnpm dev` in `frontend/`
 Note that the Vite dev server assumes that the backend listens on `:8080` and MinIO listens on `:9000`.
 If these ports differ on your development environment, you must edit `vite.config.ts`.
 
-## Building
-
-Run `make backend` to build the API server, then run `pnpm build` in `frontend/`.
-
-## Running
-
-Both the backend and frontend are expected to run behind a reverse proxy such as [Caddy](https://caddyserver.com/) or nginx.
-
-Every path should be proxied to the frontend, except:
-
-- `/api/`: this should be proxied to the backend, with the URL being rewritten to remove `/api`
-  (for example, a request to `$DOMAIN/api/v1/users/@me` should be proxied to `localhost:8080/v1/users/@me`)
-- `/media/`: this should be proxied to your object storage.
-  Make sure to rewrite `/media` into your storage bucket's name.
-
 ## Development
 
 Requirements:
@@ -40,36 +25,17 @@ Requirements:
 - PostgreSQL (any currently supported version should work)
 - Redis 6.0 or later
 - Node.js (latest version)
-- MinIO **if testing uploads** (_not_ required otherwise)
+- MinIO **if using avatars or data exports** (_not_ required otherwise)
 
 ### Setup
 
 1. Create a PostgreSQL user and database (the user should own the database)  
    For example: `create user pronouns with password 'password'; create database pronouns with owner pronouns;`
 2. Create a `.env` file in the repository root containing at least `HMAC_KEY`, `DATABASE_URL`, `REDIS`, `PORT`, and `MINIO_ENDPOINT` keys.
-   (See below for an example)
-3. Create a `.env` file in the `frontend/` directory containing `DOMAIN=http://localhost:5173`.
-4. Run `make migrate` to initialize the database, then optionally `make seeddb` to insert a test user.
-5. Run `go run -v ./backend` to run the backend.
-6. Create `frontend/.env` with the following content: `API_BASE=http://localhost:8080`
-7. cd into the `frontend` directory and run `pnpm dev` to run the frontend.
-
-```sh
-# Example env file
-HMAC_KEY="`go run -v ./scripts/genkey`"
-DATABASE_URL=postgresql://<username>:<pass>@localhost/<database> # PostgreSQL database URL
-REDIS=localhost:6379
-PORT=8080 # Port the API will listen on. Default is 8080, this is also default for the backend.
-MINIO_ENDPOINT=localhost:9000 # This always needs to be set, it *does not* need to point to a running MinIO server.
-```
-
-## Updating in production
-
-1. Build the backend with `make backend`
-2. Build the frontend with `cd frontend && pnpm install && pnpm build`
-3. Stop the servers: `systemctl stop pronouns-api pronouns-fe`
-4. Run migrations: `./pronouns database migrate`
-5. Start the servers: `systemctl start pronouns-api pronouns-fe`
+3. Run `go run -v . database migrate` to initialize the database, then optionally `go run -v . database seed` to insert a test user.
+4. Run `go run -v . web` to run the backend.
+5. Create `frontend/.env` with the following content: `PUBLIC_BASE_URL=http://localhost:5173`
+6. cd into the `frontend` directory and run `pnpm dev` to run the frontend.
 
 ## License
 
