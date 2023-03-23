@@ -10,6 +10,7 @@
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { userStore } from "$lib/store";
   import renderMarkdown from "$lib/api/markdown";
+  import ReportButton from "../ReportButton.svelte";
 
   export let data: PageData;
 
@@ -86,6 +87,11 @@
         </div>
       {/each}
     </div>
+    {#if $userStore && $userStore.id !== data.user.id}
+      <div class="row">
+        <ReportButton subject="member" reportUrl="/members/{data.id}/reports" />
+      </div>
+    {/if}
   </div>
 </div>
 

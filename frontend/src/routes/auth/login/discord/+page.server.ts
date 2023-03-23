@@ -33,4 +33,6 @@ interface CallbackResponse {
 
   is_deleted: boolean;
   deleted_at?: string;
+  self_delete?: boolean;
+  delete_reason?: string;
 }

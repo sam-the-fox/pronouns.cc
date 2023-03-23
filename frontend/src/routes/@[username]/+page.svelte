@@ -31,6 +31,7 @@
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { goto } from "$app/navigation";
   import renderMarkdown from "$lib/api/markdown";
+  import ReportButton from "./ReportButton.svelte";
 
   export let data: PageData;
 
@@ -149,6 +150,11 @@
         </div>
       {/each}
     </div>
+    {#if $userStore && $userStore.id !== data.id}
+      <div class="row">
+        <ReportButton subject="user" reportUrl="/users/{data.id}/reports" />
+      </div>
+    {/if}
     {#if data.members.length > 0 || ($userStore && $userStore.id === data.id)}
       <div class="row">
         <div class="col">

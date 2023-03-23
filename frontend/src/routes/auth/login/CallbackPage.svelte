@@ -5,6 +5,7 @@
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { userStore } from "$lib/store";
   import { addToast } from "$lib/toast";
+  import { DateTime } from "luxon";
   import { onMount } from "svelte";
   import {
     Alert,
@@ -26,6 +27,8 @@
   export let token: string | undefined;
   export let user: MeUser | undefined;
   export let deletedAt: string | undefined;
+  export let selfDelete: boolean | undefined;
+  export let deleteReason: string | undefined;
 
   onMount(() => {
     if (!isDeleted && token && user) {
@@ -136,8 +139,12 @@
     </div>
     <Button type="submit" color="primary">Sign up</Button>
   </form>
-{:else if isDeleted && token}
-  <p>Your account is pending deletion since {deletedAt}.</p>
+{:else if isDeleted && token && selfDelete && deletedAt}
+  <p>
+    Your account is pending deletion since {DateTime.fromISO(deletedAt)
+      .toLocal()
+      .toLocaleString(DateTime.DATETIME_MED)}.
+  </p>
   <p>If you wish to cancel deletion, press the button below.</p>
   <p>
     <Button color="primary" on:click={cancelDelete} disabled={deleteCancelled}
@@ -152,34 +159,6 @@
   <p>
     <Button color="link" on:click={toggleForceDeleteModal}>Force delete account</Button>
   </p>
-  <Modal
-    header="Force delete account"
-    isOpen={forceDeleteModalOpen}
-    toggle={toggleForceDeleteModal}
-  >
-    <ModalBody>
-      <p>
-        If you want to delete your account, type your username below:
-        <br />
-        <b>
-          This is irreversible! Your account <i>cannot</i> be recovered after you press "Force delete
-          account".
-        </b>
-      </p>
-      <p>
-        <input type="text" class="form-control" bind:value={forceDeleteName} />
-      </p>
-      {#if deleteError}
-        <ErrorAlert error={deleteError} />
-      {/if}
-    </ModalBody>
-    <ModalFooter>
-      <Button color="danger" on:click={forceDeleteAccount} disabled={forceDeleteName !== user?.name}
-        >Force delete account</Button
-      >
-      <Button color="secondary" on:click={toggleForceDeleteModal}>Cancel delete</Button>
-    </ModalFooter>
-  </Modal>
   {#if deleteCancelled}
     <Alert color="secondary" fade={false}>
       Account deletion cancelled! You can now <a href="/auth/login">log in</a> again.
@@ -188,6 +167,50 @@
   {#if deleteError}
     <ErrorAlert error={deleteError} />
   {/if}
+{:else if isDeleted && token && !selfDelete && deletedAt}
+  <p>
+    Your account is pending deletion since {DateTime.fromISO(deletedAt)
+      .toLocal()
+      .toLocaleString(DateTime.DATETIME_MED)}.
+  </p>
+  <p>
+    <strong>Your account was deactivated by a moderator.</strong> You cannot cancel deletion. The moderator
+    gave the following reason:
+  </p>
+  <blockquote class="blockquote">
+    {deleteReason}
+  </blockquote>
+  <p>
+    Your account will be fully deleted 180 days after being deactivated. If you want your data wiped
+    immediately instead, press the force delete link below.
+  </p>
+  <p>
+    <Button color="link" on:click={toggleForceDeleteModal}>Force delete account</Button>
+  </p>
 {:else}
   Loading...
 {/if}
+
+<Modal header="Force delete account" isOpen={forceDeleteModalOpen} toggle={toggleForceDeleteModal}>
+  <ModalBody>
+    <p>
+      If you want to delete your account, type your username (<code>{user?.name}</code>) below:
+      <br />
+      <b>
+        This is irreversible! Your account <i>cannot</i> be recovered after you press "Force delete account".
+      </b>
+    </p>
+    <p>
+      <input type="text" class="form-control" bind:value={forceDeleteName} />
+    </p>
+    {#if deleteError}
+      <ErrorAlert error={deleteError} />
+    {/if}
+  </ModalBody>
+  <ModalFooter>
+    <Button color="danger" on:click={forceDeleteAccount} disabled={forceDeleteName !== user?.name}
+      >Force delete account</Button
+    >
+    <Button color="secondary" on:click={toggleForceDeleteModal}>Cancel delete</Button>
+  </ModalFooter>
+</Modal>

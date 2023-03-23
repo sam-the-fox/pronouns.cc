@@ -1,7 +1,15 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import type { LayoutData } from "./$types";
-  import { Button, ListGroup, ListGroupItem, Modal, ModalBody, ModalFooter } from "sveltestrap";
+  import {
+    Badge,
+    Button,
+    ListGroup,
+    ListGroupItem,
+    Modal,
+    ModalBody,
+    ModalFooter,
+  } from "sveltestrap";
   import { userStore } from "$lib/store";
   import { goto } from "$app/navigation";
   import { addToast } from "$lib/toast";
@@ -20,6 +28,9 @@
     addToast({ header: "Logged out", body: "Successfully logged out!" });
     goto("/");
   };
+
+  let unreadWarnings: number;
+  $: unreadWarnings = data.warnings.filter((w) => !w.read).length;
 </script>
 
 <svelte:head>
@@ -57,6 +68,16 @@
           href="/settings/tokens"
         >
           Tokens
+        </ListGroupItem>
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/warnings"}
+          href="/settings/warnings"
+        >
+          Warnings
+          {#if unreadWarnings !== 0}
+            <Badge color="danger">{unreadWarnings}</Badge>
+          {/if}
         </ListGroupItem>
         <ListGroupItem
           tag="a"
