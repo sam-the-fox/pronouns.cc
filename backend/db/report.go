@@ -14,7 +14,7 @@ type Report struct {
 	ID         int64   `json:"id"`
 	UserID     xid.ID  `json:"user_id"`
 	UserName   string  `json:"user_name"`
-	MemberID   *xid.ID `json:"member_id"`
+	MemberID   xid.ID  `json:"member_id"`
 	MemberName *string `json:"member_name"`
 	Reason     string  `json:"reason"`
 	ReporterID xid.ID  `json:"reporter_id"`
