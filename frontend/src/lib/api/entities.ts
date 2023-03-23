@@ -81,6 +81,19 @@ export interface Invite {
   used: boolean;
 }
 
+export interface Report {
+  id: string;
+  user_id: string;
+  member_id: string | null;
+  reason: string;
+  reporter_id: string;
+
+  created_at: string;
+  resolved_at: string | null;
+  admin_id: string | null;
+  admin_comment: string | null;
+}
+
 export interface APIError {
   code: ErrorCode;
   message?: string;

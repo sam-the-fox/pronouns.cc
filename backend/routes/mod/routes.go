@@ -20,6 +20,7 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.Get("/reports/by-user/{id}", server.WrapHandler(s.getReportsByUser))
 		r.Get("/reports/by-reporter/{id}", server.WrapHandler(s.getReportsByReporter))
 
+		r.Get("/reports/{id}", nil)
 		r.Patch("/reports/{id}", nil)
 	})
 
