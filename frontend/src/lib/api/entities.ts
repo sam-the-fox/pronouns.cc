@@ -84,7 +84,9 @@ export interface Invite {
 export interface Report {
   id: string;
   user_id: string;
+  user_name: string;
   member_id: string | null;
+  member_name: string | null;
   reason: string;
   reporter_id: string;
 

@@ -12,7 +12,9 @@ import (
 type Report struct {
 	ID         int64   `json:"id"`
 	UserID     xid.ID  `json:"user_id"`
+	UserName   string  `json:"user_name"`
 	MemberID   *xid.ID `json:"member_id"`
+	MemberName *string `json:"member_name"`
 	Reason     string  `json:"reason"`
 	ReporterID xid.ID  `json:"reporter_id"`
 
@@ -25,7 +27,12 @@ type Report struct {
 const ReportPageSize = 100
 
 func (db *DB) Reports(ctx context.Context, closed bool, before int) (rs []Report, err error) {
-	builder := sq.Select("*").From("reports").Limit(ReportPageSize).OrderBy("id DESC")
+	builder := sq.Select("*",
+		"(SELECT username FROM users WHERE id = reports.user_id) AS user_name",
+		"(SELECT name FROM members WHERE id = reports.member_id) AS member_name").
+		From("reports").
+		Limit(ReportPageSize).
+		OrderBy("id DESC")
 	if before != 0 {
 		builder = builder.Where("id < ?", before)
 	}
