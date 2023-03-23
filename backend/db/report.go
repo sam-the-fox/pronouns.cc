@@ -6,6 +6,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
 
@@ -25,6 +26,7 @@ type Report struct {
 }
 
 const ReportPageSize = 100
+const ErrReportNotFound = errors.Sentinel("report not found")
 
 func (db *DB) Reports(ctx context.Context, closed bool, before int) (rs []Report, err error) {
 	builder := sq.Select("*",
@@ -96,6 +98,23 @@ func (db *DB) ReportsByReporter(ctx context.Context, reporterID xid.ID, before i
 	return rs, nil
 }
 
+func (db *DB) Report(ctx context.Context, tx pgx.Tx, id int64) (r Report, err error) {
+	sql, args, err := sq.Select("*").From("reports").Where("id = ?", id).ToSql()
+	if err != nil {
+		return r, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, tx, &r, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return r, ErrReportNotFound
+		}
+
+		return r, errors.Wrap(err, "executing query")
+	}
+	return r, nil
+}
+
 func (db *DB) CreateReport(ctx context.Context, reporterID, userID xid.ID, memberID *xid.ID, reason string) (r Report, err error) {
 	sql, args, err := sq.Insert("reports").SetMap(map[string]any{
 		"user_id":     userID,
@@ -112,4 +131,87 @@ func (db *DB) CreateReport(ctx context.Context, reporterID, userID xid.ID, membe
 		return r, errors.Wrap(err, "executing query")
 	}
 	return r, nil
+}
+
+func (db *DB) ResolveReport(ctx context.Context, ex Execer, id int64, adminID xid.ID, comment string) error {
+	sql, args, err := sq.Update("reports").
+		Set("admin_id", adminID).
+		Set("admin_comment", comment).
+		Set("resolved_at", time.Now().UTC()).
+		Where("id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}
+
+type Warning struct {
+	ID        int64      `json:"id"`
+	UserID    xid.ID     `json:"-"`
+	Reason    string     `json:"reason"`
+	CreatedAt time.Time  `json:"created_at"`
+	ReadAt    *time.Time `json:"-"`
+}
+
+func (db *DB) CreateWarning(ctx context.Context, tx pgx.Tx, userID xid.ID, reason string) (w Warning, err error) {
+	sql, args, err := sq.Insert("warnings").SetMap(map[string]any{
+		"user_id": userID,
+		"reason":  reason,
+	}).ToSql()
+	if err != nil {
+		return w, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, tx, &w, sql, args...)
+	if err != nil {
+		return w, errors.Wrap(err, "executing query")
+	}
+	return w, nil
+}
+
+func (db *DB) Warnings(ctx context.Context, userID xid.ID, unread bool) (ws []Warning, err error) {
+	builder := sq.Select("*").From("warnings").Where("user_id = ?", userID).OrderBy("id DESC")
+	if unread {
+		builder = builder.Where("read_at IS NULL")
+	}
+	sql, args, err := builder.ToSql()
+
+	if err != nil {
+		return ws, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Select(ctx, db, &ws, sql, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing query")
+	}
+	if len(ws) == 0 {
+		return []Warning{}, nil
+	}
+	return ws, nil
+}
+
+func (db *DB) AckWarning(ctx context.Context, userID xid.ID, id int64) (ok bool, err error) {
+	sql, args, err := sq.Update("warnings").
+		Set("read_at", time.Now().UTC()).
+		Where("user_id = ?", userID).
+		Where("id = ?", id).
+		Where("read_at IS NULL").ToSql()
+	if err != nil {
+		return false, errors.Wrap(err, "building sql")
+	}
+
+	ct, err := db.Exec(ctx, sql, args...)
+	if err != nil {
+		return false, errors.Wrap(err, "executing query")
+	}
+
+	if ct.RowsAffected() == 0 {
+		return false, nil
+	}
+	return true, nil
 }

@@ -17,3 +17,11 @@ create table reports (
     admin_id      text null references users (id) on delete set null,
     admin_comment text
 );
+
+create table warnings (
+    id         serial primary key,
+    user_id    text not null references users (id) on delete cascade,
+    reason     text not null,
+    created_at timestamptz not null default now(),
+    read_at    timestamptz
+);

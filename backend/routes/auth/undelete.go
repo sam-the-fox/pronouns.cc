@@ -6,11 +6,9 @@ import (
 	"encoding/base64"
 	"net/http"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
-	"github.com/georgysavva/scany/pgxscan"
 	"github.com/go-chi/render"
 	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/xid"
@@ -84,60 +82,13 @@ func (s *Server) forceDelete(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrNotFound} // assume invalid token
 	}
 
-	u, err := s.DB.User(ctx, id)
+	err = s.DB.CleanUser(ctx, id)
 	if err != nil {
-		log.Errorf("getting user: %v", err)
-		return errors.Wrap(err, "getting user")
+		log.Errorf("cleaning user data: %v", err)
+		return errors.Wrap(err, "cleaning user")
 	}
 
-	if u.Avatar != nil {
-		err = s.DB.DeleteUserAvatar(ctx, u.ID, *u.Avatar)
-		if err != nil {
-			log.Errorf("deleting avatars for user %v: %v", u.ID, err)
-			return errors.Wrap(err, "deleting user avatar")
-		}
-	}
-
-	var exports []db.DataExport
-	err = pgxscan.Select(ctx, s.DB, &exports, "SELECT * FROM data_exports WHERE user_id = $1", u.ID)
-	if err != nil {
-		log.Errorf("getting to-be-deleted export files: %v", err)
-		return errors.Wrap(err, "getting export iles")
-	}
-
-	for _, de := range exports {
-		err = s.DB.DeleteExport(ctx, de)
-		if err != nil {
-			log.Errorf("deleting export %v: %v", de.ID, err)
-			continue
-		}
-
-		log.Debugf("deleted export %v", de.ID)
-	}
-
-	members, err := s.DB.UserMembers(ctx, u.ID)
-	if err != nil {
-		log.Errorf("getting members for user %v: %v", u.ID, err)
-		return errors.Wrap(err, "getting members")
-	}
-
-	for _, m := range members {
-		if m.Avatar == nil {
-			continue
-		}
-
-		log.Debugf("deleting avatars for member %v", m.ID)
-
-		err = s.DB.DeleteMemberAvatar(ctx, m.ID, *m.Avatar)
-		if err != nil {
-			log.Errorf("deleting avatars for member %v: %v", m.ID, err)
-			continue
-		}
-
-		log.Debugf("deleted avatars for member %v", m.ID)
-	}
-
-	err = s.DB.ForceDeleteUser(ctx, u.ID)
+	err = s.DB.ForceDeleteUser(ctx, id)
 	if err != nil {
 		log.Errorf("force deleting user: %v", err)
 		return errors.Wrap(err, "deleting user")

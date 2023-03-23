@@ -20,12 +20,14 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.Get("/reports/by-user/{id}", server.WrapHandler(s.getReportsByUser))
 		r.Get("/reports/by-reporter/{id}", server.WrapHandler(s.getReportsByReporter))
 
-		r.Get("/reports/{id}", nil)
-		r.Patch("/reports/{id}", nil)
+		r.Patch("/reports/{id}", server.WrapHandler(s.resolveReport))
 	})
 
 	r.With(server.MustAuth).Post("/users/{id}/reports", server.WrapHandler(s.createUserReport))
 	r.With(server.MustAuth).Post("/members/{id}/reports", server.WrapHandler(s.createMemberReport))
+
+	r.With(server.MustAuth).Get("/auth/warnings", server.WrapHandler(s.getWarnings))
+	r.With(server.MustAuth).Post("/auth/warnings/{id}/ack", server.WrapHandler(s.ackWarning))
 }
 
 func MustAdmin(next http.Handler) http.Handler {

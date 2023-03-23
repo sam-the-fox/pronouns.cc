@@ -27,7 +27,9 @@ type GetUserResponse struct {
 type GetMeResponse struct {
 	GetUserResponse
 
-	MaxInvites      int     `json:"max_invites"`
+	MaxInvites int  `json:"max_invites"`
+	IsAdmin    bool `json:"is_admin"`
+
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
 
@@ -162,6 +164,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 	render.JSON(w, r, GetMeResponse{
 		GetUserResponse:   dbUserToResponse(u, fields, members),
 		MaxInvites:        u.MaxInvites,
+		IsAdmin:           u.IsAdmin,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
 		Fediverse:         u.Fediverse,

@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"regexp"
 	"time"
 
@@ -414,6 +416,95 @@ func (db *DB) ForceDeleteUser(ctx context.Context, id xid.ID) error {
 	_, err = db.Exec(ctx, sql, args...)
 	if err != nil {
 		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}
+
+func (db *DB) DeleteUserMembers(ctx context.Context, tx pgx.Tx, id xid.ID) error {
+	sql, args, err := sq.Delete("members").Where("user_id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}
+
+func (db *DB) ResetUser(ctx context.Context, tx pgx.Tx, id xid.ID) error {
+	err := db.SetUserFields(ctx, tx, id, []Field{})
+	if err != nil {
+		return errors.Wrap(err, "deleting fields")
+	}
+
+	hasher := sha256.New()
+	_, err = hasher.Write(id.Bytes())
+	if err != nil {
+		return errors.Wrap(err, "hashing user id")
+	}
+	hash := hex.EncodeToString(hasher.Sum(nil))
+
+	sql, args, err := sq.Update("users").
+		Set("username", "deleted-"+hash).
+		Set("display_name", nil).
+		Set("bio", nil).
+		Set("names", "[]").
+		Set("pronouns", "[]").
+		Set("avatar", nil).
+		Where("id = ?", id).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+	return nil
+}
+
+func (db *DB) CleanUser(ctx context.Context, id xid.ID) error {
+	u, err := db.User(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
+	if u.Avatar != nil {
+		err = db.DeleteUserAvatar(ctx, u.ID, *u.Avatar)
+		if err != nil {
+			return errors.Wrap(err, "deleting user avatar")
+		}
+	}
+
+	var exports []DataExport
+	err = pgxscan.Select(ctx, db, &exports, "SELECT * FROM data_exports WHERE user_id = $1", u.ID)
+	if err != nil {
+		return errors.Wrap(err, "getting export iles")
+	}
+
+	for _, de := range exports {
+		err = db.DeleteExport(ctx, de)
+		if err != nil {
+			continue
+		}
+	}
+
+	members, err := db.UserMembers(ctx, u.ID)
+	if err != nil {
+		return errors.Wrap(err, "getting members")
+	}
+
+	for _, m := range members {
+		if m.Avatar == nil {
+			continue
+		}
+
+		err = db.DeleteMemberAvatar(ctx, m.ID, *m.Avatar)
+		if err != nil {
+			continue
+		}
 	}
 	return nil
 }

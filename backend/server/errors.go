@@ -110,6 +110,10 @@ const (
 	// General request error codes
 	ErrRequestTooBig      = 4001
 	ErrMissingPermissions = 4002
+
+	// Moderation related error codes
+	ErrReportAlreadyHandled = 5001
+	ErrNotSelfDelete        = 5002
 )
 
 var errCodeMessages = map[int]string{
@@ -146,6 +150,9 @@ var errCodeMessages = map[int]string{
 
 	ErrRequestTooBig:      "Request too big (max 2 MB)",
 	ErrMissingPermissions: "Your account or current token is missing required permissions for this action",
+
+	ErrReportAlreadyHandled: "Report has already been resolved",
+	ErrNotSelfDelete:        "Cannot cancel deletion for an account deleted by a moderator",
 }
 
 var errCodeStatuses = map[int]int{
@@ -182,4 +189,7 @@ var errCodeStatuses = map[int]int{
 
 	ErrRequestTooBig:      http.StatusBadRequest,
 	ErrMissingPermissions: http.StatusForbidden,
+
+	ErrReportAlreadyHandled: http.StatusBadRequest,
+	ErrNotSelfDelete:        http.StatusForbidden,
 }
