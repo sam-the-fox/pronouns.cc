@@ -85,6 +85,10 @@
           >
         </ModalFooter>
       </Modal>
+      <p class="text-muted mt-2 mx-1">
+        <Icon name="info-circle-fill" aria-hidden /> By signing in, you consent to pronouns.cc storing
+        a token in your browser to identify your account.
+      </p>
     </div>
     <div class="col-md">
       <p>
