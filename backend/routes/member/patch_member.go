@@ -190,6 +190,14 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 				return err
 			}
 			avatarHash = &hash
+
+			// delete current avatar if member has one
+			if m.Avatar != nil {
+				err = s.DB.DeleteMemberAvatar(ctx, claims.UserID, *m.Avatar)
+				if err != nil {
+					log.Errorf("deleting existing avatar: %v", err)
+				}
+			}
 		}
 	}
 
