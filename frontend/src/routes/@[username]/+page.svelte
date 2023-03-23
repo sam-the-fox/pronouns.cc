@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { marked } from "marked";
-  import sanitizeHtml from "sanitize-html";
-
   import type { PageData } from "./$types";
 
   import {
@@ -33,11 +30,12 @@
   import { apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { goto } from "$app/navigation";
+  import renderMarkdown from "$lib/api/markdown";
 
   export let data: PageData;
 
   let bio: string | null;
-  $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio, { breaks: true })) : null;
+  $: bio = renderMarkdown(data.bio);
 
   let memberPage: number = 0;
   let memberSlice: PartialMember[] = [];

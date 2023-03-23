@@ -335,8 +335,8 @@
               accept="image/png, image/jpeg, image/gif, image/webp"
             />
             <p class="text-muted mt-3">
-              <Icon name="info-circle-fill" /> Only PNG, JPEG, GIF, and WebP can be used as avatars.
-              Avatars cannot be larger than 1 MB, and animated avatars will be made static.
+              <Icon name="info-circle-fill" aria-hidden /> Only PNG, JPEG, GIF, and WebP can be used
+              as avatars. Avatars cannot be larger than 1 MB, and animated avatars will be made static.
             </p>
             <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
           </div>
@@ -357,6 +357,15 @@
           <FormGroup floating label="Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})">
             <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
           </FormGroup>
+          <p class="text-muted mt-3">
+            <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
+            <a
+              class="text-reset"
+              href="https://commonmark.org/help/"
+              target="_blank"
+              rel="noopener noreferrer">Markdown</a
+            >.
+          </p>
         </div>
       </div>
     </div>
