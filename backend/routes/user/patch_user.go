@@ -137,6 +137,14 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 				return err
 			}
 			avatarHash = &hash
+
+			// delete current avatar if user has one
+			if u.Avatar != nil {
+				err = s.DB.DeleteUserAvatar(ctx, claims.UserID, *u.Avatar)
+				if err != nil {
+					log.Errorf("deleting existing avatar: %v", err)
+				}
+			}
 		}
 	}
 

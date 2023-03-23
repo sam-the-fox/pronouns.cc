@@ -4,7 +4,7 @@ import type { APIError } from "$lib/api/entities";
 import { apiFetch } from "$lib/api/fetch";
 import type { MetaResponse } from "$lib/api/responses";
 
-export const load = (async (event) => {
+export const load = (async () => {
   try {
     return await apiFetch<MetaResponse>("/meta", {});
   } catch (e) {

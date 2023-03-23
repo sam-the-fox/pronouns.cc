@@ -91,7 +91,7 @@
           </tr>
           <tr>
             <th scope="row">Members</th>
-            <td>{data.members.length}/{MAX_MEMBERS}</td>
+            <td>{data.user.members.length}/{MAX_MEMBERS}</td>
           </tr>
           {#if data.invitesEnabled}
             <tr>

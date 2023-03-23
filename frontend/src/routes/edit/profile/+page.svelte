@@ -75,6 +75,7 @@
 
   const fieldsEqual = (arr1: Field[], arr2: Field[]) => {
     if (arr1?.length !== arr2?.length) return false;
+    if (!arr1.every((_, i) => arr1[i].entries.length === arr2[i].entries.length)) return false;
     if (!arr1.every((_, i) => arr1[i].name === arr2[i].name)) return false;
 
     return arr1.every((_, i) =>
@@ -281,8 +282,9 @@
               accept="image/png, image/jpeg, image/gif, image/webp"
             />
             <p class="text-muted mt-3">
-              <Icon name="info-circle-fill" /> Only PNG, JPEG, GIF, and WebP images can be used as avatars.
-              Avatars cannot be larger than 1 MB, and animated avatars will be made static.
+              <Icon name="info-circle-fill" aria-hidden /> Only PNG, JPEG, GIF, and WebP images can be
+              used as avatars. Avatars cannot be larger than 1 MB, and animated avatars will be made
+              static.
             </p>
             <p>
               <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
@@ -298,6 +300,15 @@
           <FormGroup floating label="Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})">
             <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
           </FormGroup>
+          <p class="text-muted mt-3">
+            <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
+            <a
+              class="text-reset"
+              href="https://commonmark.org/help/"
+              target="_blank"
+              rel="noopener noreferrer">Markdown</a
+            >.
+          </p>
         </div>
       </div>
     </div>

@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { marked } from "marked";
-  import sanitizeHtml from "sanitize-html";
-
   import FieldCard from "$lib/components/FieldCard.svelte";
 
   import type { PageData } from "./$types";
@@ -12,11 +9,12 @@
   import { memberAvatars, pronounDisplay, WordStatus } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { userStore } from "$lib/store";
+  import renderMarkdown from "$lib/api/markdown";
 
   export let data: PageData;
 
   let bio: string | null;
-  $: bio = data.bio ? sanitizeHtml(marked.parse(data.bio, { breaks: true })) : null;
+  $: bio = renderMarkdown(data.bio);
 
   const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
   const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);

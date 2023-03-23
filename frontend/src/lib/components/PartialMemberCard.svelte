@@ -31,7 +31,9 @@
 </script>
 
 <div>
-  <FallbackImage urls={memberAvatars(member)} width={200} alt="Avatar for {member.name}" />
+  <a href="/@{user.name}/{member.name}">
+    <FallbackImage urls={memberAvatars(member)} width={200} alt="Avatar for {member.name}" />
+  </a>
   <p class="m-2">
     <a class="text-reset fs-5" href="/@{user.name}/{member.name}">
       {member.display_name ?? member.name}

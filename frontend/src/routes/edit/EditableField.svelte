@@ -1,7 +1,7 @@
 <script lang="ts">
   import { WordStatus, type Field } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
-  import { Button, Input, InputGroup, InputGroupText } from "sveltestrap";
+  import { Button, Input, InputGroup } from "sveltestrap";
   import FieldEntry from "./FieldEntry.svelte";
 
   export let field: Field;
