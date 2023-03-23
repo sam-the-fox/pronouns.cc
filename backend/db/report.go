@@ -21,7 +21,7 @@ type Report struct {
 
 	CreatedAt    time.Time  `json:"created_at"`
 	ResolvedAt   *time.Time `json:"resolved_at"`
-	AdminID      *xid.ID    `json:"admin_id"`
+	AdminID      xid.ID     `json:"admin_id"`
 	AdminComment *string    `json:"admin_comment"`
 }
 

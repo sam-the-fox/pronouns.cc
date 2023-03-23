@@ -96,6 +96,13 @@ export interface Report {
   admin_comment: string | null;
 }
 
+export interface Warning {
+  id: number;
+  reason: string;
+  created_at: string;
+  read: boolean;
+}
+
 export interface APIError {
   code: ErrorCode;
   message?: string;

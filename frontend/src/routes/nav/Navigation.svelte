@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
+  import { decodeJwt } from "jose";
 
   import {
+    Badge,
     Collapse,
     Icon,
     Nav,
@@ -15,12 +17,23 @@
 
   import Logo from "./Logo.svelte";
   import { userStore, themeStore } from "$lib/store";
-  import { ErrorCode, type APIError, type MeUser } from "$lib/api/entities";
-  import { apiFetch } from "$lib/api/fetch";
+  import {
+    ErrorCode,
+    type APIError,
+    type MeUser,
+    type Report,
+    type Warning,
+  } from "$lib/api/entities";
+  import { apiFetch, apiFetchClient } from "$lib/api/fetch";
+  import { addToast } from "$lib/toast";
 
   let theme: string;
   let currentUser: MeUser | null;
   let showMenu: boolean = false;
+
+  let isAdmin = false;
+  let numReports = 0;
+  let numWarnings = 0;
 
   $: currentUser = $userStore;
   $: theme = $themeStore;
@@ -46,6 +59,32 @@
             localStorage.removeItem("pronouns-token");
             localStorage.removeItem("pronouns-user");
           }
+        });
+
+      isAdmin = !!decodeJwt(token)["adm"];
+      if (isAdmin) {
+        apiFetchClient<Report[]>("/admin/reports")
+          .then((reports) => {
+            numReports = reports.length;
+          })
+          .catch((e) => {
+            console.log("getting reports:", e);
+          });
+      }
+
+      apiFetchClient<Warning[]>("/auth/warnings")
+        .then((warnings) => {
+          if (warnings.length !== 0) {
+            numWarnings = warnings.length;
+            addToast({
+              header: "Warnings",
+              body: "You have unread warnings. Go to your settings to view them.",
+              duration: -1,
+            });
+          }
+        })
+        .catch((e) => {
+          console.log("getting warnings:", e);
         });
     }
   });
@@ -83,8 +122,23 @@
           <NavLink href="/@{currentUser.name}">@{currentUser.name}</NavLink>
         </NavItem>
         <NavItem>
-          <NavLink href="/settings">Settings</NavLink>
+          <NavLink href="/settings">
+            Settings
+            {#if numWarnings}
+              <Badge color="danger">{numWarnings}</Badge>
+            {/if}
+          </NavLink>
         </NavItem>
+        {#if isAdmin}
+          <NavItem>
+            <NavLink href="/reports">
+              Reports
+              {#if numReports !== 0}
+                <Badge color="danger">{numReports}</Badge>
+              {/if}
+            </NavLink>
+          </NavItem>
+        {/if}
       {:else}
         <NavItem>
           <NavLink href="/auth/login">Log in</NavLink>

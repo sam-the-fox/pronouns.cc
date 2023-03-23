@@ -450,6 +450,7 @@ func (db *DB) ResetUser(ctx context.Context, tx pgx.Tx, id xid.ID) error {
 		Set("username", "deleted-"+hash).
 		Set("display_name", nil).
 		Set("bio", nil).
+		Set("links", nil).
 		Set("names", "[]").
 		Set("pronouns", "[]").
 		Set("avatar", nil).

@@ -1,4 +1,10 @@
-import { ErrorCode, type APIError, type Invite, type MeUser } from "$lib/api/entities";
+import {
+  ErrorCode,
+  type Warning,
+  type APIError,
+  type Invite,
+  type MeUser,
+} from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
 import type { LayoutLoad } from "./$types";
 
@@ -6,6 +12,7 @@ export const ssr = false;
 
 export const load = (async ({ parent }) => {
   const user = await apiFetchClient<MeUser>("/users/@me");
+  const warnings = await apiFetchClient<Warning[]>("/auth/warnings?all=true");
 
   let invites: Invite[] = [];
   let invitesEnabled = true;
@@ -24,5 +31,6 @@ export const load = (async ({ parent }) => {
     user,
     invites,
     invitesEnabled,
+    warnings,
   };
 }) satisfies LayoutLoad;

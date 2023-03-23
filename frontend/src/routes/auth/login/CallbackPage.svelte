@@ -194,7 +194,7 @@
 <Modal header="Force delete account" isOpen={forceDeleteModalOpen} toggle={toggleForceDeleteModal}>
   <ModalBody>
     <p>
-      If you want to delete your account, type your username (<code>{user.name}</code>) below:
+      If you want to delete your account, type your username (<code>{user?.name}</code>) below:
       <br />
       <b>
         This is irreversible! Your account <i>cannot</i> be recovered after you press "Force delete account".
