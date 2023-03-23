@@ -27,6 +27,16 @@ func (s *Server) cancelDelete(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrNotFound} // assume invalid token
 	}
 
+	// only self deleted users can undelete themselves
+	u, err := s.DB.User(ctx, id)
+	if err != nil {
+		log.Errorf("getting user: %v", err)
+		return errors.Wrap(err, "getting user")
+	}
+	if !*u.SelfDelete {
+		return server.APIError{Code: server.ErrForbidden}
+	}
+
 	err = s.DB.UndoDeleteUser(ctx, id)
 	if err != nil {
 		log.Errorf("executing undelete query: %v", err)

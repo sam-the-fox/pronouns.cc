@@ -77,6 +77,11 @@ func (s *Server) resolveReport(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		if req.Delete {
+			err = s.DB.InvalidateAllTokens(ctx, tx, report.UserID)
+			if err != nil {
+				return errors.Wrap(err, "invalidating tokens")
+			}
+
 			err = s.DB.CleanUser(ctx, report.UserID)
 			if err != nil {
 				log.Errorf("cleaning user data: %v", err)

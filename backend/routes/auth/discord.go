@@ -43,8 +43,10 @@ type discordCallbackResponse struct {
 	Ticket        string `json:"ticket,omitempty"`
 	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
 
-	IsDeleted bool       `json:"is_deleted"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	IsDeleted    bool       `json:"is_deleted"`
+	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
+	SelfDelete   *bool      `json:"self_delete,omitempty"`
+	DeleteReason *string    `json:"delete_reason,omitempty"`
 }
 
 func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
@@ -81,7 +83,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 
 	u, err := s.DB.DiscordUser(ctx, du.ID)
 	if err == nil {
-		if u.DeletedAt != nil && *u.SelfDelete {
+		if u.DeletedAt != nil {
 			// store cancel delete token
 			token := undeleteToken()
 			err = s.saveUndeleteToken(ctx, u.ID, token)
@@ -91,11 +93,13 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 			}
 
 			render.JSON(w, r, discordCallbackResponse{
-				HasAccount: true,
-				Token:      token,
-				User:       dbUserToUserResponse(u, []db.Field{}),
-				IsDeleted:  true,
-				DeletedAt:  u.DeletedAt,
+				HasAccount:   true,
+				Token:        token,
+				User:         dbUserToUserResponse(u, []db.Field{}),
+				IsDeleted:    true,
+				DeletedAt:    u.DeletedAt,
+				SelfDelete:   u.SelfDelete,
+				DeleteReason: u.DeleteReason,
 			})
 			return nil
 		}

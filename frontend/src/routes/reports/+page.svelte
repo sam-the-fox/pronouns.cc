@@ -48,14 +48,16 @@
 
   <div>
     {#each data.reports as report, index}
-      <ReportCard {report}>
-        &bull;
-        <Button outline color="warning" size="sm" on:click={() => openWarnModalFor(index)}
-          >Warn user</Button
-        >
-        <Button outline color="danger" size="sm">Deactivate user</Button>
-        <Button outline color="secondary" size="sm">Ignore report</Button>
-      </ReportCard>
+      <div class="my-2">
+        <ReportCard {report}>
+          &bull;
+          <Button outline color="warning" size="sm" on:click={() => openWarnModalFor(index)}
+            >Warn user</Button
+          >
+          <Button outline color="danger" size="sm">Deactivate user</Button>
+          <Button outline color="secondary" size="sm">Ignore report</Button>
+        </ReportCard>
+      </div>
     {/each}
   </div>
 

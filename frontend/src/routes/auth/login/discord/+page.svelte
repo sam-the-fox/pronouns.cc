@@ -57,6 +57,8 @@
   token={data.token}
   user={data.user}
   deletedAt={data.deleted_at}
+  selfDelete={data.self_delete}
+  deleteReason={data.delete_reason}
   {linkAccount}
   {signupForm}
 />
