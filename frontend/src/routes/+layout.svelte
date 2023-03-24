@@ -23,15 +23,20 @@
   <meta property="og:site_name" content="pronouns.cc" />
 </svelte:head>
 
-<Navigation />
-<div class="container">
-  <slot />
-  <div class="position-absolute top-0 end-0">
-    {#each $toastStore as toast}
-      <Toast header={toast.header} body={toast.body} />
-    {/each}
+<div class="d-flex flex-column min-vh-100">
+  <div class="flex-grow-1">
+    <Navigation />
+    <div class="container">
+      <slot />
+      <div class="position-absolute top-0 end-0">
+        {#each $toastStore as toast}
+          <Toast header={toast.header} body={toast.body} />
+        {/each}
+      </div>
+    </div>
   </div>
-  <footer>
+
+  <footer class="container">
     <hr />
     <p>
       pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
