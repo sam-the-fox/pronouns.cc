@@ -1,7 +1,17 @@
+<script lang="ts">
+  import { html } from "./terms.md";
+</script>
+
 <svelte:head>
   <title>Terms of service - pronouns.cc</title>
 </svelte:head>
 
-<div>
-  <h1>Terms of service</h1>
+<div class="grid">
+  <div class="row">
+    <div class="col-lg-2" />
+    <div class="col-lg-8">
+      {@html html}
+    </div>
+    <div class="col-lg-2" />
+  </div>
 </div>
