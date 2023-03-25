@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -50,8 +49,6 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "marshaling json")
 	}
 
-	fmt.Println(string(b))
-
 	// make me user request
 	req, err := http.NewRequestWithContext(ctx, "POST", "https://"+decoded.Instance+"/api/auth/session/userkey", bytes.NewReader(b))
 	if err != nil {
@@ -59,6 +56,7 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 	}
 	req.Header.Set("User-Agent", "pronouns.cc/"+server.Tag)
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -337,6 +335,7 @@ func (s *Server) noAppMisskeyURL(ctx context.Context, w http.ResponseWriter, r *
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "pronouns.cc/"+server.Tag)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -404,6 +403,7 @@ func (s *Server) misskeyURL(ctx context.Context, app db.FediverseApp) (token, ur
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "pronouns.cc/"+server.Tag)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
