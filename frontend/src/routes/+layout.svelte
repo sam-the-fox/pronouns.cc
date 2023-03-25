@@ -42,9 +42,9 @@
     <p>
       pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
       {#if versionMismatch}
-        (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}">
-          {data.git_commit}
-        </a>)
+        (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}"
+          >{data.git_commit}</a
+        >)
       {/if} &middot;
       <a href="/page/about">About & contact</a> &middot;
       <a href="/page/terms">Terms of service</a> &middot;
