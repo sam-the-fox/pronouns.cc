@@ -32,6 +32,7 @@
   import { goto } from "$app/navigation";
   import renderMarkdown from "$lib/api/markdown";
   import ReportButton from "./ReportButton.svelte";
+  import ProfileLink from "./ProfileLink.svelte";
 
   export let data: PageData;
 
@@ -114,7 +115,7 @@
         <div class="col-md d-flex align-items-center">
           <ul class="list-unstyled">
             {#each data.links as link}
-              <li><Icon name="globe" /> <a href={link}>{link}</a></li>
+              <li><ProfileLink {link} /></li>
             {/each}
           </ul>
         </div>
