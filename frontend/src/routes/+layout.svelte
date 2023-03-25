@@ -1,6 +1,7 @@
 <script lang="ts">
   import "bootstrap/dist/css/bootstrap.min.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
+  import "./main.css";
 
   import Navigation from "./nav/Navigation.svelte";
   import type { LayoutData } from "./$types";
@@ -45,8 +46,9 @@
           {data.git_commit}
         </a>)
       {/if} &middot;
-      <a href="/page/terms">Terms of service</a>
-      - <a href="/page/privacy">Privacy policy</a>
+      <a href="/page/about">About & contact</a> &middot;
+      <a href="/page/terms">Terms of service</a> &middot;
+      <a href="/page/privacy">Privacy policy</a>
     </p>
   </footer>
 </div>
