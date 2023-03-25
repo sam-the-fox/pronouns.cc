@@ -153,19 +153,24 @@ export const pronounDisplay = (entry: Pronoun) => {
 };
 
 export const userAvatars = (user: User | MeUser | MemberPartialUser) => {
-  if (!user.avatar) return [];
+  if (!user.avatar) return defaultAvatars;
 
   return [
     `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.webp`,
-    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.webp`,
+    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.jpg`,
   ];
 };
 
 export const memberAvatars = (member: Member | PartialMember) => {
-  if (!member.avatar) return [];
+  if (!member.avatar) return defaultAvatars;
 
   return [
     `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.webp`,
-    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.webp`,
+    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.jpg`,
   ];
 };
+
+export const defaultAvatars = [
+  `${PUBLIC_BASE_URL}/default/512.webp`,
+  `${PUBLIC_BASE_URL}/default/512.jpg`,
+];
