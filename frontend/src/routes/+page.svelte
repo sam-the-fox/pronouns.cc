@@ -1,6 +1,7 @@
 <script lang="ts">
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { Button } from "sveltestrap";
+  import { userStore } from "$lib/store";
 </script>
 
 <svelte:head>
@@ -16,7 +17,11 @@
   <p class="fs-3">Create and share <em>all</em> your pronouns</p>
 
   <p>
-    <Button href="/auth/login" color="success" size="lg">Log in or sign up</Button>
+    {#if $userStore}
+      <Button href="/@{$userStore.name}" color="secondary" size="lg">Go to your profile</Button>
+    {:else}
+      <Button href="/auth/login" color="success" size="lg">Log in or sign up</Button>
+    {/if}
   </p>
 </div>
 

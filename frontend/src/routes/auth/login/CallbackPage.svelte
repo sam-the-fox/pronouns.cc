@@ -35,7 +35,8 @@
       localStorage.setItem("pronouns-token", token);
       localStorage.setItem("pronouns-user", JSON.stringify(user));
       userStore.set(user);
-      goto("/");
+      addToast({ header: "Logged in", body: "Successfully logged in!" });
+      goto(`/@${user.name}`);
     }
   });
 

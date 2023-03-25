@@ -25,7 +25,7 @@
       localStorage.setItem("pronouns-user", JSON.stringify(resp.user));
       userStore.set(resp.user);
       addToast({ header: "Welcome!", body: "Signed up successfully!" });
-      goto("/");
+      goto(`/@${resp.user.name}`);
     } catch (e) {
       data.error = e as APIError;
     }
