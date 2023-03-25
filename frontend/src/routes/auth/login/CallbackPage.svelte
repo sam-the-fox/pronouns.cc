@@ -134,7 +134,7 @@
       </div>
     {/if}
     <div class="form-text mb-1">
-      By signing up, you agree to the <a href="/page/tos">terms of service</a> and the
+      By signing up, you agree to the <a href="/page/terms">terms of service</a> and the
       <a href="/page/privacy">privacy policy</a>.
     </div>
     <Button type="submit" color="primary">Sign up</Button>
