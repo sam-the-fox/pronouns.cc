@@ -91,6 +91,12 @@ func Mount(srv *server.Server, r chi.Router) {
 			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.mastodonUnlink))
 		})
 
+		r.Route("/misskey", func(r chi.Router) {
+			r.Post("/callback", server.WrapHandler(s.misskeyCallback))
+			r.Post("/signup", server.WrapHandler(s.misskeySignup))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.misskeyLink))
+		})
+
 		// invite routes
 		r.With(server.MustAuth).Get("/invites", server.WrapHandler(s.getInvites))
 		r.With(server.MustAuth).Post("/invites", server.WrapHandler(s.createInvite))

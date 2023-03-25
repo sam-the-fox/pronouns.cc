@@ -48,7 +48,9 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	switch softwareName {
-	case "mastodon", "pleroma", "akkoma", "pixelfed", "calckey":
+	case "misskey", "foundkey", "calckey":
+		return s.noAppMisskeyURL(ctx, w, r, softwareName, instance)
+	case "mastodon", "pleroma", "akkoma", "pixelfed":
 	default:
 		// sorry, misskey :( TODO: support misskey
 		return server.APIError{Code: server.ErrUnsupportedInstance}

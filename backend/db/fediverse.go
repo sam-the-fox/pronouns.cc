@@ -20,21 +20,31 @@ type FediverseApp struct {
 }
 
 func (f FediverseApp) ClientConfig() *oauth2.Config {
-	// if f.MastodonCompatible() {
+	if f.MastodonCompatible() {
+		return &oauth2.Config{
+			ClientID:     f.ClientID,
+			ClientSecret: f.ClientSecret,
+			Endpoint: oauth2.Endpoint{
+				AuthURL:   "https://" + f.Instance + "/oauth/authorize",
+				TokenURL:  "https://" + f.Instance + "/oauth/token",
+				AuthStyle: oauth2.AuthStyleInParams,
+			},
+			Scopes:      []string{"read:accounts"},
+			RedirectURL: os.Getenv("BASE_URL") + "/auth/login/mastodon/" + f.Instance,
+		}
+	}
+
 	return &oauth2.Config{
 		ClientID:     f.ClientID,
 		ClientSecret: f.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			AuthURL:   "https://" + f.Instance + "/oauth/authorize",
-			TokenURL:  "https://" + f.Instance + "/oauth/token",
-			AuthStyle: oauth2.AuthStyleInParams,
+			AuthURL:   "https://" + f.Instance + "/auth",
+			TokenURL:  "https://" + f.Instance + "/api/auth/session/oauth",
+			AuthStyle: oauth2.AuthStyleInHeader,
 		},
-		Scopes:      []string{"read:accounts"},
-		RedirectURL: os.Getenv("BASE_URL") + "/auth/login/mastodon/" + f.Instance,
+		Scopes:      []string{"read:account"},
+		RedirectURL: os.Getenv("BASE_URL") + "/auth/login/misskey/" + f.Instance,
 	}
-	// }
-
-	// TODO: misskey, assuming i can even find english API documentation, that is
 }
 
 func (f FediverseApp) MastodonCompatible() bool {
