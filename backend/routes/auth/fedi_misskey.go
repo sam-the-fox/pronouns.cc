@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -29,15 +30,6 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrBadRequest}
 	}
 
-	// if the state can't be validated, return
-	if valid, err := s.validateCSRFState(ctx, decoded.State); !valid {
-		if err != nil {
-			return err
-		}
-
-		return server.APIError{Code: server.ErrInvalidState}
-	}
-
 	app, err := s.DB.FediverseApp(ctx, decoded.Instance)
 	if err != nil {
 		log.Errorf("getting app for instance %q: %v", decoded.Instance, err)
@@ -48,21 +40,25 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	token, err := app.ClientConfig().Exchange(ctx, decoded.Code)
-	if err != nil {
-		log.Errorf("exchanging oauth code: %v", err)
+	userkeyReq := struct {
+		AppSecret string `json:"appSecret"`
+		Token     string `json:"token"`
+	}{AppSecret: app.ClientSecret, Token: decoded.Code}
 
-		return server.APIError{Code: server.ErrInvalidOAuthCode}
+	b, err := json.Marshal(userkeyReq)
+	if err != nil {
+		return errors.Wrap(err, "marshaling json")
 	}
 
+	fmt.Println(string(b))
+
 	// make me user request
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://"+decoded.Instance+"/api/i", nil)
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://"+decoded.Instance+"/api/auth/session/userkey", bytes.NewReader(b))
 	if err != nil {
-		return errors.Wrap(err, "creating i request")
+		return errors.Wrap(err, "creating userkey request")
 	}
 	req.Header.Set("User-Agent", "pronouns.cc/"+server.Tag)
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", token.Type()+" "+token.AccessToken)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -75,13 +71,20 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "reading i response")
 	}
 
-	var mu partialMisskeyAccount
-	err = json.Unmarshal(jb, &mu)
-	if err != nil {
-		return errors.Wrap(err, "unmarshaling i response")
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		log.Errorf("POST userkey for instance %q (type %v): %v", app.Instance, app.InstanceType, string(jb))
+		return errors.Wrap(err, "error on misskey's end")
 	}
 
-	u, err := s.DB.FediverseUser(ctx, mu.ID, app.ID)
+	var mu struct {
+		User partialMisskeyAccount `json:"user"`
+	}
+	err = json.Unmarshal(jb, &mu)
+	if err != nil {
+		return errors.Wrap(err, "unmarshaling userkey response")
+	}
+
+	u, err := s.DB.FediverseUser(ctx, mu.User.ID, app.ID)
 	if err == nil {
 		if u.DeletedAt != nil {
 			// store cancel delete token
@@ -104,7 +107,7 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 			return nil
 		}
 
-		err = u.UpdateFromFedi(ctx, s.DB, mu.ID, mu.Username, app.ID)
+		err = u.UpdateFromFedi(ctx, s.DB, mu.User.ID, mu.User.Username, app.ID)
 		if err != nil {
 			log.Errorf("updating user %v with misskey info: %v", u.ID, err)
 		}
@@ -141,7 +144,7 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 
 	// no user found, so save a ticket + save their Misskey info in Redis
 	ticket := RandBase64(32)
-	err = s.DB.SetJSON(ctx, "misskey:"+ticket, mu, "EX", "600")
+	err = s.DB.SetJSON(ctx, "misskey:"+ticket, mu.User, "EX", "600")
 	if err != nil {
 		log.Errorf("setting misskey user for ticket %q: %v", ticket, err)
 		return err
@@ -149,7 +152,7 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 
 	render.JSON(w, r, fediCallbackResponse{
 		HasAccount:    false,
-		Fediverse:     mu.Username,
+		Fediverse:     mu.User.Username,
 		Ticket:        ticket,
 		RequireInvite: s.RequireInvite,
 	})
@@ -360,13 +363,14 @@ func (s *Server) noAppMisskeyURL(ctx context.Context, w http.ResponseWriter, r *
 		return errors.Wrap(err, "creating app")
 	}
 
-	state, err := s.setCSRFState(r.Context())
+	_, url, err := s.misskeyURL(ctx, app)
 	if err != nil {
-		return errors.Wrap(err, "setting CSRF state")
+		log.Errorf("generating URL for misskey %q: %v", instance, err)
+		return errors.Wrap(err, "generating URL")
 	}
 
 	render.JSON(w, r, FediResponse{
-		URL: app.ClientConfig().AuthCodeURL(state),
+		URL: url,
 	})
 	return nil
 }
@@ -381,4 +385,48 @@ type misskeyAppRequest struct {
 type misskeyApp struct {
 	ID     string `json:"id"`
 	Secret string `json:"secret"`
+}
+
+func (s *Server) misskeyURL(ctx context.Context, app db.FediverseApp) (token, url string, err error) {
+	genSession := struct {
+		AppSecret string `json:"appSecret"`
+	}{AppSecret: app.ClientSecret}
+
+	b, err := json.Marshal(genSession)
+	if err != nil {
+		return token, url, errors.Wrap(err, "marshaling json")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://"+app.Instance+"/api/auth/session/generate", bytes.NewReader(b))
+	if err != nil {
+		log.Errorf("creating POST session request for %q: %v", app.Instance, err)
+		return token, url, errors.Wrap(err, "creating POST apps request")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "pronouns.cc/"+server.Tag)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Errorf("sending POST session request for %q: %v", app.Instance, err)
+		return token, url, errors.Wrap(err, "sending POST apps request")
+	}
+	defer resp.Body.Close()
+
+	jb, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("reading response for request: %v", err)
+		return token, url, errors.Wrap(err, "reading response")
+	}
+
+	var genSessionResp struct {
+		Token string `json:"token"`
+		URL   string `json:"url"`
+	}
+
+	err = json.Unmarshal(jb, &genSessionResp)
+	if err != nil {
+		return token, url, errors.Wrap(err, "unmarshaling misskey response")
+	}
+
+	return genSessionResp.Token, genSessionResp.URL, nil
 }

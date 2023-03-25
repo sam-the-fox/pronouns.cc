@@ -8,8 +8,7 @@ export const load = (async ({ url, params }) => {
       method: "POST",
       body: {
         instance: params.instance,
-        code: url.searchParams.get("code"),
-        state: url.searchParams.get("state"),
+        code: url.searchParams.get("token"),
       },
     });
 

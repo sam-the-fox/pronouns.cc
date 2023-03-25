@@ -69,9 +69,6 @@
       </ListGroup>
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
         <ModalBody>
-          <p>
-            <strong>Note:</strong> Misskey (and derivatives) are not supported yet, sorry.
-          </p>
           <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
           {#if error}
             <div class="mt-2">

@@ -30,6 +30,18 @@ func (s *Server) getFediverseURL(w http.ResponseWriter, r *http.Request) error {
 		return s.noAppFediverseURL(ctx, w, r, instance)
 	}
 
+	if app.Misskey() {
+		_, url, err := s.misskeyURL(ctx, app)
+		if err != nil {
+			return errors.Wrap(err, "generating misskey URL")
+		}
+
+		render.JSON(w, r, FediResponse{
+			URL: url,
+		})
+		return nil
+	}
+
 	state, err := s.setCSRFState(r.Context())
 	if err != nil {
 		return errors.Wrap(err, "setting CSRF state")

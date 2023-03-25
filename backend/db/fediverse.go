@@ -51,6 +51,10 @@ func (f FediverseApp) MastodonCompatible() bool {
 	return f.InstanceType == "mastodon" || f.InstanceType == "pleroma" || f.InstanceType == "akkoma" || f.InstanceType == "pixelfed"
 }
 
+func (f FediverseApp) Misskey() bool {
+	return f.InstanceType == "misskey" || f.InstanceType == "foundkey" || f.InstanceType == "calckey"
+}
+
 const ErrNoInstanceApp = errors.Sentinel("instance doesn't have an app")
 
 func (db *DB) FediverseApp(ctx context.Context, instance string) (fa FediverseApp, err error) {
