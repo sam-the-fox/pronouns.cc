@@ -83,6 +83,13 @@
 
   const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
   const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+
+  let profileEmpty = false;
+  $: profileEmpty =
+    data.names.length === 0 &&
+    data.pronouns.length === 0 &&
+    data.fields.length === 0 &&
+    (!data.bio || data.bio.length === 0);
 </script>
 
 <div class="container">
@@ -106,7 +113,16 @@
         {:else}
           <h2>@{data.name}</h2>
         {/if}
-        {#if bio}
+        {#if profileEmpty && $userStore?.id === data.id}
+          <hr />
+          <p>
+            <em>
+              Your profile is empty! You can customize it by going to the <a href="/edit/profile"
+                >edit profile</a
+              > page.</em
+            > <span class="text-muted">(only you can see this)</span>
+          </p>
+        {:else if bio}
           <hr />
           <p>{@html bio}</p>
         {/if}
@@ -183,11 +199,24 @@
           </h2>
         </div>
       </div>
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 text-center">
-        {#each memberSlice as member}
-          <PartialMemberCard user={data} {member} />
-        {/each}
-      </div>
+      {#if data.members.length > 0}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 text-center">
+          {#each memberSlice as member}
+            <PartialMemberCard user={data} {member} />
+          {/each}
+        </div>
+      {:else}
+        <div>
+          <p>
+            You don't have any members yet.
+            <br />
+            Members are sub-profiles that can have their own avatar,
+            names, pronouns, and preferred terms. <span class="text-muted"
+              >(only you can see this)</span
+            >
+          </p>
+        </div>
+      {/if}
     {/if}
     <Modal header="Create member" isOpen={modalOpen} toggle={toggleModal}>
       <ModalBody>

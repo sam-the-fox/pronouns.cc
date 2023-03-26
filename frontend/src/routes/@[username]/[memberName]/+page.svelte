@@ -20,6 +20,13 @@
 
   const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
   const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+
+  let profileEmpty = false;
+  $: profileEmpty =
+    data.names.length === 0 &&
+    data.pronouns.length === 0 &&
+    data.fields.length === 0 &&
+    (!data.bio || data.bio.length === 0);
 </script>
 
 <div class="container">
@@ -43,7 +50,16 @@
       <div class="col-md">
         <h2>{data.display_name ?? data.name}</h2>
         <h5 class="text-body-secondary">{data.name} (@{data.user.name})</h5>
-        {#if bio}
+        {#if profileEmpty && $userStore?.id === data.user.id}
+          <hr />
+          <p>
+            <em>
+              This member's profile is empty! You can customize it by going to the <a
+                href="/edit/member/{data.id}">edit member</a
+              > page.</em
+            > <span class="text-muted">(only you can see this)</span>
+          </p>
+        {:else if bio}
           <hr />
           <p>{@html bio}</p>
         {/if}
