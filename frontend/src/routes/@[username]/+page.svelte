@@ -58,10 +58,13 @@
     memberPage = memberPage + 1;
   };
 
+  const memberNameRegex = /^[^@\\?!#\/\\\\[\]\"'$%&()+<=>^|~`,]{1,100}$/;
   let modalOpen = false;
   let toggleModal = () => (modalOpen = !modalOpen);
   let newMemberName = "";
   let newMemberError: APIError | null = null;
+  let memberNameValid = true;
+  $: memberNameValid = memberNameRegex.test(newMemberName);
 
   const createMember = async () => {
     try {
@@ -210,10 +213,8 @@
           <p>
             You don't have any members yet.
             <br />
-            Members are sub-profiles that can have their own avatar,
-            names, pronouns, and preferred terms. <span class="text-muted"
-              >(only you can see this)</span
-            >
+            Members are sub-profiles that can have their own avatar, names, pronouns, and preferred terms.
+            <span class="text-muted">(only you can see this)</span>
           </p>
         </div>
       {/if}
@@ -221,12 +222,20 @@
     <Modal header="Create member" isOpen={modalOpen} toggle={toggleModal}>
       <ModalBody>
         <Input bind:value={newMemberName} />
+        <p class="text-muted my-2">
+          <Icon name="info-circle-fill" aria-label="Info" /> Your members must have distinct names. Member
+          names must be 100 characters long at most, and cannot contain the following characters: @ ?
+          ! # / \ [ ] " ' $ % & ( ) + &lt; = &gt; ^ | ~ ` and ,
+        </p>
         {#if newMemberError}
           <ErrorAlert error={newMemberError} />
         {/if}
       </ModalBody>
       <ModalFooter>
-        <Button color="primary" on:click={createMember} disabled={newMemberName.length === 0}
+        {#if !memberNameValid && newMemberName.length > 0}
+          <span class="text-danger-emphasis mb-2">That member name is not valid.</span>
+        {/if}
+        <Button color="primary" on:click={createMember} disabled={!memberNameValid}
           >Create member</Button
         >
         <Button color="secondary" on:click={toggleModal}>Cancel</Button>

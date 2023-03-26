@@ -75,7 +75,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	if !db.MemberNameValid(cmr.Name) {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: "Member name cannot contain any of the following: @, \\, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
+			Details: "Member name cannot contain any of the following: @, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
 		}
 	}
 

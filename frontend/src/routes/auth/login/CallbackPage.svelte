@@ -43,7 +43,11 @@
   let deleteCancelled: boolean;
   let deleteError: APIError | null;
 
+  const usernameRegex = /^[\w-.]{2,40}$/;
   let username: string;
+  let usernameValid = true;
+  $: usernameValid = usernameRegex.test(username);
+
   let inviteCode: string;
   let forceDeleteName = "";
   let forceDeleteModalOpen = false;
@@ -88,10 +92,10 @@
 </script>
 
 <svelte:head>
-  <title>Log in with the {authType} - pronouns.cc</title>
+  <title>Log in with {authType} - pronouns.cc</title>
 </svelte:head>
 
-<h1>Log in with the {authType}</h1>
+<h1>Log in with {authType}</h1>
 
 {#if error}
   <ErrorAlert {error} />
@@ -122,23 +126,34 @@
       <FormGroup floating label="Username">
         <Input id="username" name="username" bind:value={username} />
       </FormGroup>
+      <div id="username-help" class="text-muted">
+        <Icon name="info-circle-fill" aria-label="Info" /> Your username must be unique, be at most 40
+        characters long, and only contain letters from the basic English alphabet, dashes, underscores,
+        and periods. Your username is used as part of your profile link, you can set a separate display
+        name.
+      </div>
     </div>
     {#if requireInvite}
       <div>
         <FormGroup floating label="Invite code">
           <Input id="invite" name="invite" aria-describedby="invite-help" bind:value={inviteCode} />
         </FormGroup>
-        <div id="invite-help" class="form-text">
-          <Icon name="info-circle-fill" /> You currently need an invite code to sign up. You can get
-          one from an existing user.
+        <div id="invite-help" class="text-muted">
+          <Icon name="info-circle-fill" aria-label="Info" /> You currently need an invite code to sign
+          up. You can get one from an existing user.
         </div>
       </div>
     {/if}
-    <div class="form-text mb-1">
+    <div class="text-muted my-1">
       By signing up, you agree to the <a href="/page/terms">terms of service</a> and the
       <a href="/page/privacy">privacy policy</a>.
     </div>
-    <Button type="submit" color="primary">Sign up</Button>
+    <p>
+      <Button type="submit" color="primary" disabled={!usernameValid}>Sign up</Button>
+      {#if !usernameValid && username.length > 0}
+        <span class="text-danger-emphasis mb-2">That username is not valid.</span>
+      {/if}
+    </p>
   </form>
 {:else if isDeleted && token && selfDelete && deletedAt}
   <p>
