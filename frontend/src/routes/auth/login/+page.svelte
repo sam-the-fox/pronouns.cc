@@ -70,6 +70,13 @@
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
         <ModalBody>
           <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
+          <p class="text-muted mt-2">
+            <Icon name="info-circle-fill" aria-label="Info" /> This should be the domain you use to access
+            posts. For example, if your username is <code>@timmie@mastodon.example</code>, but your
+            user <em>page</em> is at
+            <code>social.mastodon.example/timmie</code>, you should fill in
+            <code>social.mastodon.example</code>.
+          </p>
           {#if error}
             <div class="mt-2">
               <ErrorAlert {error} />
