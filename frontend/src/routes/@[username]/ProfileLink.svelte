@@ -20,7 +20,7 @@
   };
 </script>
 
-<Icon name="globe" aria-label="Link" />
+<Icon name="globe" aria-hidden />
 {#if isLink}
   <a href={link} rel="me nofollow noreferrer" target="_blank">{displayLink}</a>
 {:else}

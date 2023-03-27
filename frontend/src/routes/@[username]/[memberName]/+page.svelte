@@ -49,7 +49,7 @@
       </div>
       <div class="col-md">
         <h2>{data.display_name ?? data.name}</h2>
-        <h5 class="text-body-secondary">{data.name} (@{data.user.name})</h5>
+        <p class="fs-5 text-body-secondary">{data.name} (@{data.user.name})</p>
         {#if profileEmpty && $userStore?.id === data.user.id}
           <hr />
           <p>

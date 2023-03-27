@@ -113,8 +113,8 @@
   expand="lg"
   class="mb-4"
 >
-  <NavbarBrand href="/"><Logo /></NavbarBrand>
-  <NavbarToggler on:click={toggleMenu} />
+  <NavbarBrand href="/" aria-label="pronouns.cc landing page"><Logo /></NavbarBrand>
+  <NavbarToggler on:click={toggleMenu} aria-label="Toggle menu" />
   <Collapse isOpen={showMenu} navbar expand="lg">
     <Nav class="ms-auto" navbar>
       {#if currentUser}

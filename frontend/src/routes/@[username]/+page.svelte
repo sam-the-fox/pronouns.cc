@@ -111,7 +111,7 @@
         {#if data.display_name}
           <div>
             <h2>{data.display_name}</h2>
-            <h5 class="text-body-secondary">@{data.name}</h5>
+            <p class="fs-5 text-body-secondary">@{data.name}</p>
           </div>
         {:else}
           <h2>@{data.name}</h2>
