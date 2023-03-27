@@ -4,6 +4,8 @@
 
 <svelte:head>
   <title>Privacy policy - pronouns.cc</title>
+  <meta name="description" content="pronouns.cc's privacy policy" />
+  <meta property="og:description" content="pronouns.cc's privacy policy" />
 </svelte:head>
 
 <div class="grid">

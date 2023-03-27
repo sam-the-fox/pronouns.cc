@@ -252,6 +252,7 @@
     content={data.display_name ? `${data.display_name} (@${data.name})` : `@${data.name}`}
   />
   <meta property="og:url" content="{PUBLIC_BASE_URL}/@{data.name}" />
+  <meta name="description" content="@{data.name} on pronouns.cc" />
 
   {#if data.avatar}
     <meta property="og:image" content={userAvatars(data)[0]} />

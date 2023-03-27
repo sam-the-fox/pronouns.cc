@@ -4,6 +4,8 @@
 
 <svelte:head>
   <title>Terms of service - pronouns.cc</title>
+  <meta name="description" content="pronouns.cc's terms of service" />
+  <meta property="og:description" content="pronouns.cc's terms of service" />
 </svelte:head>
 
 <div class="grid">

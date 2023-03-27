@@ -4,6 +4,8 @@
 
 <svelte:head>
   <title>About & contact - pronouns.cc</title>
+  <meta name="description" content="pronouns.cc's about and contact page" />
+  <meta property="og:description" content="pronouns.cc's about and contact page" />
 </svelte:head>
 
 <div class="grid">
