@@ -45,7 +45,7 @@
 
 <div class="row row-cols-1 row-cols-md-3">
   <div>
-    <h5>In beta</h5>
+    <h2 class="fs-5">In beta</h2>
     <p>
       pronouns.cc is currently <strong>in beta</strong>. There might be issues and some
       functionality is not available or unfinished. Issue reports and pull requests
@@ -55,7 +55,7 @@
     </p>
   </div>
   <div>
-    <h5>Isn't this similar to Pronouns.page?</h5>
+    <h2 class="fs-5">Isn't this similar to Pronouns.page?</h2>
     <p>
       Yes! <a href="https://pronouns.page" rel="noreferrer" target="_blank">Pronouns.page</a>, along
       with <a href="https://pronouny.xyz" rel="noreferrer" target="_blank">pronouny.xyz</a>, was a
@@ -64,7 +64,7 @@
     </p>
   </div>
   <div>
-    <h5>Open source</h5>
+    <h2 class="fs-5">Open source</h2>
     <p>
       pronouns.cc is
       <a href="https://codeberg.org/u1f320/pronouns.cc" rel="noreferrer" target="_blank"
@@ -73,15 +73,15 @@
     </p>
   </div>
   <div>
-    <h5>This is useful!</h5>
+    <h2 class="fs-5">This is useful!</h2>
     <p>thank you :3</p>
   </div>
   <div>
-    <h5>This website sucks!</h5>
+    <h2 class="fs-5">This website sucks!</h2>
     <p>oh no :&lpar;</p>
   </div>
   <div>
-    <h5>Support pronouns.cc</h5>
+    <h2 class="fs-5">Support pronouns.cc</h2>
     <p>
       If you like pronouns.cc and want to support me financially, check out the <a
         href="/page/about">about page</a
