@@ -68,7 +68,7 @@
         <div class="col-md d-flex align-items-center">
           <ul class="list-unstyled">
             {#each data.links as link}
-              <li><ProfileLink {link} /></li>
+              <ProfileLink {link} />
             {/each}
           </ul>
         </div>

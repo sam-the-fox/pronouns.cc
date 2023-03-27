@@ -20,9 +20,16 @@
   };
 </script>
 
-<Icon name="globe" aria-hidden />
 {#if isLink}
-  <a href={link} rel="me nofollow noreferrer" target="_blank">{displayLink}</a>
+  <a href={link} class="text-decoration-none">
+    <li class="py-2 py-lg-0">
+      <Icon name="globe" aria-hidden class="text-body" />
+      <span class="text-decoration-underline">{displayLink}</span>
+    </li>
+  </a>
 {:else}
-  <span>{link}</span>
+  <li class="py-2 py-lg-0">
+    <Icon name="globe" aria-hidden />
+    <span>{displayLink}</span>
+  </li>
 {/if}
