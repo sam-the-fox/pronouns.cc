@@ -6,6 +6,9 @@
   let displayLink: string;
   $: displayLink = prettifyLink(link);
 
+  let isLink = true;
+  $: isLink = link.startsWith("http://") || link.startsWith("https://");
+
   const prettifyLink = (raw: string) => {
     let out = raw;
     if (raw.startsWith("https://")) out = raw.substring("https://".length);
@@ -17,5 +20,9 @@
   };
 </script>
 
-<Icon name="globe" />
-<a href={link} rel="me nofollow noreferrer" target="_blank">{displayLink}</a>
+<Icon name="globe" aria-label="Link" />
+{#if isLink}
+  <a href={link} rel="me nofollow noreferrer" target="_blank">{displayLink}</a>
+{:else}
+  <span>{link}</span>
+{/if}
