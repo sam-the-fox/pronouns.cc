@@ -6,7 +6,7 @@
 
 <svelte:head>
   <title>pronouns.cc</title>
-  <meta property="description" content="Create and share your preferred names and pronouns!" />
+  <meta name="description" content="Create and share your preferred names and pronouns!" />
   <meta property="og:title" content="pronouns.cc" />
   <meta property="og:description" content="Create and share your preferred names and pronouns!" />
   <meta property="og:url" content={PUBLIC_BASE_URL} />
