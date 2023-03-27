@@ -184,7 +184,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 				return err
 			}
 
-			hash, err := s.DB.WriteMemberAvatar(ctx, id, webp, jpg)
+			hash, err := s.DB.WriteMemberAvatar(ctx, m.ID, webp, jpg)
 			if err != nil {
 				log.Errorf("uploading member avatar: %v", err)
 				return err
@@ -193,7 +193,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 
 			// delete current avatar if member has one
 			if m.Avatar != nil {
-				err = s.DB.DeleteMemberAvatar(ctx, claims.UserID, *m.Avatar)
+				err = s.DB.DeleteMemberAvatar(ctx, m.ID, *m.Avatar)
 				if err != nil {
 					log.Errorf("deleting existing avatar: %v", err)
 				}
