@@ -25,8 +25,14 @@
     {#each urls as url}
       <source {width} srcSet={url} type={contentTypeFor(url)} />
     {/each}
-    <img {width} src={urls[0] || defaultAvatars[0]} {alt} class="rounded-circle img-fluid" />
+    <img
+      {width}
+      height={width}
+      src={urls[0] || defaultAvatars[0]}
+      {alt}
+      class="rounded-circle img-fluid"
+    />
   </picture>
 {:else}
-  <img {width} class="rounded-circle img-fluid" src={defaultAvatars[0]} {alt} />
+  <img {width} height={width} class="rounded-circle img-fluid" src={defaultAvatars[0]} {alt} />
 {/if}

@@ -268,7 +268,13 @@
             {#if avatar === ""}
               <FallbackImage alt="Current avatar" urls={[]} width={200} />
             {:else if avatar}
-              <img width={200} src={avatar} alt="New avatar" class="rounded-circle img-fluid" />
+              <img
+                width={200}
+                height={200}
+                src={avatar}
+                alt="New avatar"
+                class="rounded-circle img-fluid"
+              />
             {:else}
               <FallbackImage alt="Current avatar" urls={userAvatars($userStore)} width={200} />
             {/if}
