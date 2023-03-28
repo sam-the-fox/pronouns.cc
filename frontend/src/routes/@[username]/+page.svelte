@@ -33,6 +33,7 @@
   import renderMarkdown from "$lib/api/markdown";
   import ReportButton from "./ReportButton.svelte";
   import ProfileLink from "./ProfileLink.svelte";
+    import { memberNameRegex } from "$lib/api/regex";
 
   export let data: PageData;
 
@@ -58,7 +59,6 @@
     memberPage = memberPage + 1;
   };
 
-  const memberNameRegex = /^[^@\\?!#\/\\\\[\]\"'$%&()+<=>^|~`,]{1,100}$/;
   let modalOpen = false;
   let toggleModal = () => (modalOpen = !modalOpen);
   let newMemberName = "";

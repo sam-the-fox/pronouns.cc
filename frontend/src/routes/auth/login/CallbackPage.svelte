@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
   import { apiFetch } from "$lib/api/fetch";
+  import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { userStore } from "$lib/store";
   import { addToast } from "$lib/toast";
@@ -43,7 +44,6 @@
   let deleteCancelled: boolean;
   let deleteError: APIError | null;
 
-  const usernameRegex = /^[\w-.]{2,40}$/;
   let username: string;
   let usernameValid = true;
   $: usernameValid = usernameRegex.test(username);

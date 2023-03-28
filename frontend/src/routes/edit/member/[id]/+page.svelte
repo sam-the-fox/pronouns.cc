@@ -32,6 +32,7 @@
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import type { PageData } from "./$types";
   import { addToast, delToast } from "$lib/toast";
+  import { memberNameRegex } from "$lib/api/regex";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -50,6 +51,9 @@
   let names: FieldEntry[] = window.structuredClone(data.member.names);
   let pronouns: Pronoun[] = window.structuredClone(data.member.pronouns);
   let fields: Field[] = window.structuredClone(data.member.fields);
+
+  let memberNameValid = true;
+  $: memberNameValid = memberNameRegex.test(name);
 
   let avatar: string | null;
   let avatar_files: FileList | null;
@@ -277,7 +281,9 @@
       tooltip="Back to member"
     />
     {#if modified}
-      <Button color="success" on:click={() => updateMember()}>Save changes</Button>
+      <Button color="success" on:click={() => updateMember()} disabled={!memberNameValid}
+        >Save changes</Button
+      >
     {/if}
     <Button color="danger" on:click={toggleDeleteOpen}
       >Delete {data.member.display_name ?? data.member.name}</Button
@@ -353,6 +359,9 @@
           <FormGroup floating label="Name">
             <Input bind:value={name} />
           </FormGroup>
+          {#if !memberNameValid}
+            <p class="text-danger-emphasis mb-2">That member name is not valid.</p>
+          {/if}
         </div>
         <div>
           <FormGroup floating label="Display name">

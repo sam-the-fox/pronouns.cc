@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { type MeUser, userAvatars, type APIError, MAX_MEMBERS } from "$lib/api/entities";
   import { apiFetchClient } from "$lib/api/fetch";
+  import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
@@ -12,6 +13,8 @@
   export let data: PageData;
 
   let username = data.user.name;
+  let usernameValid = true;
+  $: usernameValid = usernameRegex.test(username);
   let error: APIError | null = null;
 
   let deleteOpen = false;
@@ -60,13 +63,23 @@
         <Button
           color="secondary"
           on:click={() => changeUsername()}
-          disabled={username === data.user.name}>Change username</Button
+          disabled={username === data.user.name || !usernameValid}>Change username</Button
         >
       </div>
       {#if username !== data.user.name}
         <p class="text-muted">
-          <Icon name="info-circle-fill" /> Changing your username will make any existing links to your
-          or your members' profiles invalid.
+          <Icon name="info-circle-fill" aria-hidden /> Changing your username will make any existing
+          links to your or your members' profiles invalid.
+          <br />
+          Your username must be unique, be at most 40 characters long, and only contain letters from
+          the basic English alphabet, dashes, underscores, and periods. Your username is used as part
+          of your profile link, you can set a separate display name.
+          {#if !usernameValid}
+            <br />
+            <span class="text-danger-emphasis"
+              ><Icon name="exclamation-triangle-fill" aria-hidden /> That username is not valid.</span
+            >
+          {/if}
         </p>
       {/if}
       {#if error}
