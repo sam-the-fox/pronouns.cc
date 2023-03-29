@@ -14,7 +14,7 @@ const (
 	MaxFields           = 25
 	FieldNameMaxLength  = 100
 	FieldEntriesLimit   = 100
-	FieldEntryMaxLength = 50
+	FieldEntryMaxLength = 100
 )
 
 type Field struct {

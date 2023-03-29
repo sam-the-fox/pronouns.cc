@@ -67,7 +67,7 @@ func (fe FieldEntry) Validate() string {
 		return fmt.Sprintf("name must be %d characters or less, is %d", FieldEntryMaxLength, len([]rune(fe.Value)))
 	}
 
-	if fe.Status.Valid() {
+	if !fe.Status.Valid() {
 		return "status is invalid"
 	}
 
@@ -95,7 +95,7 @@ func (p PronounEntry) Validate() string {
 		return fmt.Sprintf("pronouns must be %d characters or less, is %d", FieldEntryMaxLength, len([]rune(p.Pronouns)))
 	}
 
-	if p.Status.Valid() {
+	if !p.Status.Valid() {
 		return "status is invalid"
 	}
 
