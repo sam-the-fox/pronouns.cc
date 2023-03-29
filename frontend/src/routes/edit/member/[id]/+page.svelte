@@ -190,31 +190,23 @@
   };
 
   const removeName = (index: number) => {
-    if (names.length === 1) names = [];
-    else if (index === 0) names = names.slice(1);
-    else if (index === names.length - 1) names = names.slice(0, names.length - 1);
-    else names = [...names.slice(0, index - 1), ...names.slice(0, index + 1)];
+    names.splice(index, 1);
+    names = [...names];
   };
 
   const removePronoun = (index: number) => {
-    if (pronouns.length === 1) pronouns = [];
-    else if (index === 0) pronouns = pronouns.slice(1);
-    else if (index === pronouns.length - 1) pronouns = pronouns.slice(0, pronouns.length - 1);
-    else pronouns = [...pronouns.slice(0, index - 1), ...pronouns.slice(0, index + 1)];
+    pronouns.splice(index, 1);
+    pronouns = [...pronouns];
   };
 
   const removeLink = (index: number) => {
-    if (links.length === 1) links = [];
-    else if (index === 0) links = links.slice(1);
-    else if (index === links.length - 1) links = links.slice(0, links.length - 1);
-    else links = [...links.slice(0, index - 1), ...links.slice(0, index + 1)];
+    links.splice(index, 1);
+    links = [...links];
   };
 
   const removeField = (index: number) => {
-    if (fields.length === 1) fields = [];
-    else if (index === 0) fields = fields.slice(1);
-    else if (index === fields.length - 1) fields = fields.slice(0, fields.length - 1);
-    else fields = [...fields.slice(0, index - 1), ...fields.slice(0, index + 1)];
+    fields.splice(index, 1);
+    fields = [...fields];
   };
 
   const updateMember = async () => {
