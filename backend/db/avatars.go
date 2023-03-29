@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	webpArgs = []string{"-thumbnail", "512x512^", "-gravity", "center", "-extent", "512x512", "-quality", "90", "webp:-"}
+	webpArgs = []string{"-thumbnail", "512x512^", "-gravity", "center", "-background", "none", "-extent", "512x512", "-quality", "90", "webp:-"}
 	jpgArgs  = []string{"-thumbnail", "512x512^", "-gravity", "center", "-extent", "512x512", "-quality", "80", "jpg:-"}
 )
 
