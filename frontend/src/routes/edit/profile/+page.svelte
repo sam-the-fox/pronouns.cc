@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import {
     MAX_DESCRIPTION_LENGTH,
     userAvatars,
@@ -12,7 +11,7 @@
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { Alert, Button, ButtonGroup, FormGroup, Icon, Input } from "sveltestrap";
+  import { Button, ButtonGroup, FormGroup, Icon, Input } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
@@ -21,22 +20,20 @@
   import EditablePronouns from "../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast, delToast } from "$lib/toast";
+  import type { PageData } from "./$types";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
-  if (!$userStore) {
-    addToast({ header: "Error", body: "You are not logged in." });
-    goto("/");
-  }
+  export let data: PageData;
 
   let error: APIError | null = null;
 
-  let bio: string = $userStore?.bio || "";
-  let display_name: string = $userStore?.display_name || "";
-  let links: string[] = $userStore ? window.structuredClone($userStore.links) : [];
-  let names: FieldEntry[] = $userStore ? window.structuredClone($userStore.names) : [];
-  let pronouns: Pronoun[] = $userStore ? window.structuredClone($userStore.pronouns) : [];
-  let fields: Field[] = $userStore ? window.structuredClone($userStore.fields) : [];
+  let bio: string = data.user.bio || "";
+  let display_name: string = data.user.display_name || "";
+  let links: string[] = window.structuredClone(data.user.links);
+  let names: FieldEntry[] = window.structuredClone(data.user.names);
+  let pronouns: Pronoun[] = window.structuredClone(data.user.pronouns);
+  let fields: Field[] = window.structuredClone(data.user.fields);
 
   let avatar: string | null;
   let avatar_files: FileList | null;
@@ -60,14 +57,12 @@
     fields: Field[],
     avatar: string | null,
   ) => {
-    if (!$userStore) return false;
-
-    if (bio !== $userStore.bio) return true;
-    if (display_name !== $userStore.display_name) return true;
-    if (!linksEqual(links, $userStore.links)) return true;
-    if (!fieldsEqual(fields, $userStore.fields)) return true;
-    if (!namesEqual(names, $userStore.names)) return true;
-    if (!pronounsEqual(pronouns, $userStore.pronouns)) return true;
+    if (bio !== data.user.bio) return true;
+    if (display_name !== data.user.display_name) return true;
+    if (!linksEqual(links, data.user.links)) return true;
+    if (!fieldsEqual(fields, data.user.fields)) return true;
+    if (!namesEqual(names, data.user.names)) return true;
+    if (!pronounsEqual(pronouns, data.user.pronouns)) return true;
     if (avatar !== null) return true;
 
     return false;
@@ -211,6 +206,7 @@
         fields,
       });
 
+      data.user = resp;
       userStore.set(resp);
       localStorage.setItem("pronouns-user", JSON.stringify(resp));
 
@@ -234,7 +230,7 @@
 <h1>
   Edit profile
   <ButtonGroup>
-    <Button color="secondary" href="/@{$userStore?.name}">
+    <Button color="secondary" href="/@{data.user.name}">
       <Icon name="chevron-left" />
       Back to your profile
     </Button>
@@ -248,154 +244,149 @@
   <ErrorAlert {error} />
 {/if}
 
-{#if !$userStore}
-  <Alert color="danger" fade={false}>Error: No user object</Alert>
-{:else}
-  <div class="grid">
-    <div class="row m-1">
-      <div class="col-md">
-        <h4>Avatar</h4>
-        <div class="row">
-          <div class="col-md text-center">
-            {#if avatar === ""}
-              <FallbackImage alt="Current avatar" urls={[]} width={200} />
-            {:else if avatar}
-              <img
-                width={200}
-                height={200}
-                src={avatar}
-                alt="New avatar"
-                class="rounded-circle img-fluid"
-              />
-            {:else}
-              <FallbackImage alt="Current avatar" urls={userAvatars($userStore)} width={200} />
-            {/if}
-          </div>
-          <div class="col-md mt-2">
-            <input
-              class="form-control"
-              id="avatar"
-              type="file"
-              bind:files={avatar_files}
-              accept="image/png, image/jpeg, image/gif, image/webp"
+<div class="grid">
+  <div class="row m-1">
+    <div class="col-md">
+      <h4>Avatar</h4>
+      <div class="row">
+        <div class="col-md text-center">
+          {#if avatar === ""}
+            <FallbackImage alt="Current avatar" urls={[]} width={200} />
+          {:else if avatar}
+            <img
+              width={200}
+              height={200}
+              src={avatar}
+              alt="New avatar"
+              class="rounded-circle img-fluid"
             />
-            <p class="text-muted mt-3">
-              <Icon name="info-circle-fill" aria-hidden /> Only PNG, JPEG, GIF, and WebP images can be
-              used as avatars. Avatars cannot be larger than 1 MB, and animated avatars will be made
-              static.
-            </p>
-            <p>
-              <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
-            </p>
-          </div>
+          {:else}
+            <FallbackImage alt="Current avatar" urls={userAvatars(data.user)} width={200} />
+          {/if}
         </div>
-      </div>
-      <div class="col-md">
-        <FormGroup floating label="Display name">
-          <Input bind:value={display_name} />
-        </FormGroup>
-        <div>
-          <FormGroup floating label="Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})">
-            <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
-          </FormGroup>
+        <div class="col-md mt-2">
+          <input
+            class="form-control"
+            id="avatar"
+            type="file"
+            bind:files={avatar_files}
+            accept="image/png, image/jpeg, image/gif, image/webp"
+          />
           <p class="text-muted mt-3">
-            <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
-            <a
-              class="text-reset"
-              href="https://commonmark.org/help/"
-              target="_blank"
-              rel="noopener noreferrer">Markdown</a
-            >.
+            <Icon name="info-circle-fill" aria-hidden /> Only PNG, JPEG, GIF, and WebP images can be
+            used as avatars. Avatars cannot be larger than 1 MB, and animated avatars will be made static.
+          </p>
+          <p>
+            <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
           </p>
         </div>
       </div>
     </div>
-    <div class="row m-1">
-      <div class="col-md">
-        <h4>Names</h4>
-        {#each names as _, index}
-          <EditableName
-            bind:value={names[index].value}
-            bind:status={names[index].status}
-            moveUp={() => moveName(index, true)}
-            moveDown={() => moveName(index, false)}
-            remove={() => removeName(index)}
-          />
-        {/each}
-        <div class="input-group m-1">
-          <input type="text" class="form-control" bind:value={newName} />
-          <IconButton color="success" icon="plus" tooltip="Add name" click={() => addName()} />
-        </div>
-      </div>
-      <div class="col-md">
-        <h4>Links</h4>
-        {#each links as _, index}
-          <div class="input-group m-1">
-            <input type="text" class="form-control" bind:value={links[index]} />
-            <IconButton
-              color="danger"
-              icon="trash3"
-              tooltip="Remove link"
-              click={() => removeLink(index)}
-            />
-          </div>
-        {/each}
-        <div class="input-group m-1">
-          <input type="text" class="form-control" bind:value={newLink} />
-          <IconButton color="success" icon="plus" tooltip="Add link" click={() => addLink()} />
-        </div>
+    <div class="col-md">
+      <FormGroup floating label="Display name">
+        <Input bind:value={display_name} />
+      </FormGroup>
+      <div>
+        <FormGroup floating label="Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})">
+          <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
+        </FormGroup>
+        <p class="text-muted mt-3">
+          <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
+          <a
+            class="text-reset"
+            href="https://commonmark.org/help/"
+            target="_blank"
+            rel="noopener noreferrer">Markdown</a
+          >.
+        </p>
       </div>
     </div>
-    <div class="row m-1">
-      <div class="col-md">
-        <h4>Pronouns</h4>
-        {#each pronouns as _, index}
-          <EditablePronouns
-            bind:pronoun={pronouns[index]}
-            moveUp={() => movePronoun(index, true)}
-            moveDown={() => movePronoun(index, false)}
-            remove={() => removePronoun(index)}
-          />
-        {/each}
-        <div class="input-group m-1">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Full set (e.g. it/it/its/its/itself)"
-            bind:value={newPronouns}
-            required
-          />
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Optional display text (e.g. it/its)"
-            bind:value={newPronounsDisplay}
-          />
-          <IconButton
-            color="success"
-            icon="plus"
-            tooltip="Add pronouns"
-            click={() => addPronouns()}
-          />
-        </div>
-      </div>
-    </div>
-    <hr />
-    <h4>
-      Fields <Button on:click={() => (fields = [...fields, { name: "New field", entries: [] }])}>
-        Add new field
-      </Button>
-    </h4>
   </div>
-  <div class="grid gap-3">
-    <div class="row row-cols-1 row-cols-md-2">
-      {#each fields as _, index}
-        <EditableField
-          bind:field={fields[index]}
-          deleteField={() => removeField(index)}
-          moveField={(up) => moveField(index, up)}
+  <div class="row m-1">
+    <div class="col-md">
+      <h4>Names</h4>
+      {#each names as _, index}
+        <EditableName
+          bind:value={names[index].value}
+          bind:status={names[index].status}
+          moveUp={() => moveName(index, true)}
+          moveDown={() => moveName(index, false)}
+          remove={() => removeName(index)}
         />
       {/each}
+      <div class="input-group m-1">
+        <input type="text" class="form-control" bind:value={newName} />
+        <IconButton color="success" icon="plus" tooltip="Add name" click={() => addName()} />
+      </div>
+    </div>
+    <div class="col-md">
+      <h4>Links</h4>
+      {#each links as _, index}
+        <div class="input-group m-1">
+          <input type="text" class="form-control" bind:value={links[index]} />
+          <IconButton
+            color="danger"
+            icon="trash3"
+            tooltip="Remove link"
+            click={() => removeLink(index)}
+          />
+        </div>
+      {/each}
+      <div class="input-group m-1">
+        <input type="text" class="form-control" bind:value={newLink} />
+        <IconButton color="success" icon="plus" tooltip="Add link" click={() => addLink()} />
+      </div>
     </div>
   </div>
-{/if}
+  <div class="row m-1">
+    <div class="col-md">
+      <h4>Pronouns</h4>
+      {#each pronouns as _, index}
+        <EditablePronouns
+          bind:pronoun={pronouns[index]}
+          moveUp={() => movePronoun(index, true)}
+          moveDown={() => movePronoun(index, false)}
+          remove={() => removePronoun(index)}
+        />
+      {/each}
+      <div class="input-group m-1">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Full set (e.g. it/it/its/its/itself)"
+          bind:value={newPronouns}
+          required
+        />
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Optional display text (e.g. it/its)"
+          bind:value={newPronounsDisplay}
+        />
+        <IconButton
+          color="success"
+          icon="plus"
+          tooltip="Add pronouns"
+          click={() => addPronouns()}
+        />
+      </div>
+    </div>
+  </div>
+  <hr />
+  <h4>
+    Fields <Button on:click={() => (fields = [...fields, { name: "New field", entries: [] }])}>
+      Add new field
+    </Button>
+  </h4>
+</div>
+<div class="grid gap-3">
+  <div class="row row-cols-1 row-cols-md-2">
+    {#each fields as _, index}
+      <EditableField
+        bind:field={fields[index]}
+        deleteField={() => removeField(index)}
+        moveField={(up) => moveField(index, up)}
+      />
+    {/each}
+  </div>
+</div>
