@@ -252,6 +252,18 @@
     }
   };
 
+  let deleteModalPronoun = "the member's";
+  $: deleteModalPronoun = updateModalPronoun(pronouns);
+
+  const updateModalPronoun = (pronouns: Pronoun[]) => {
+    const filtered = pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+    if (filtered.length < 1) return "the member's";
+
+    const split = filtered[0].pronouns.split("/");
+    if (split.length !== 5) return "the member's";
+    return split[2];
+  };
+
   let deleteOpen = false;
   const toggleDeleteOpen = () => (deleteOpen = !deleteOpen);
   let deleteName = "";
@@ -285,7 +297,9 @@
 <Modal header="Delete member" isOpen={deleteOpen} toggle={toggleDeleteOpen}>
   <ModalBody>
     <p>
-      If you want to delete this member, type their name (<code>{data.member.name}</code>) below:
+      If you want to delete this member, type {deleteModalPronoun} name (<code
+        >{data.member.name}</code
+      >) below:
     </p>
     <p>
       <input type="text" class="form-control" bind:value={deleteName} />
