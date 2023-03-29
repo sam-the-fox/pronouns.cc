@@ -42,8 +42,8 @@ func (f Field) Validate() string {
 			return fmt.Sprintf("entries.%d: max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
 		}
 
-		if entry.Status == StatusUnknown || entry.Status >= wordStatusMax {
-			return fmt.Sprintf("entries.%d: status is invalid, must be between 1 and %d, is %d", i, wordStatusMax-1, entry.Status)
+		if !entry.Status.Valid() {
+			return fmt.Sprintf("entries.%d: status is invalid", i)
 		}
 	}
 

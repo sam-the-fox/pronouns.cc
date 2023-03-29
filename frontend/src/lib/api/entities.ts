@@ -43,12 +43,12 @@ export interface Pronoun {
 }
 
 export enum WordStatus {
-  Unknown = 0,
-  Favourite = 1,
-  Okay = 2,
-  Jokingly = 3,
-  FriendsOnly = 4,
-  Avoid = 5,
+  Unknown = "",
+  Favourite = "favourite",
+  Okay = "okay",
+  Jokingly = "jokingly",
+  FriendsOnly = "friends_only",
+  Avoid = "avoid",
 }
 
 export interface PartialMember {

@@ -5,17 +5,53 @@ import (
 	"strings"
 )
 
-type WordStatus int
+type WordStatus string
 
 const (
-	StatusUnknown     WordStatus = 0
-	StatusFavourite   WordStatus = 1
-	StatusOkay        WordStatus = 2
-	StatusJokingly    WordStatus = 3
-	StatusFriendsOnly WordStatus = 4
-	StatusAvoid       WordStatus = 5
-	wordStatusMax     WordStatus = 6
+	StatusUnknown     WordStatus = ""
+	StatusFavourite   WordStatus = "favourite"
+	StatusOkay        WordStatus = "okay"
+	StatusJokingly    WordStatus = "jokingly"
+	StatusFriendsOnly WordStatus = "friends_only"
+	StatusAvoid       WordStatus = "avoid"
 )
+
+func (w *WordStatus) UnmarshalJSON(src []byte) error {
+	if string(src) == "null" {
+		return nil
+	}
+
+	s := strings.Trim(string(src), `"`)
+	switch s {
+	case "1":
+		*w = "favourite"
+	case "2":
+		*w = "okay"
+	case "3":
+		*w = "jokingly"
+	case "4":
+		*w = "friends_only"
+	case "5":
+		*w = "avoid"
+	default:
+		*w = WordStatus(s)
+	}
+
+	return nil
+}
+
+func (w WordStatus) Valid(extra ...WordStatus) bool {
+	if w == StatusFavourite || w == StatusOkay || w == StatusJokingly || w == StatusFriendsOnly || w == StatusAvoid {
+		return true
+	}
+
+	for i := range extra {
+		if w == extra[i] {
+			return true
+		}
+	}
+	return false
+}
 
 type FieldEntry struct {
 	Value  string     `json:"value"`
@@ -31,8 +67,8 @@ func (fe FieldEntry) Validate() string {
 		return fmt.Sprintf("name must be %d characters or less, is %d", FieldEntryMaxLength, len([]rune(fe.Value)))
 	}
 
-	if fe.Status == StatusUnknown || fe.Status >= wordStatusMax {
-		return fmt.Sprintf("status is invalid, must be between 1 and %d, is %d", wordStatusMax-1, fe.Status)
+	if fe.Status.Valid() {
+		return "status is invalid"
 	}
 
 	return ""
@@ -59,8 +95,8 @@ func (p PronounEntry) Validate() string {
 		return fmt.Sprintf("pronouns must be %d characters or less, is %d", FieldEntryMaxLength, len([]rune(p.Pronouns)))
 	}
 
-	if p.Status == StatusUnknown || p.Status >= wordStatusMax {
-		return fmt.Sprintf("status is invalid, must be between 1 and %d, is %d", wordStatusMax-1, p.Status)
+	if p.Status.Valid() {
+		return "status is invalid"
 	}
 
 	return ""
