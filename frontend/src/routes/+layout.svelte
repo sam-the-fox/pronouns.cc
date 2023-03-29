@@ -26,7 +26,7 @@
 
 <div class="d-flex flex-column min-vh-100">
   <div class="flex-grow-1">
-    <Navigation />
+    <Navigation commit={data.git_commit} />
     <div class="container">
       <slot />
       <div class="position-absolute top-0 start-50 translate-middle-x">

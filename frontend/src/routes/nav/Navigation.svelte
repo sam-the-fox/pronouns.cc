@@ -27,6 +27,8 @@
   import { apiFetch, apiFetchClient } from "$lib/api/fetch";
   import { addToast } from "$lib/toast";
 
+  export let commit: string;
+
   let theme: string;
   let currentUser: MeUser | null;
   let showMenu: boolean = false;
@@ -113,7 +115,12 @@
   expand="lg"
   class="mb-4"
 >
-  <NavbarBrand href="/" aria-label="pronouns.cc landing page"><Logo /></NavbarBrand>
+  <NavbarBrand href="/" aria-label="pronouns.cc landing page">
+    <Logo />
+    {#if commit === "[unknown]"}
+      <Badge color="danger">DEV</Badge>
+    {/if}
+  </NavbarBrand>
   <NavbarToggler on:click={toggleMenu} aria-label="Toggle menu" />
   <Collapse isOpen={showMenu} navbar expand="lg">
     <Nav class="ms-auto" navbar>
