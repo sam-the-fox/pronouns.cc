@@ -17,8 +17,6 @@ let maxId = 0;
 export const addToast = (data: ToastData) => {
   const id = maxId++;
 
-  console.log(id);
-
   toastStore.update((toasts) => (toasts = [...toasts, { ...data, id }]));
 
   if (data.duration !== -1) {

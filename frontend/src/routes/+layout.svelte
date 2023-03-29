@@ -29,7 +29,7 @@
     <Navigation />
     <div class="container">
       <slot />
-      <div class="position-absolute top-0 end-0">
+      <div class="position-absolute top-0 start-50 translate-middle-x">
         {#each $toastStore as toast}
           <Toast header={toast.header} body={toast.body} />
         {/each}
