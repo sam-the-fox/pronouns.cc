@@ -7,9 +7,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
-	"github.com/jackc/pgx/v4"
 	"github.com/rs/xid"
 )
 
@@ -45,35 +43,31 @@ func (s *Server) getTokens(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-type deleteTokenResponse struct {
-	TokenID     xid.ID    `json:"id"`
-	Invalidated bool      `json:"invalidated"`
-	Created     time.Time `json:"time"`
-}
-
 func (s *Server) deleteToken(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
-	tokenID, err := xid.FromString(chi.URLParam(r, "id"))
-	if err != nil {
-		return server.APIError{Code: server.ErrBadRequest}
+	if !claims.TokenWrite || claims.APIToken {
+		return server.APIError{Code: server.ErrInvalidToken}
 	}
 
-	t, err := s.DB.InvalidateToken(ctx, claims.UserID, tokenID)
+	tx, err := s.DB.Begin(ctx)
 	if err != nil {
-		if errors.Cause(err) == pgx.ErrNoRows {
-			return server.APIError{Code: server.ErrNotFound}
-		}
+		return errors.Wrap(err, "beginning transaction")
+	}
+	defer tx.Rollback(ctx)
 
-		return errors.Wrap(err, "invalidating token")
+	err = s.DB.InvalidateAllTokens(ctx, tx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "invalidating tokens")
 	}
 
-	render.JSON(w, r, deleteTokenResponse{
-		TokenID:     t.TokenID,
-		Invalidated: t.Invalidated,
-		Created:     t.Created,
-	})
+	err = tx.Commit(ctx)
+	if err != nil {
+		return errors.Wrap(err, "committing transaction")
+	}
+
+	render.NoContent(w, r)
 	return nil
 }
 
