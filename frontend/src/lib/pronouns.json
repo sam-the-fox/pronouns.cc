@@ -1,12 +1,22 @@
 {
-  "pronouns": {
+  "pages": {
     "they": { "pronouns": ["they", "them", "their", "theirs", "themself"] },
-    "they/them": { "pronouns": ["they", "them", "their", "theirs", "themself"] },
     "he": { "pronouns": ["he", "him", "his", "his", "himself"] },
-    "he/him": { "pronouns": ["he", "him", "his", "his", "himself"] },
     "she": { "pronouns": ["she", "her", "her", "hers", "herself"] },
+    "it": { "pronouns": ["it", "it", "its", "its", "itself"], "display": "it/its" }
+  },
+  "autocomplete": {
+    "they/them": { "pronouns": ["they", "them", "their", "theirs", "themself"] },
+    "they/them (singular)": {
+      "pronouns": ["they", "them", "their", "theirs", "themself"],
+      "display": "they/them (singular)"
+    },
+    "they/them (plural)": {
+      "pronouns": ["they", "them", "their", "theirs", "themselves"],
+      "display": "they/them (plural)"
+    },
+    "he/him": { "pronouns": ["he", "him", "his", "his", "himself"] },
     "she/her": { "pronouns": ["she", "her", "her", "hers", "herself"] },
-    "it": { "pronouns": ["it", "it", "its", "its", "itself"], "display": "it/its" },
     "it/its": { "pronouns": ["it", "it", "its", "its", "itself"], "display": "it/its" }
   }
 }

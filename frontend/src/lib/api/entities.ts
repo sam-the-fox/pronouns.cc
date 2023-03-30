@@ -174,3 +174,12 @@ export const defaultAvatars = [
   `${PUBLIC_BASE_URL}/default/512.webp`,
   `${PUBLIC_BASE_URL}/default/512.jpg`,
 ];
+
+export interface PronounsJson {
+  pages: Pronouns;
+  autocomplete: Pronouns;
+}
+
+interface Pronouns {
+  [key: string]: { pronouns: string[]; display?: string };
+}

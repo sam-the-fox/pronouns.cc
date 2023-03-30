@@ -1,9 +1,9 @@
 import { error } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
+import type { PronounsJson } from "$lib/api/entities";
 
-interface Pronouns {
-  [key: string]: { pronouns: string[]; display?: string };
-}
+import pronounsRaw from "$lib/pronouns.json";
+const pronouns = pronounsRaw as PronounsJson;
 
 export const load = (async ({ params }) => {
   const [param, displayText] = params.pronouns.split(",");
@@ -24,10 +24,18 @@ export const load = (async ({ params }) => {
     };
   }
 
-  const pronouns: Pronouns = (await import("$lib/pronouns.json")).pronouns;
-
-  if (params.pronouns in pronouns) {
-    const entry = pronouns[params.pronouns];
+  if (params.pronouns in pronouns.pages) {
+    const entry = pronouns.pages[params.pronouns];
+    return {
+      displayText: entry.display || "",
+      subjective: entry.pronouns[0],
+      objective: entry.pronouns[1],
+      possessiveDeterminer: entry.pronouns[2],
+      possessivePronoun: entry.pronouns[3],
+      reflexive: entry.pronouns[4],
+    };
+  } else if (params.pronouns in pronouns.autocomplete) {
+    const entry = pronouns.autocomplete[params.pronouns];
     return {
       displayText: entry.display || "",
       subjective: entry.pronouns[0],

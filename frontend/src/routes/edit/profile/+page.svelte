@@ -11,7 +11,7 @@
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { Button, ButtonGroup, FormGroup, Icon, Input } from "sveltestrap";
+  import { Alert, Button, ButtonGroup, FormGroup, Icon, Input, Popover } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
@@ -40,7 +40,6 @@
 
   let newName = "";
   let newPronouns = "";
-  let newPronounsDisplay = "";
   let newLink = "";
 
   let modified = false;
@@ -155,12 +154,23 @@
   };
 
   const addPronouns = () => {
-    pronouns = [
-      ...pronouns,
-      { pronouns: newPronouns, display_text: newPronounsDisplay || null, status: WordStatus.Okay },
-    ];
+    if (newPronouns in data.pronouns) {
+      const fullSet = data.pronouns[newPronouns];
+      pronouns = [
+        ...pronouns,
+        {
+          pronouns: fullSet.pronouns.join("/"),
+          display_text: fullSet.display || null,
+          status: WordStatus.Okay,
+        },
+      ];
+    } else {
+      pronouns = [
+        ...pronouns,
+        { pronouns: newPronouns, display_text: null, status: WordStatus.Okay },
+      ];
+    }
     newPronouns = "";
-    newPronounsDisplay = "";
   };
 
   const addLink = () => {
@@ -353,22 +363,22 @@
         <input
           type="text"
           class="form-control"
-          placeholder="Full set (e.g. it/it/its/its/itself)"
+          placeholder="New pronouns"
           bind:value={newPronouns}
           required
-        />
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Optional display text (e.g. it/its)"
-          bind:value={newPronounsDisplay}
         />
         <IconButton
           color="success"
           icon="plus"
           tooltip="Add pronouns"
+          disabled={newPronouns === ""}
           click={() => addPronouns()}
         />
+        <Button id="pronouns-help" color="secondary"><Icon name="question" /></Button>
+        <Popover target="pronouns-help" placement="bottom">
+          For common pronouns, the short form (e.g. "she/her" or "he/him") is enough; for less
+          common pronouns, you will have to use all five forms (e.g. "ce/cir/cir/cirs/cirself").
+        </Popover>
       </div>
     </div>
   </div>
