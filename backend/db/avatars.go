@@ -6,13 +6,19 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"image"
+	_ "image/gif"
+	"image/jpeg"
+	_ "image/png"
 	"io"
-	"os/exec"
 	"strings"
 
 	"emperror.dev/errors"
+	"github.com/disintegration/imaging"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
+
+	"github.com/chai2010/webp"
 )
 
 var (
@@ -25,8 +31,8 @@ const ErrInvalidContentType = errors.Sentinel("invalid avatar content type")
 
 // ConvertAvatar parses an avatar from a data URI, converts it to WebP and JPEG, and returns the results.
 func (db *DB) ConvertAvatar(data string) (
-	webp *bytes.Buffer,
-	jpg *bytes.Buffer,
+	webpOut *bytes.Buffer,
+	jpgOut *bytes.Buffer,
 	err error,
 ) {
 	data = strings.TrimSpace(data)
@@ -34,113 +40,36 @@ func (db *DB) ConvertAvatar(data string) (
 		return nil, nil, ErrInvalidDataURI
 	}
 	split := strings.Split(data, ",")
-	rest, b64 := split[0], split[1]
 
-	rest = strings.Split(rest, ":")[1]
-	contentType := strings.Split(rest, ";")[0]
-
-	var contentArg []string
-	switch contentType {
-	case "image/png":
-		contentArg = []string{"png:-"}
-	case "image/jpeg":
-		contentArg = []string{"jpg:-"}
-	case "image/gif":
-		contentArg = []string{"gif:-"}
-	case "image/webp":
-		contentArg = []string{"webp:-"}
-	default:
-		return nil, nil, ErrInvalidContentType
-	}
-
-	rawData, err := base64.StdEncoding.DecodeString(b64)
+	rawData, err := base64.StdEncoding.DecodeString(split[1])
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "invalid base64 data")
 	}
 
-	// create webp convert command and get its pipes
-	webpConvert := exec.Command("convert", append(contentArg, webpArgs...)...)
-	stdIn, err := webpConvert.StdinPipe()
+	img, _, err := image.Decode(bytes.NewReader(rawData))
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "getting webp stdin")
-	}
-	stdOut, err := webpConvert.StdoutPipe()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "getting webp stdout")
+		return nil, nil, errors.Wrap(err, "decodign image")
 	}
 
-	// start webp command
-	err = webpConvert.Start()
+	resized := imaging.Fill(img, 512, 512, imaging.Center, imaging.Linear)
+
+	webpOut = new(bytes.Buffer)
+	err = webp.Encode(webpOut, resized, &webp.Options{
+		Quality: 90,
+	})
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "starting webp command")
+		return nil, nil, errors.Wrap(err, "encoding WebP image")
 	}
 
-	// write data
-	_, err = stdIn.Write(rawData)
+	jpgOut = new(bytes.Buffer)
+	err = jpeg.Encode(jpgOut, resized, &jpeg.Options{
+		Quality: 80,
+	})
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "writing webp data")
-	}
-	err = stdIn.Close()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "closing webp stdin")
+		return nil, nil, errors.Wrap(err, "encoding JPEG image")
 	}
 
-	// read webp output
-	webpBuffer := new(bytes.Buffer)
-	_, err = io.Copy(webpBuffer, stdOut)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "reading webp data")
-	}
-	webp = webpBuffer
-
-	// finish webp command
-	err = webpConvert.Wait()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "running webp command")
-	}
-
-	// create jpg convert command and get its pipes
-	jpgConvert := exec.Command("convert", append(contentArg, jpgArgs...)...)
-	stdIn, err = jpgConvert.StdinPipe()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "getting jpg stdin")
-	}
-	stdOut, err = jpgConvert.StdoutPipe()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "getting jpg stdout")
-	}
-
-	// start jpg command
-	err = jpgConvert.Start()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "starting jpg command")
-	}
-
-	// write data
-	_, err = stdIn.Write(rawData)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "writing jpg data")
-	}
-	err = stdIn.Close()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "closing jpg stdin")
-	}
-
-	// read jpg output
-	jpgBuffer := new(bytes.Buffer)
-	_, err = io.Copy(jpgBuffer, stdOut)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "reading jpg data")
-	}
-	jpg = jpgBuffer
-
-	// finish jpg command
-	err = jpgConvert.Wait()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "running jpg command")
-	}
-
-	return webp, jpg, nil
+	return webpOut, jpgOut, nil
 }
 
 func (db *DB) WriteUserAvatar(ctx context.Context,

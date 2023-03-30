@@ -6,6 +6,8 @@ require (
 	emperror.dev/errors v0.8.1
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/bwmarrin/discordgo v0.25.0
+	github.com/chai2010/webp v1.1.1
+	github.com/disintegration/imaging v1.6.2
 	github.com/georgysavva/scany v0.3.0
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/httprate v0.5.3
@@ -56,6 +58,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
