@@ -189,8 +189,8 @@ func (s *Server) mastodonLink(w http.ResponseWriter, r *http.Request) error {
 	claims, _ := server.ClaimsFromContext(ctx)
 
 	// only site tokens can be used for this endpoint
-	if claims.APIToken || !claims.TokenWrite {
-		return server.APIError{Code: server.ErrInvalidToken}
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
 	req, err := Decode[fediLinkRequest](r)
@@ -240,8 +240,8 @@ func (s *Server) mastodonUnlink(w http.ResponseWriter, r *http.Request) error {
 	claims, _ := server.ClaimsFromContext(ctx)
 
 	// only site tokens can be used for this endpoint
-	if claims.APIToken || !claims.TokenWrite {
-		return server.APIError{Code: server.ErrInvalidToken}
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
 	u, err := s.DB.User(ctx, claims.UserID)

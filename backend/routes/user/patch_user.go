@@ -28,6 +28,10 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
 	var req PatchUserRequest
 	err := render.Decode(r, &req)
 	if err != nil {

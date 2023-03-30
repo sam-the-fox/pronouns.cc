@@ -22,6 +22,10 @@ func (s *Server) createUserReport(w http.ResponseWriter, r *http.Request) error 
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
 	userID, err := xid.FromString(chi.URLParam(r, "id"))
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest, Details: "Invalid user ID"}
@@ -64,6 +68,10 @@ func (s *Server) createUserReport(w http.ResponseWriter, r *http.Request) error 
 func (s *Server) createMemberReport(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
+
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
 
 	memberID, err := xid.FromString(chi.URLParam(r, "id"))
 	if err != nil {

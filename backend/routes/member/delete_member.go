@@ -17,6 +17,10 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) error {
 
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "this token is read-only"}
+	}
+
 	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
 	if err != nil {
 		return server.APIError{Code: server.ErrMemberNotFound}

@@ -14,6 +14,10 @@ func (s *Server) startExport(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
+	}
+
 	hasExport, err := s.DB.HasRecentExport(ctx, claims.UserID)
 	if err != nil {
 		log.Errorf("checking if user has recent export: %v", err)
@@ -55,6 +59,10 @@ type dataExportResponse struct {
 func (s *Server) getExport(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
+
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
+	}
 
 	de, err := s.DB.UserExport(ctx, claims.UserID)
 	if err != nil {

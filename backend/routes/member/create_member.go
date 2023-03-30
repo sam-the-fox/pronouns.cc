@@ -27,6 +27,10 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
 	u, err := s.DB.User(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting user")

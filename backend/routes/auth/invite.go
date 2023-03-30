@@ -32,6 +32,10 @@ func (s *Server) getInvites(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
+	}
+
 	is, err := s.DB.UserInvites(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting user invites")
@@ -53,6 +57,10 @@ func (s *Server) createInvite(w http.ResponseWriter, r *http.Request) error {
 
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
+
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
+	}
 
 	inv, err := s.DB.CreateInvite(ctx, claims.UserID)
 	if err != nil {

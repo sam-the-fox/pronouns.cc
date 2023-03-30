@@ -33,6 +33,10 @@ func (s *Server) getTokens(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
+	}
+
 	tokens, err := s.DB.Tokens(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting tokens")
@@ -52,7 +56,7 @@ func (s *Server) deleteToken(w http.ResponseWriter, r *http.Request) error {
 	claims, _ := server.ClaimsFromContext(ctx)
 
 	if claims.APIToken {
-		return server.APIError{Code: server.ErrInvalidToken}
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
 	tx, err := s.DB.Begin(ctx)
@@ -89,7 +93,7 @@ func (s *Server) createToken(w http.ResponseWriter, r *http.Request) error {
 	claims, _ := server.ClaimsFromContext(ctx)
 
 	if claims.APIToken {
-		return server.APIError{Code: server.ErrInvalidToken}
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
 	readOnly := r.FormValue("read_only") == "true"

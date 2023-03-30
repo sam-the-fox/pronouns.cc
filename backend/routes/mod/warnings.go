@@ -44,6 +44,10 @@ func (s *Server) ackWarning(w http.ResponseWriter, r *http.Request) (err error) 
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
+	if !claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
+	}
+
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest}

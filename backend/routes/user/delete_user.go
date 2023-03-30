@@ -12,8 +12,8 @@ func (s *Server) deleteUser(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
-	if claims.APIToken || !claims.TokenWrite {
-		return server.APIError{Code: server.ErrMissingPermissions}
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
 	tx, err := s.DB.Begin(ctx)
