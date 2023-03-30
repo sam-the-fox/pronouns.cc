@@ -14,6 +14,8 @@ type Token struct {
 	UserID      xid.ID
 	TokenID     xid.ID
 	Invalidated bool
+	APIOnly     bool `db:"api_only"`
+	ReadOnly    bool
 	Created     time.Time
 	Expires     time.Time
 }
@@ -62,10 +64,15 @@ func (db *DB) Tokens(ctx context.Context, userID xid.ID) (ts []Token, err error)
 const ExpiryTime = 3 * 30 * 24 * time.Hour
 
 // SaveToken saves a token to the database.
-func (db *DB) SaveToken(ctx context.Context, userID xid.ID, tokenID xid.ID) (t Token, err error) {
+func (db *DB) SaveToken(ctx context.Context, userID xid.ID, tokenID xid.ID, apiOnly, readOnly bool) (t Token, err error) {
 	sql, args, err := sq.Insert("tokens").
-		Columns("user_id", "token_id", "expires").
-		Values(userID, tokenID, time.Now().Add(ExpiryTime)).
+		SetMap(map[string]any{
+			"user_id":   userID,
+			"token_id":  tokenID,
+			"expires":   time.Now().Add(ExpiryTime),
+			"api_only":  apiOnly,
+			"read_only": readOnly,
+		}).
 		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {

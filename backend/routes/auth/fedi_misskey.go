@@ -118,7 +118,7 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		// save token to database
-		_, err = s.DB.SaveToken(ctx, u.ID, tokenID)
+		_, err = s.DB.SaveToken(ctx, u.ID, tokenID, false, false)
 		if err != nil {
 			return errors.Wrap(err, "saving token to database")
 		}
@@ -301,7 +301,7 @@ func (s *Server) misskeySignup(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// save token to database
-	_, err = s.DB.SaveToken(ctx, u.ID, tokenID)
+	_, err = s.DB.SaveToken(ctx, u.ID, tokenID, false, false)
 	if err != nil {
 		return errors.Wrap(err, "saving token to database")
 	}

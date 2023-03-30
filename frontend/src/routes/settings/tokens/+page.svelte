@@ -1,36 +1,89 @@
 <script lang="ts">
+  import type { APIError } from "$lib/api/entities";
+  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import { DateTime } from "luxon";
-  import { Icon, Table } from "sveltestrap";
+  import {
+    Button,
+    ButtonGroup,
+    Card,
+    CardBody,
+    CardHeader,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+  } from "sveltestrap";
   import type { PageData } from "./$types";
+
+  interface Token {
+    token: string;
+    id: string;
+    api_only: boolean;
+    read_only: boolean;
+    created: string;
+    expires: string;
+  }
 
   export let data: PageData;
 
-  import { decodeJwt } from "jose";
-  const claims = decodeJwt(localStorage.getItem("pronouns-token")!);
+  let newToken: string | null = null;
+  let error: APIError | null = null;
+
+  let newTokenModalOpen = false;
+  const toggleNewTokenModalOpen = () => (newTokenModalOpen = !newTokenModalOpen);
+
+  const createToken = async (readOnly: boolean) => {
+    try {
+      const token = await apiFetchClient<Token>(`/auth/tokens?read_only=${readOnly}`, "POST");
+      newToken = token.token;
+      error = null;
+      data.tokens = [...data.tokens, token];
+      toggleNewTokenModalOpen();
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
 </script>
 
-<h1>Tokens ({data.tokens.length})</h1>
+<h1>
+  Tokens ({data.tokens.length})
+  <ButtonGroup>
+    <Button color="success" on:click={() => createToken(false)}>New API token</Button>
+    <Button color="success" on:click={() => createToken(true)}>New read-only API token</Button>
+  </ButtonGroup>
+</h1>
 
-<Table bordered striped hover>
-  <thead>
-    <th>ID</th>
-    <th>Created at</th>
-    <th>Expires at</th>
-    <th>Current?</th>
-  </thead>
-  <tbody>
-    {#each data.tokens as token}
-      <tr>
-        <td><code>{token.id}</code></td>
-        <td>{DateTime.fromISO(token.created).toLocal().toLocaleString(DateTime.DATETIME_MED)}</td>
-        <td>{DateTime.fromISO(token.expires).toLocal().toLocaleString(DateTime.DATETIME_MED)}</td>
-        <td
-          >{#if claims["jti"] === token.id}<Icon name="check-lg" alt="Current token" />{:else}<Icon
-              name="x-lg"
-              alt="Not current token"
-            />{/if}</td
-        >
-      </tr>
-    {/each}
-  </tbody>
-</Table>
+{#each data.tokens as token}
+  <Card class="my-2">
+    <CardHeader>{token.id}</CardHeader>
+    <CardBody>
+      <ul class="list-unstyled">
+        <li>
+          <strong>Created at:</strong>
+          {DateTime.fromISO(token.created).toLocal().toLocaleString(DateTime.DATETIME_MED)}
+        </li>
+        <li>
+          <strong>Expires at:</strong>
+          {DateTime.fromISO(token.expires).toLocal().toLocaleString(DateTime.DATETIME_MED)}
+        </li>
+        <li>
+          <strong>Read-only:</strong>
+          {token.read_only ? "yes" : "no"}
+        </li>
+      </ul>
+    </CardBody>
+  </Card>
+{:else}
+  You don't have any unexpired API tokens right now.
+{/each}
+
+<Modal isOpen={newTokenModalOpen}>
+  <ModalHeader toggle={toggleNewTokenModalOpen}>New token created</ModalHeader>
+  <ModalBody>
+    <p>Created a new API token! Please save it somewhere secure, as it will only be shown once.</p>
+    <p><code>{newToken}</code></p>
+  </ModalBody>
+  <ModalFooter>
+    <Button color="secondary" on:click={toggleNewTokenModalOpen}>Close</Button>
+  </ModalFooter>
+</Modal>

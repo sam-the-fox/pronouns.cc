@@ -12,16 +12,20 @@ import (
 )
 
 type getTokenResponse struct {
-	TokenID xid.ID    `json:"id"`
-	Created time.Time `json:"created"`
-	Expires time.Time `json:"expires"`
+	TokenID  xid.ID    `json:"id"`
+	APIOnly  bool      `json:"api_only"`
+	ReadOnly bool      `json:"read_only"`
+	Created  time.Time `json:"created"`
+	Expires  time.Time `json:"expires"`
 }
 
 func dbTokenToGetResponse(t db.Token) getTokenResponse {
 	return getTokenResponse{
-		TokenID: t.TokenID,
-		Created: t.Created,
-		Expires: t.Expires,
+		TokenID:  t.TokenID,
+		APIOnly:  t.APIOnly,
+		ReadOnly: t.ReadOnly,
+		Created:  t.Created,
+		Expires:  t.Expires,
 	}
 }
 
@@ -47,7 +51,7 @@ func (s *Server) deleteToken(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
-	if !claims.TokenWrite || claims.APIToken {
+	if claims.APIToken {
 		return server.APIError{Code: server.ErrInvalidToken}
 	}
 
@@ -71,7 +75,42 @@ func (s *Server) deleteToken(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+type createTokenResponse struct {
+	Token    string    `json:"token"`
+	TokenID  xid.ID    `json:"id"`
+	APIOnly  bool      `json:"api_only"`
+	ReadOnly bool      `json:"read_only"`
+	Created  time.Time `json:"created"`
+	Expires  time.Time `json:"expires"`
+}
+
 func (s *Server) createToken(w http.ResponseWriter, r *http.Request) error {
-	// unimplemented right now
-	return server.APIError{Code: server.ErrForbidden}
+	ctx := r.Context()
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	if claims.APIToken {
+		return server.APIError{Code: server.ErrInvalidToken}
+	}
+
+	readOnly := r.FormValue("read_only") == "true"
+	tokenID := xid.New()
+	tokenStr, err := s.Auth.CreateToken(claims.UserID, tokenID, false, true, !readOnly)
+	if err != nil {
+		return errors.Wrap(err, "creating token")
+	}
+
+	t, err := s.DB.SaveToken(ctx, claims.UserID, tokenID, true, readOnly)
+	if err != nil {
+		return errors.Wrap(err, "saving token")
+	}
+
+	render.JSON(w, r, createTokenResponse{
+		Token:    tokenStr,
+		TokenID:  t.TokenID,
+		APIOnly:  t.APIOnly,
+		ReadOnly: t.ReadOnly,
+		Created:  t.Created,
+		Expires:  t.Expires,
+	})
+	return nil
 }

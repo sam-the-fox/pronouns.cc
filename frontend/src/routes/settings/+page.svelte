@@ -17,11 +17,6 @@
   $: usernameValid = usernameRegex.test(username);
   let error: APIError | null = null;
 
-  let deleteOpen = false;
-  const toggleDeleteOpen = () => (deleteOpen = !deleteOpen);
-  let deleteUsername = "";
-  let deleteError: APIError | null = null;
-
   const changeUsername = async () => {
     try {
       const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", { username });
@@ -34,6 +29,11 @@
       error = e as APIError;
     }
   };
+
+  let deleteOpen = false;
+  const toggleDeleteOpen = () => (deleteOpen = !deleteOpen);
+  let deleteUsername = "";
+  let deleteError: APIError | null = null;
 
   const deleteAccount = async () => {
     try {
@@ -48,6 +48,29 @@
     } catch (e) {
       deleteUsername = "";
       deleteError = e as APIError;
+    }
+  };
+
+  let invalidateModalOpen = false;
+  const toggleInvalidateModalOpen = () => (invalidateModalOpen = !invalidateModalOpen);
+  let invalidateError: APIError | null = null;
+
+  const invalidateAllTokens = async () => {
+    try {
+      await fastFetchClient("/auth/tokens", "DELETE");
+
+      invalidateError = null;
+      userStore.set(null);
+      localStorage.removeItem("pronouns-token");
+      localStorage.removeItem("pronouns-user");
+      toggleInvalidateModalOpen();
+      addToast({
+        header: "Invalidated tokens",
+        body: "Invalidated all your tokens, please log in again.",
+      });
+      goto("/");
+    } catch (e) {
+      invalidateError = e as APIError;
     }
   };
 </script>
@@ -91,6 +114,31 @@
       <p>
         To change your avatar, go to <a href="/edit/profile">edit profile</a>.
       </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <h4>Force log out</h4>
+      <p>
+        If you think one of your tokens might have been compromised, you can log out on all devices
+        by clicking this button.
+      </p>
+      <p>
+        <Button color="danger" on:click={toggleInvalidateModalOpen}>Force log out</Button>
+      </p>
+      <Modal isOpen={invalidateModalOpen} toggle={toggleInvalidateModalOpen}>
+        <ModalHeader toggle={toggleInvalidateModalOpen}>Force log out</ModalHeader>
+        <ModalBody>
+          <p>If you want to force log out on all devices, click the button below.</p>
+          {#if invalidateError}
+            <ErrorAlert error={invalidateError} />
+          {/if}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="danger" on:click={invalidateAllTokens}>Force log out</Button>
+          <Button color="secondary" on:click={toggleInvalidateModalOpen}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
     </div>
   </div>
   <div class="row">
