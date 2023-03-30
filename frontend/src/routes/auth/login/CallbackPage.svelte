@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import type { APIError, MeUser } from "$lib/api/entities";
-  import { apiFetch } from "$lib/api/fetch";
+  import { fastFetch } from "$lib/api/fetch";
   import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { userStore } from "$lib/store";
@@ -58,7 +58,7 @@
 
   const forceDeleteAccount = async () => {
     try {
-      await apiFetch<any>("/auth/force-delete", {
+      await fastFetch("/auth/force-delete", {
         method: "GET",
         headers: {
           "X-Delete-Token": token!,
@@ -75,7 +75,7 @@
 
   const cancelDelete = async () => {
     try {
-      await apiFetch<any>("/auth/cancel-delete", {
+      await fastFetch("/auth/cancel-delete", {
         method: "GET",
         headers: {
           "X-Delete-Token": token!,

@@ -51,13 +51,13 @@ func (s *Server) createUserReport(w http.ResponseWriter, r *http.Request) error 
 		return server.APIError{Code: server.ErrBadRequest, Details: "Reason cannot exceed 2000 characters"}
 	}
 
-	report, err := s.DB.CreateReport(ctx, claims.UserID, u.ID, nil, req.Reason)
+	_, err = s.DB.CreateReport(ctx, claims.UserID, u.ID, nil, req.Reason)
 	if err != nil {
 		log.Errorf("creating report for %v: %v", u.ID, err)
 		return errors.Wrap(err, "creating report")
 	}
 
-	render.JSON(w, r, map[string]any{"created": true, "created_at": report.CreatedAt})
+	render.NoContent(w, r)
 	return nil
 }
 
@@ -100,12 +100,12 @@ func (s *Server) createMemberReport(w http.ResponseWriter, r *http.Request) erro
 		return server.APIError{Code: server.ErrBadRequest, Details: "Reason cannot exceed 2000 characters"}
 	}
 
-	report, err := s.DB.CreateReport(ctx, claims.UserID, u.ID, &m.ID, req.Reason)
+	_, err = s.DB.CreateReport(ctx, claims.UserID, u.ID, &m.ID, req.Reason)
 	if err != nil {
 		log.Errorf("creating report for %v: %v", m.ID, err)
 		return errors.Wrap(err, "creating report")
 	}
 
-	render.JSON(w, r, map[string]any{"created": true, "created_at": report.CreatedAt})
+	render.NoContent(w, r)
 	return nil
 }

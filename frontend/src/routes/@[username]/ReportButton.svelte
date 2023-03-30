@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { APIError } from "$lib/api/entities";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { fastFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast } from "$lib/toast";
   import { Button, FormGroup, Icon, Modal, ModalBody, ModalFooter } from "sveltestrap";
@@ -18,7 +18,7 @@
 
   const doReport = async () => {
     try {
-      await apiFetchClient<any>(reportUrl, "POST", { reason: reason });
+      await fastFetchClient(reportUrl, "POST", { reason: reason });
       error = null;
       addToast({ header: "Sent report", body: "Successfully sent report!" });
       toggle();

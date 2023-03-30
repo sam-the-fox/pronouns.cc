@@ -3,7 +3,7 @@
   import { DateTime, Duration } from "luxon";
   import { Alert, Button } from "sveltestrap";
   import { PUBLIC_BASE_URL } from "$env/static/public";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { fastFetchClient } from "$lib/api/fetch";
   import type { APIError } from "$lib/api/entities";
   import { addToast } from "$lib/toast";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
@@ -23,7 +23,7 @@
 
   const requestExport = async () => {
     try {
-      await apiFetchClient<any>("/users/@me/export/start");
+      await fastFetchClient("/users/@me/export/start");
 
       addToast({
         header: "Export in progress",

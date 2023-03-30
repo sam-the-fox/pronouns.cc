@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { APIError } from "$lib/api/entities";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { fastFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast } from "$lib/toast";
   import { Button, FormGroup, Modal, ModalBody, ModalFooter } from "sveltestrap";
@@ -42,7 +42,7 @@
 
   const warnUser = async () => {
     try {
-      await apiFetchClient<any>(`/admin/reports/${data.reports[reportIndex].id}`, "PATCH", {
+      await fastFetchClient(`/admin/reports/${data.reports[reportIndex].id}`, "PATCH", {
         warn: true,
         reason: reason,
       });
@@ -58,7 +58,7 @@
 
   const deactivateUser = async () => {
     try {
-      await apiFetchClient<any>(`/admin/reports/${data.reports[reportIndex].id}`, "PATCH", {
+      await fastFetchClient(`/admin/reports/${data.reports[reportIndex].id}`, "PATCH", {
         warn: true,
         ban: true,
         delete: deleteUser,
@@ -76,7 +76,7 @@
 
   const ignoreReport = async () => {
     try {
-      await apiFetchClient<any>(`/admin/reports/${data.reports[reportIndex].id}`, "PATCH", {
+      await fastFetchClient(`/admin/reports/${data.reports[reportIndex].id}`, "PATCH", {
         reason: reason,
       });
       error = null;

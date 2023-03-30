@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { type MeUser, userAvatars, type APIError, MAX_MEMBERS } from "$lib/api/entities";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
@@ -37,7 +37,7 @@
 
   const deleteAccount = async () => {
     try {
-      await apiFetchClient<any>("/users/@me", "DELETE");
+      await fastFetchClient("/users/@me", "DELETE");
 
       userStore.set(null);
       localStorage.removeItem("pronouns-token");

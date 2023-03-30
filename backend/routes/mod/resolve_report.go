@@ -108,6 +108,6 @@ func (s *Server) resolveReport(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "committing transaction")
 	}
 
-	render.JSON(w, r, map[string]any{"success": true})
+	render.NoContent(w, r)
 	return nil
 }

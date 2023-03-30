@@ -58,6 +58,6 @@ func (s *Server) ackWarning(w http.ResponseWriter, r *http.Request) (err error) 
 		return server.APIError{Code: server.ErrNotFound}
 	}
 
-	render.JSON(w, r, map[string]any{"ok": true})
+	render.NoContent(w, r)
 	return nil
 }

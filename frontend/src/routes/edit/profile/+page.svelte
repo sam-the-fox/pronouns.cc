@@ -11,7 +11,7 @@
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
-  import { Alert, Button, ButtonGroup, FormGroup, Icon, Input, Popover } from "sveltestrap";
+  import { Button, ButtonGroup, FormGroup, Icon, Input, Popover } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";

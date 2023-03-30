@@ -22,7 +22,7 @@
     ModalFooter,
   } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../../EditableField.svelte";
   import EditableName from "../../EditableName.svelte";
@@ -242,9 +242,13 @@
 
   const deleteMember = async () => {
     try {
-      await apiFetchClient<any>(`/members/${data.member.id}`, "DELETE");
+      await fastFetchClient(`/members/${data.member.id}`, "DELETE");
 
       toggleDeleteOpen();
+      addToast({
+        header: "Deleted member",
+        body: `Successfully deleted member ${data.member.name}!`,
+      });
       goto(`/@${data.member.user.name}`);
     } catch (e) {
       deleteName = "";

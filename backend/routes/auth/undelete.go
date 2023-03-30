@@ -42,7 +42,7 @@ func (s *Server) cancelDelete(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("executing undelete query: %v", err)
 	}
 
-	render.JSON(w, r, map[string]any{"success": true})
+	render.NoContent(w, r)
 	return nil
 }
 
@@ -104,6 +104,6 @@ func (s *Server) forceDelete(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "deleting user")
 	}
 
-	render.JSON(w, r, map[string]any{"success": true})
+	render.NoContent(w, r)
 	return nil
 }

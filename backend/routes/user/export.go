@@ -43,7 +43,7 @@ func (s *Server) startExport(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	render.JSON(w, r, map[string]any{"started": true})
+	render.NoContent(w, r)
 	return nil
 }
 

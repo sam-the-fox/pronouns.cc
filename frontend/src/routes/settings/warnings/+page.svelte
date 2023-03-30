@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { APIError } from "$lib/api/entities";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast } from "$lib/toast";
   import { DateTime } from "luxon";
@@ -12,7 +12,7 @@
 
   const acknowledgeWarning = async (idx: number) => {
     try {
-      await apiFetchClient<any>(`/auth/warnings/${data.warnings[idx].id}/ack`, "POST");
+      await fastFetchClient(`/auth/warnings/${data.warnings[idx].id}/ack`, "POST");
       addToast({
         header: "Acknowledged",
         body: `Marked warning #${data.warnings[idx].id} as read.`,
