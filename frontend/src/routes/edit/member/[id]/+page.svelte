@@ -20,6 +20,7 @@
     Modal,
     ModalBody,
     ModalFooter,
+    Popover,
   } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
@@ -59,7 +60,6 @@
 
   let newName = "";
   let newPronouns = "";
-  let newPronounsDisplay = "";
   let newLink = "";
 
   let modified = false;
@@ -169,21 +169,38 @@
     fields[newIndex] = temp;
   };
 
-  const addName = () => {
+  const addName = (event: Event) => {
+    event.preventDefault();
+
     names = [...names, { value: newName, status: WordStatus.Okay }];
     newName = "";
   };
 
-  const addPronouns = () => {
-    pronouns = [
-      ...pronouns,
-      { pronouns: newPronouns, display_text: newPronounsDisplay || null, status: WordStatus.Okay },
-    ];
+  const addPronouns = (event: Event) => {
+    event.preventDefault();
+
+    if (newPronouns in data.pronouns) {
+      const fullSet = data.pronouns[newPronouns];
+      pronouns = [
+        ...pronouns,
+        {
+          pronouns: fullSet.pronouns.join("/"),
+          display_text: fullSet.display || null,
+          status: WordStatus.Okay,
+        },
+      ];
+    } else {
+      pronouns = [
+        ...pronouns,
+        { pronouns: newPronouns, display_text: null, status: WordStatus.Okay },
+      ];
+    }
     newPronouns = "";
-    newPronounsDisplay = "";
   };
 
-  const addLink = () => {
+  const addLink = (event: Event) => {
+    event.preventDefault();
+
     links = [...links, newLink];
     newLink = "";
   };
@@ -375,9 +392,10 @@
         </FormGroup>
       </div>
       <div>
-        <FormGroup floating label="Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})">
-          <textarea style="min-height: 100px;" class="form-control" bind:value={bio} />
-        </FormGroup>
+        <div class="form">
+          <label for="bio"><strong>Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})</strong></label>
+          <textarea class="form-control" style="height: 200px;" id="bio" bind:value={bio} />
+        </div>
         <p class="text-muted mt-3">
           <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
           <a
@@ -402,10 +420,10 @@
           remove={() => removeName(index)}
         />
       {/each}
-      <div class="input-group m-1">
+      <form class="input-group m-1" on:submit={addName}>
         <input type="text" class="form-control" bind:value={newName} />
-        <IconButton color="success" icon="plus" tooltip="Add name" click={() => addName()} />
-      </div>
+        <IconButton type="submit" color="success" icon="plus" tooltip="Add name" />
+      </form>
     </div>
     <div class="col-md">
       <h4>Links</h4>
@@ -420,10 +438,10 @@
           />
         </div>
       {/each}
-      <div class="input-group m-1">
+      <form class="input-group m-1" on:submit={addLink}>
         <input type="text" class="form-control" bind:value={newLink} />
-        <IconButton color="success" icon="plus" tooltip="Add link" click={() => addLink()} />
-      </div>
+        <IconButton type="submit" color="success" icon="plus" tooltip="Add link" />
+      </form>
     </div>
   </div>
   <div class="row m-1">
@@ -437,27 +455,43 @@
           remove={() => removePronoun(index)}
         />
       {/each}
-      <div class="input-group m-1">
+      <form class="input-group m-1" on:submit={addPronouns}>
         <input
           type="text"
           class="form-control"
-          placeholder="Full set (e.g. it/it/its/its/itself)"
+          placeholder="New pronouns"
           bind:value={newPronouns}
           required
         />
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Optional display text (e.g. it/its)"
-          bind:value={newPronounsDisplay}
-        />
         <IconButton
+          type="submit"
           color="success"
           icon="plus"
           tooltip="Add pronouns"
-          click={() => addPronouns()}
+          disabled={newPronouns === ""}
         />
-      </div>
+        <form class="input-group m-1" on:submit={addPronouns}>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="New pronouns"
+            bind:value={newPronouns}
+            required
+          />
+          <IconButton
+            type="submit"
+            color="success"
+            icon="plus"
+            tooltip="Add pronouns"
+            disabled={newPronouns === ""}
+          />
+          <Button id="pronouns-help" color="secondary"><Icon name="question" /></Button>
+          <Popover target="pronouns-help" placement="bottom">
+            For common pronouns, the short form (e.g. "she/her" or "he/him") is enough; for less
+            common pronouns, you will have to use all five forms (e.g. "ce/cir/cir/cirs/cirself").
+          </Popover>
+        </form>
+      </form>
     </div>
   </div>
   <hr />

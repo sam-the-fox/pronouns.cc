@@ -6,6 +6,7 @@
   export let tooltip: string;
   export let active: boolean = false;
   export let disabled: boolean = false;
+  export let type: string | undefined = undefined;
 
   export let click: ((e: MouseEvent) => void) | undefined = undefined;
   export let href: string | undefined = undefined;
@@ -14,6 +15,6 @@
 </script>
 
 <Tooltip target={button} placement="top">{tooltip}</Tooltip>
-<Button {color} {active} {disabled} {href} on:click={click} bind:inner={button}>
+<Button {type} {color} {active} {disabled} {href} on:click={click} bind:inner={button}>
   <Icon name={icon} />
 </Button>

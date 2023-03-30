@@ -10,7 +10,9 @@
 
   let newEntry: string = "";
 
-  const addEntry = () => {
+  const addEntry = (event: Event) => {
+    event.preventDefault();
+
     field.entries = [...field.entries, { value: newEntry, status: WordStatus.Okay }];
     newEntry = "";
   };
@@ -61,8 +63,8 @@
     />
   {/each}
 
-  <div class="input-group m-1">
+  <form class="input-group m-1" on:submit={addEntry}>
     <input type="text" class="form-control" placeholder="New entry" bind:value={newEntry} />
-    <IconButton color="success" icon="plus" tooltip="Add entry" click={() => addEntry()} />
-  </div>
+    <IconButton color="success" icon="plus" tooltip="Add entry" />
+  </form>
 </div>
