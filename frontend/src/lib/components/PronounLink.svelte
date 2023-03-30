@@ -26,7 +26,7 @@
 </script>
 
 {#if shouldLink}
-  <a href="/pronouns/{link}">{pronounText}</a>
+  <a class="text-reset" href="/pronouns/{link}">{pronounText}</a>
 {:else}
   {pronounText}
 {/if}

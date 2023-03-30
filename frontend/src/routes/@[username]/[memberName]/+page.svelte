@@ -12,6 +12,7 @@
   import renderMarkdown from "$lib/api/markdown";
   import ReportButton from "../ReportButton.svelte";
   import ProfileLink from "../ProfileLink.svelte";
+  import StatusLine from "$lib/components/StatusLine.svelte";
 
   export let data: PageData;
 
@@ -80,7 +81,7 @@
           <h3>Names</h3>
           <ul class="list-unstyled fs-5">
             {#each data.names as name}
-              <li><StatusIcon status={name.status} /> {name.value}</li>
+              <li><StatusLine status={name.status}>{name.value}</StatusLine></li>
             {/each}
           </ul>
         </div>
@@ -90,10 +91,7 @@
           <h3>Pronouns</h3>
           <ul class="list-unstyled fs-5">
             {#each data.pronouns as pronouns}
-              <li>
-                <StatusIcon status={pronouns.status} />
-                <PronounLink {pronouns} />
-              </li>
+              <li><StatusLine status={pronouns.status}><PronounLink {pronouns} /></StatusLine></li>
             {/each}
           </ul>
         </div>
