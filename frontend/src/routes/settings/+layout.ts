@@ -6,31 +6,39 @@ import {
   type MeUser,
 } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
+import { redirect } from "@sveltejs/kit";
 import type { LayoutLoad } from "./$types";
 
 export const ssr = false;
 
 export const load = (async ({ parent }) => {
-  const user = await apiFetchClient<MeUser>("/users/@me");
-  const warnings = await apiFetchClient<Warning[]>("/auth/warnings?all=true");
-
-  let invites: Invite[] = [];
-  let invitesEnabled = true;
   try {
-    invites = await apiFetchClient<Invite[]>("/auth/invites");
-  } catch (e) {
-    if ((e as APIError).code === ErrorCode.InvitesDisabled) {
-      invitesEnabled = false;
+    const user = await apiFetchClient<MeUser>("/users/@me");
+    const warnings = await apiFetchClient<Warning[]>("/auth/warnings?all=true");
+
+    let invites: Invite[] = [];
+    let invitesEnabled = true;
+    try {
+      invites = await apiFetchClient<Invite[]>("/auth/invites");
+    } catch (e) {
+      if ((e as APIError).code === ErrorCode.InvitesDisabled) {
+        invitesEnabled = false;
+      }
     }
+
+    const data = await parent();
+
+    return {
+      ...data,
+      user,
+      invites,
+      invitesEnabled,
+      warnings,
+    };
+  } catch (e) {
+    if ((e as APIError).code !== ErrorCode.InternalServerError) {
+      throw redirect(303, "/auth/login");
+    }
+    throw e;
   }
-
-  const data = await parent();
-
-  return {
-    ...data,
-    user,
-    invites,
-    invitesEnabled,
-    warnings,
-  };
 }) satisfies LayoutLoad;
