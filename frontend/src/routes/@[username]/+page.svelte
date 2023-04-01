@@ -178,7 +178,7 @@
         <div class="col">
           <hr />
           <h2>
-            Members
+            {data.member_title || "Members"}
             {#if $userStore && $userStore.id === data.id}
               <Button
                 color="success"
