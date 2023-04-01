@@ -24,10 +24,12 @@ type GetMemberResponse struct {
 	Fields   []db.Field        `json:"fields"`
 
 	User PartialUser `json:"user"`
+
+	Unlisted *bool `json:"unlisted,omitempty"`
 }
 
-func dbMemberToMember(u db.User, m db.Member, fields []db.Field) GetMemberResponse {
-	return GetMemberResponse{
+func dbMemberToMember(u db.User, m db.Member, fields []db.Field, isOwnMember bool) GetMemberResponse {
+	r := GetMemberResponse{
 		ID:          m.ID,
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
@@ -46,6 +48,12 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field) GetMemberRespon
 			Avatar:      u.Avatar,
 		},
 	}
+
+	if isOwnMember {
+		r.Unlisted = &m.Unlisted
+	}
+
+	return r
 }
 
 type PartialUser struct {
@@ -81,12 +89,17 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMemberNotFound}
 	}
 
+	isOwnMember := false
+	if claims, ok := server.ClaimsFromContext(ctx); ok && claims.UserID == u.ID {
+		isOwnMember = true
+	}
+
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, fields))
+	render.JSON(w, r, dbMemberToMember(u, m, fields, isOwnMember))
 	return nil
 }
 
@@ -104,6 +117,11 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrUserNotFound}
 	}
 
+	isOwnMember := false
+	if claims, ok := server.ClaimsFromContext(ctx); ok && claims.UserID == u.ID {
+		isOwnMember = true
+	}
+
 	m, err := s.DB.UserMember(ctx, u.ID, chi.URLParam(r, "memberRef"))
 	if err != nil {
 		return server.APIError{
@@ -116,7 +134,7 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, fields))
+	render.JSON(w, r, dbMemberToMember(u, m, fields, isOwnMember))
 	return nil
 }
 

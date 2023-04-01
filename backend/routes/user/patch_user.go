@@ -15,11 +15,13 @@ type PatchUserRequest struct {
 	Username    *string            `json:"username"`
 	DisplayName *string            `json:"display_name"`
 	Bio         *string            `json:"bio"`
+	MemberTitle *string            `json:"member_title"`
 	Links       *[]string          `json:"links"`
 	Names       *[]db.FieldEntry   `json:"names"`
 	Pronouns    *[]db.PronounEntry `json:"pronouns"`
 	Fields      *[]db.Field        `json:"fields"`
 	Avatar      *string            `json:"avatar"`
+	ListPrivate *bool              `json:"list_private"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
@@ -48,6 +50,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	if req.Username == nil &&
 		req.DisplayName == nil &&
 		req.Bio == nil &&
+		req.MemberTitle == nil &&
+		req.ListPrivate == nil &&
 		req.Links == nil &&
 		req.Fields == nil &&
 		req.Names == nil &&
@@ -70,6 +74,13 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, len(*req.Bio)),
+		}
+	}
+	// this is considered a name
+	if req.MemberTitle != nil && len(*req.MemberTitle) > db.MaxDisplayNameLength {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: fmt.Sprintf("Member title too long (max %d, current %d)", db.MaxDisplayNameLength, len(*req.MemberTitle)),
 		}
 	}
 
@@ -175,7 +186,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.Links, avatarHash)
+	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err

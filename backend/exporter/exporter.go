@@ -175,7 +175,7 @@ func (s *server) doExport(u db.User) {
 		log.Debugf("[%v] exported user avatar", u.ID)
 	}
 
-	members, err := s.DB.UserMembers(ctx, u.ID)
+	members, err := s.DB.UserMembers(ctx, u.ID, true)
 	if err != nil {
 		log.Errorf("[%v] getting user members: %v", u.ID, err)
 		return

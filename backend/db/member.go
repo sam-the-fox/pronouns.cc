@@ -26,6 +26,7 @@ type Member struct {
 	Links       []string
 	Names       []FieldEntry
 	Pronouns    []PronounEntry
+	Unlisted    bool
 }
 
 const (
@@ -68,10 +69,15 @@ func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (
 }
 
 // UserMembers returns all of a user's members, sorted by name.
-func (db *DB) UserMembers(ctx context.Context, userID xid.ID) (ms []Member, err error) {
-	sql, args, err := sq.Select("*").
+func (db *DB) UserMembers(ctx context.Context, userID xid.ID, showHidden bool) (ms []Member, err error) {
+	builder := sq.Select("*").
 		From("members").Where("user_id = ?", userID).
-		OrderBy("name", "id").ToSql()
+		OrderBy("name", "id")
+	if !showHidden {
+		builder = builder.Where("unlisted = ?", false)
+	}
+
+	sql, args, err := builder.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "building sql")
 	}
@@ -148,6 +154,7 @@ func (db *DB) UpdateMember(
 	ctx context.Context,
 	tx pgx.Tx, id xid.ID,
 	name, displayName, bio *string,
+	unlisted *bool,
 	links *[]string,
 	avatar *string,
 ) (m Member, err error) {
@@ -189,6 +196,9 @@ func (db *DB) UpdateMember(
 	}
 	if links != nil {
 		builder = builder.Set("links", *links)
+	}
+	if unlisted != nil {
+		builder = builder.Set("unlisted", *unlisted)
 	}
 
 	if avatar != nil {

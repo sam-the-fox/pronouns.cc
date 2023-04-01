@@ -23,6 +23,7 @@ type PatchMemberRequest struct {
 	Pronouns    *[]db.PronounEntry `json:"pronouns"`
 	Fields      *[]db.Field        `json:"fields"`
 	Avatar      *string            `json:"avatar"`
+	Unlisted    *bool              `json:"unlisted"`
 }
 
 func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
@@ -62,6 +63,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	if req.DisplayName == nil &&
 		req.Name == nil &&
 		req.Bio == nil &&
+		req.Unlisted == nil &&
 		req.Links == nil &&
 		req.Fields == nil &&
 		req.Names == nil &&
@@ -213,7 +215,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	m, err = s.DB.UpdateMember(ctx, tx, id, req.Name, req.DisplayName, req.Bio, req.Links, avatarHash)
+	m, err = s.DB.UpdateMember(ctx, tx, id, req.Name, req.DisplayName, req.Bio, req.Unlisted, req.Links, avatarHash)
 	if err != nil {
 		switch errors.Cause(err) {
 		case db.ErrNothingToUpdate:
@@ -274,6 +276,6 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated member back on success
-	render.JSON(w, r, dbMemberToMember(u, m, fields))
+	render.JSON(w, r, dbMemberToMember(u, m, fields, true))
 	return nil
 }

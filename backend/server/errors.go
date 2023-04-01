@@ -99,7 +99,8 @@ const (
 	ErrLastProvider        = 1016 // unlinking provider would leave account with no authentication method
 
 	// User-related error codes
-	ErrUserNotFound = 2001
+	ErrUserNotFound      = 2001
+	ErrMemberListPrivate = 2002
 
 	// Member-related error codes
 	ErrMemberNotFound     = 3001
@@ -141,7 +142,8 @@ var errCodeMessages = map[int]string{
 	ErrNotLinked:           "Your account is already not linked to an account of this type",
 	ErrLastProvider:        "This is your account's only authentication provider",
 
-	ErrUserNotFound: "User not found",
+	ErrUserNotFound:      "User not found",
+	ErrMemberListPrivate: "This user's member list is private.",
 
 	ErrMemberNotFound:     "Member not found",
 	ErrMemberLimitReached: "Member limit reached",
@@ -180,7 +182,8 @@ var errCodeStatuses = map[int]int{
 	ErrNotLinked:           http.StatusBadRequest,
 	ErrLastProvider:        http.StatusBadRequest,
 
-	ErrUserNotFound: http.StatusNotFound,
+	ErrUserNotFound:      http.StatusNotFound,
+	ErrMemberListPrivate: http.StatusForbidden,
 
 	ErrMemberNotFound:     http.StatusNotFound,
 	ErrMemberLimitReached: http.StatusBadRequest,

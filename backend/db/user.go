@@ -20,6 +20,7 @@ type User struct {
 	Username    string
 	DisplayName *string
 	Bio         *string
+	MemberTitle *string
 
 	Avatar *string
 	Links  []string
@@ -35,8 +36,9 @@ type User struct {
 	FediverseAppID    *int64
 	FediverseInstance *string
 
-	MaxInvites int
-	IsAdmin    bool
+	MaxInvites  int
+	IsAdmin     bool
+	ListPrivate bool
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool
@@ -317,10 +319,11 @@ func (db *DB) UpdateUser(
 	ctx context.Context,
 	tx pgx.Tx, id xid.ID,
 	displayName, bio *string,
+	memberTitle *string, listPrivate *bool,
 	links *[]string,
 	avatar *string,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatar == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -349,8 +352,18 @@ func (db *DB) UpdateUser(
 			builder = builder.Set("bio", *bio)
 		}
 	}
+	if memberTitle != nil {
+		if *memberTitle == "" {
+			builder = builder.Set("member_title", nil)
+		} else {
+			builder = builder.Set("member_title", *memberTitle)
+		}
+	}
 	if links != nil {
 		builder = builder.Set("links", *links)
+	}
+	if listPrivate != nil {
+		builder = builder.Set("list_private", *listPrivate)
 	}
 
 	if avatar != nil {
@@ -492,7 +505,7 @@ func (db *DB) CleanUser(ctx context.Context, id xid.ID) error {
 		}
 	}
 
-	members, err := db.UserMembers(ctx, u.ID)
+	members, err := db.UserMembers(ctx, u.ID, true)
 	if err != nil {
 		return errors.Wrap(err, "getting members")
 	}

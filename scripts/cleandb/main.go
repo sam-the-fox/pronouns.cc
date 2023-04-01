@@ -83,7 +83,7 @@ func run(c *cli.Context) error {
 	}
 
 	for _, u := range users {
-		members, err := db.UserMembers(ctx, u.ID)
+		members, err := db.UserMembers(ctx, u.ID, true)
 		if err != nil {
 			fmt.Printf("error getting members for user %v: %v\n", u.ID, err)
 			continue

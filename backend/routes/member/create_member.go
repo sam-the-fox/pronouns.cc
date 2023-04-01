@@ -161,7 +161,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		return errors.Wrap(err, "committing transaction")
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, cmr.Fields))
+	render.JSON(w, r, dbMemberToMember(u, m, cmr.Fields, true))
 	return nil
 }
 

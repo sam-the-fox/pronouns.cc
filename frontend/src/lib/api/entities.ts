@@ -10,6 +10,7 @@ export interface User {
   bio: string | null;
   avatar: string | null;
   links: string[];
+  member_title: string | null;
 
   names: FieldEntry[];
   pronouns: Pronoun[];
@@ -24,6 +25,7 @@ export interface MeUser extends User {
   fediverse: string | null;
   fediverse_username: string | null;
   fediverse_instance: string | null;
+  list_private: boolean;
 }
 
 export interface Field {
@@ -66,6 +68,7 @@ export interface Member extends PartialMember {
   fields: Field[];
 
   user: MemberPartialUser;
+  unlisted?: boolean;
 }
 
 export interface MemberPartialUser {

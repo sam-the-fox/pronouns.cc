@@ -16,6 +16,7 @@ type GetUserResponse struct {
 	Username    string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
 	Bio         *string           `json:"bio"`
+	MemberTitle *string           `json:"member_title"`
 	Avatar      *string           `json:"avatar"`
 	Links       []string          `json:"links"`
 	Names       []db.FieldEntry   `json:"names"`
@@ -27,8 +28,9 @@ type GetUserResponse struct {
 type GetMeResponse struct {
 	GetUserResponse
 
-	MaxInvites int  `json:"max_invites"`
-	IsAdmin    bool `json:"is_admin"`
+	MaxInvites  int  `json:"max_invites"`
+	IsAdmin     bool `json:"is_admin"`
+	ListPrivate bool `json:"list_private"`
 
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
@@ -55,6 +57,7 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUser
 		Username:    u.Username,
 		DisplayName: u.DisplayName,
 		Bio:         u.Bio,
+		MemberTitle: u.MemberTitle,
 		Avatar:      u.Avatar,
 		Links:       db.NotNull(u.Links),
 		Names:       db.NotNull(u.Names),
@@ -87,16 +90,28 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 	if id, err := xid.FromString(userRef); err == nil {
 		u, err := s.DB.User(ctx, id)
 		if err == nil {
+			if u.DeletedAt != nil {
+				return server.APIError{Code: server.ErrUserNotFound}
+			}
+
+			isSelf := false
+			if claims, ok := server.ClaimsFromContext(ctx); ok && claims.UserID == u.ID {
+				isSelf = true
+			}
+
 			fields, err := s.DB.UserFields(ctx, u.ID)
 			if err != nil {
 				log.Errorf("Error getting user fields: %v", err)
 				return err
 			}
 
-			members, err := s.DB.UserMembers(ctx, u.ID)
-			if err != nil {
-				log.Errorf("Error getting user members: %v", err)
-				return err
+			var members []db.Member
+			if !u.ListPrivate || isSelf {
+				members, err = s.DB.UserMembers(ctx, u.ID, isSelf)
+				if err != nil {
+					log.Errorf("Error getting user members: %v", err)
+					return err
+				}
 			}
 
 			render.JSON(w, r, dbUserToResponse(u, fields, members))
@@ -123,16 +138,24 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrUserNotFound}
 	}
 
+	isSelf := false
+	if claims, ok := server.ClaimsFromContext(ctx); ok && claims.UserID == u.ID {
+		isSelf = true
+	}
+
 	fields, err := s.DB.UserFields(ctx, u.ID)
 	if err != nil {
 		log.Errorf("Error getting user fields: %v", err)
 		return err
 	}
 
-	members, err := s.DB.UserMembers(ctx, u.ID)
-	if err != nil {
-		log.Errorf("Error getting user members: %v", err)
-		return err
+	var members []db.Member
+	if !u.ListPrivate || isSelf {
+		members, err = s.DB.UserMembers(ctx, u.ID, isSelf)
+		if err != nil {
+			log.Errorf("Error getting user members: %v", err)
+			return err
+		}
 	}
 
 	render.JSON(w, r, dbUserToResponse(u, fields, members))
@@ -155,7 +178,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	members, err := s.DB.UserMembers(ctx, u.ID)
+	members, err := s.DB.UserMembers(ctx, u.ID, true)
 	if err != nil {
 		log.Errorf("Error getting user members: %v", err)
 		return err
@@ -165,6 +188,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		GetUserResponse:   dbUserToResponse(u, fields, members),
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
+		ListPrivate:       u.ListPrivate,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
 		Fediverse:         u.Fediverse,

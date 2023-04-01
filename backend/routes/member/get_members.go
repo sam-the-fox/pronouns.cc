@@ -52,7 +52,16 @@ func (s *Server) getUserMembers(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrUserNotFound}
 	}
 
-	ms, err := s.DB.UserMembers(ctx, u.ID)
+	isSelf := false
+	if claims, ok := server.ClaimsFromContext(ctx); ok && claims.UserID == u.ID {
+		isSelf = true
+	}
+
+	if u.ListPrivate && !isSelf {
+		return server.APIError{Code: server.ErrMemberListPrivate}
+	}
+
+	ms, err := s.DB.UserMembers(ctx, u.ID, isSelf)
 	if err != nil {
 		return err
 	}
@@ -65,7 +74,7 @@ func (s *Server) getMeMembers(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
-	ms, err := s.DB.UserMembers(ctx, claims.UserID)
+	ms, err := s.DB.UserMembers(ctx, claims.UserID, true)
 	if err != nil {
 		return err
 	}

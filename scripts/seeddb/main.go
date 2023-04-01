@@ -48,7 +48,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	_, err = pg.UpdateUser(ctx, tx, u.ID, ptr("testing"), ptr("This is a bio!"), &[]string{"https://pronouns.cc"}, nil)
+	_, err = pg.UpdateUser(ctx, tx, u.ID, ptr("testing"), ptr("This is a bio!"), nil, ptr(false), &[]string{"https://pronouns.cc"}, nil)
 	if err != nil {
 		fmt.Println("error setting user info:", err)
 		return err
