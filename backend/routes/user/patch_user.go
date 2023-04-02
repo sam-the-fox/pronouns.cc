@@ -248,6 +248,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		GetUserResponse:   dbUserToResponse(u, fields, nil),
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
+		ListPrivate:       u.ListPrivate,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
 		Fediverse:         u.Fediverse,
