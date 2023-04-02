@@ -21,6 +21,12 @@
     ModalBody,
     ModalFooter,
     Popover,
+    TabContent,
+    TabPane,
+    Card,
+    CardBody,
+    CardHeader,
+    Alert,
   } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
@@ -32,6 +38,7 @@
   import type { PageData } from "./$types";
   import { addToast, delToast } from "$lib/toast";
   import { memberNameRegex } from "$lib/api/regex";
+  import renderMarkdown from "$lib/api/markdown";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -51,6 +58,7 @@
   let names: FieldEntry[] = window.structuredClone(data.member.names);
   let pronouns: Pronoun[] = window.structuredClone(data.member.pronouns);
   let fields: Field[] = window.structuredClone(data.member.fields);
+  let unlisted: boolean = data.member.unlisted || false;
 
   let memberNameValid = true;
   $: memberNameValid = memberNameRegex.test(name);
@@ -64,10 +72,22 @@
 
   let modified = false;
 
-  $: modified = isModified(bio, name, display_name, links, names, pronouns, fields, avatar);
+  $: modified = isModified(
+    data.member,
+    bio,
+    name,
+    display_name,
+    links,
+    names,
+    pronouns,
+    fields,
+    avatar,
+    unlisted,
+  );
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
   const isModified = (
+    member: Member,
     bio: string,
     name: string,
     display_name: string,
@@ -76,15 +96,17 @@
     pronouns: Pronoun[],
     fields: Field[],
     avatar: string | null,
+    unlisted: boolean,
   ) => {
-    if (name !== data.member.name) return true;
-    if (bio !== data.member.bio) return true;
-    if (display_name !== data.member.display_name) return true;
-    if (!linksEqual(links, data.member.links)) return true;
-    if (!fieldsEqual(fields, data.member.fields)) return true;
-    if (!namesEqual(names, data.member.names)) return true;
-    if (!pronounsEqual(pronouns, data.member.pronouns)) return true;
+    if (name !== member.name) return true;
+    if (bio !== member.bio) return true;
+    if (display_name !== member.display_name) return true;
+    if (!linksEqual(links, member.links)) return true;
+    if (!fieldsEqual(fields, member.fields)) return true;
+    if (!namesEqual(names, member.names)) return true;
+    if (!pronounsEqual(pronouns, member.pronouns)) return true;
     if (avatar !== null) return true;
+    if (unlisted !== member.unlisted) return true;
 
     return false;
   };
@@ -242,6 +264,7 @@
         names,
         pronouns,
         fields,
+        unlisted,
       });
 
       addToast({ header: "Success", body: "Successfully saved changes!" });
@@ -249,7 +272,6 @@
       data.member = resp;
       avatar = null;
       error = null;
-      modified = false;
     } catch (e) {
       error = e as APIError;
     } finally {
@@ -341,75 +363,66 @@
   <ErrorAlert {error} />
 {/if}
 
-<div class="grid">
-  <div class="row m-1">
-    <div class="col-md">
-      <h4>Avatar</h4>
-      <div class="row">
-        <div class="col-md text-center">
-          {#if avatar === ""}
-            <FallbackImage alt="Current avatar" urls={[]} width={200} />
-          {:else if avatar}
-            <img
-              width={200}
-              height={200}
-              src={avatar}
-              alt="New avatar"
-              class="rounded-circle img-fluid"
+<TabContent>
+  <TabPane tabId="avatar" tab="Names and avatar" active>
+    <div class="row mt-3">
+      <div class="col-md">
+        <div class="row">
+          <div class="col-md text-center">
+            {#if avatar === ""}
+              <FallbackImage alt="Current avatar" urls={[]} width={200} />
+            {:else if avatar}
+              <img
+                width={200}
+                height={200}
+                src={avatar}
+                alt="New avatar"
+                class="rounded-circle img-fluid"
+              />
+            {:else}
+              <FallbackImage alt="Current avatar" urls={memberAvatars(data.member)} width={200} />
+            {/if}
+          </div>
+          <div class="col-md">
+            <input
+              class="form-control"
+              id="avatar"
+              type="file"
+              bind:files={avatar_files}
+              accept="image/png, image/jpeg, image/gif, image/webp"
             />
-          {:else}
-            <FallbackImage alt="Current avatar" urls={memberAvatars(data.member)} width={200} />
-          {/if}
-        </div>
-        <div class="col-md mt-2">
-          <input
-            class="form-control"
-            id="avatar"
-            type="file"
-            bind:files={avatar_files}
-            accept="image/png, image/jpeg, image/gif, image/webp"
-          />
-          <p class="text-muted mt-3">
-            <Icon name="info-circle-fill" aria-hidden /> Only PNG, JPEG, GIF, and WebP can be used as
-            avatars. Avatars cannot be larger than 1 MB, and animated avatars will be made static.
-          </p>
-          <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
+            <p class="text-muted mt-3">
+              <Icon name="info-circle-fill" aria-hidden /> Only PNG, JPEG, GIF, and WebP images can be
+              used as avatars. Avatars cannot be larger than 1 MB, and animated avatars will be made
+              static.
+            </p>
+            <p>
+              <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="col-md">
-      <div>
+      <div class="col-md">
         <FormGroup floating label="Name">
           <Input bind:value={name} />
+          <p class="text-muted mt-1">
+            <Icon name="info-circle-fill" aria-hidden />
+            The member name is only used as part of the link to their profile page.
+          </p>
         </FormGroup>
         {#if !memberNameValid}
           <p class="text-danger-emphasis mb-2">That member name is not valid.</p>
         {/if}
-      </div>
-      <div>
         <FormGroup floating label="Display name">
           <Input bind:value={display_name} />
         </FormGroup>
-      </div>
-      <div>
-        <div class="form">
-          <label for="bio"><strong>Bio ({bio.length}/{MAX_DESCRIPTION_LENGTH})</strong></label>
-          <textarea class="form-control" style="height: 200px;" id="bio" bind:value={bio} />
-        </div>
-        <p class="text-muted mt-3">
-          <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
-          <a
-            class="text-reset"
-            href="https://commonmark.org/help/"
-            target="_blank"
-            rel="noopener noreferrer">Markdown</a
-          >.
+        <p class="text-muted mt-1">
+          <Icon name="info-circle-fill" aria-hidden />
+          Your display name is used in page titles and as a header.
         </p>
       </div>
     </div>
-  </div>
-  <div class="row m-1">
-    <div class="col-md">
+    <div>
       <h4>Names</h4>
       {#each names as _, index}
         <EditableName
@@ -425,51 +438,44 @@
         <IconButton type="submit" color="success" icon="plus" tooltip="Add name" />
       </form>
     </div>
-    <div class="col-md">
-      <h4>Links</h4>
-      {#each links as _, index}
-        <div class="input-group m-1">
-          <input type="text" class="form-control" bind:value={links[index]} />
-          <IconButton
-            color="danger"
-            icon="trash3"
-            tooltip="Remove link"
-            click={() => removeLink(index)}
-          />
-        </div>
-      {/each}
-      <form class="input-group m-1" on:submit={addLink}>
-        <input type="text" class="form-control" bind:value={newLink} />
-        <IconButton type="submit" color="success" icon="plus" tooltip="Add link" />
-      </form>
+  </TabPane>
+  <TabPane tabId="bio" tab="Bio">
+    <div class="mt-3">
+      <div class="form">
+        <textarea class="form-control" style="height: 200px;" bind:value={bio} />
+      </div>
+      <p class="text-muted mt-1">
+        Using {bio.length}/{MAX_DESCRIPTION_LENGTH} characters
+      </p>
+      <p class="text-muted my-2">
+        <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
+        <a
+          class="text-reset"
+          href="https://commonmark.org/help/"
+          target="_blank"
+          rel="noopener noreferrer">Markdown</a
+        >.
+      </p>
+      <hr />
+      <Card>
+        <CardHeader>Preview</CardHeader>
+        <CardBody>
+          {@html renderMarkdown(bio)}
+        </CardBody>
+      </Card>
     </div>
-  </div>
-  <div class="row m-1">
-    <div class="col-md">
-      <h4>Pronouns</h4>
-      {#each pronouns as _, index}
-        <EditablePronouns
-          bind:pronoun={pronouns[index]}
-          moveUp={() => movePronoun(index, true)}
-          moveDown={() => movePronoun(index, false)}
-          remove={() => removePronoun(index)}
-        />
-      {/each}
-      <form class="input-group m-1" on:submit={addPronouns}>
-        <input
-          type="text"
-          class="form-control"
-          placeholder="New pronouns"
-          bind:value={newPronouns}
-          required
-        />
-        <IconButton
-          type="submit"
-          color="success"
-          icon="plus"
-          tooltip="Add pronouns"
-          disabled={newPronouns === ""}
-        />
+  </TabPane>
+  <TabPane tabId="pronouns" tab="Pronouns">
+    <div class="mt-3">
+      <div class="col-md">
+        {#each pronouns as _, index}
+          <EditablePronouns
+            bind:pronoun={pronouns[index]}
+            moveUp={() => movePronoun(index, true)}
+            moveDown={() => movePronoun(index, false)}
+            remove={() => removePronoun(index)}
+          />
+        {/each}
         <form class="input-group m-1" on:submit={addPronouns}>
           <input
             type="text"
@@ -491,24 +497,68 @@
             common pronouns, you will have to use all five forms (e.g. "ce/cir/cir/cirs/cirself").
           </Popover>
         </form>
+      </div>
+    </div>
+  </TabPane>
+  <TabPane tabId="fields" tab="Fields">
+    {#if data.user.fields.length === 0}
+      <Alert class="mt-3" color="secondary" fade={false}>
+        Fields are extra categories you can add separate from names and pronouns.<br />
+        For example, you could use them for gender terms, honorifics, or compliments.
+      </Alert>
+    {/if}
+    <div class="grid gap-3">
+      <div class="row row-cols-1 row-cols-md-2">
+        {#each fields as _, index}
+          <EditableField
+            bind:field={fields[index]}
+            deleteField={() => removeField(index)}
+            moveField={(up) => moveField(index, up)}
+          />
+        {/each}
+      </div>
+    </div>
+    <div>
+      <Button on:click={() => (fields = [...fields, { name: "New field", entries: [] }])}>
+        <Icon name="plus" aria-hidden /> Add new field
+      </Button>
+    </div>
+  </TabPane>
+  <TabPane tabId="links" tab="Links">
+    <div class="mt-3">
+      {#each links as _, index}
+        <div class="input-group m-1">
+          <input type="text" class="form-control" bind:value={links[index]} />
+          <IconButton
+            color="danger"
+            icon="trash3"
+            tooltip="Remove link"
+            click={() => removeLink(index)}
+          />
+        </div>
+      {/each}
+      <form class="input-group m-1" on:submit={addLink}>
+        <input type="text" class="form-control" bind:value={newLink} />
+        <IconButton type="submit" color="success" icon="plus" tooltip="Add link" />
       </form>
     </div>
-  </div>
-  <hr />
-  <h4>
-    Fields <Button on:click={() => (fields = [...fields, { name: "New field", entries: [] }])}>
-      Add new field
-    </Button>
-  </h4>
-</div>
-<div class="grid gap-3">
-  <div class="row row-cols-1 row-cols-md-2">
-    {#each fields as _, index}
-      <EditableField
-        bind:field={fields[index]}
-        deleteField={() => removeField(index)}
-        moveField={(up) => moveField(index, up)}
-      />
-    {/each}
-  </div>
-</div>
+  </TabPane>
+  <TabPane tabId="other" tab="Other">
+    <div class="row mt-3">
+      <div class="col-md">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" bind:checked={unlisted} id="unlisted" />
+          <label class="form-check-label" for="unlisted">Hide from member list</label>
+        </div>
+        <p class="text-muted mt-1">
+          <Icon name="info-circle-fill" aria-hidden />
+          This <em>only</em> hides this member from your member list.
+          <strong>
+            This member will still be visible to anyone at
+            <code class="text-nowrap">pronouns.cc/@{data.user.name}/{data.member.name}</code>.
+          </strong>
+        </p>
+      </div>
+    </div>
+  </TabPane>
+</TabContent>

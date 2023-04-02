@@ -61,6 +61,7 @@
   let modified = false;
 
   $: modified = isModified(
+    data.user,
     bio,
     display_name,
     links,
@@ -74,6 +75,7 @@
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
   const isModified = (
+    user: MeUser,
     bio: string,
     display_name: string,
     links: string[],
@@ -84,15 +86,15 @@
     member_title: string,
     list_private: boolean,
   ) => {
-    if (bio !== (data.user.bio || "")) return true;
-    if (display_name !== (data.user.display_name || "")) return true;
-    if (member_title !== (data.user.member_title || "")) return true;
-    if (!linksEqual(links, data.user.links)) return true;
-    if (!fieldsEqual(fields, data.user.fields)) return true;
-    if (!namesEqual(names, data.user.names)) return true;
-    if (!pronounsEqual(pronouns, data.user.pronouns)) return true;
+    if (bio !== (user.bio || "")) return true;
+    if (display_name !== (user.display_name || "")) return true;
+    if (member_title !== (user.member_title || "")) return true;
+    if (!linksEqual(links, user.links)) return true;
+    if (!fieldsEqual(fields, user.fields)) return true;
+    if (!namesEqual(names, user.names)) return true;
+    if (!pronounsEqual(pronouns, user.pronouns)) return true;
     if (avatar !== null) return true;
-    if (list_private !== data.user.list_private) return true;
+    if (list_private !== user.list_private) return true;
 
     return false;
   };
@@ -262,7 +264,6 @@
 
       avatar = null;
       error = null;
-      modified = false;
     } catch (e) {
       error = e as APIError;
     } finally {
