@@ -4,6 +4,7 @@ import {
   type APIError,
   type Invite,
   type MeUser,
+  type Member,
 } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
 import { redirect } from "@sveltejs/kit";
@@ -14,6 +15,7 @@ export const ssr = false;
 export const load = (async ({ parent }) => {
   try {
     const user = await apiFetchClient<MeUser>("/users/@me");
+    const members = await apiFetchClient<Member[]>("/users/@me/members");
     const warnings = await apiFetchClient<Warning[]>("/auth/warnings?all=true");
 
     let invites: Invite[] = [];
@@ -31,6 +33,7 @@ export const load = (async ({ parent }) => {
     return {
       ...data,
       user,
+      members,
       invites,
       invitesEnabled,
       warnings,

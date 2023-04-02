@@ -31,6 +31,9 @@
 
   let unreadWarnings: number;
   $: unreadWarnings = data.warnings.filter((w) => !w.read).length;
+
+  let hasHiddenMembers: boolean;
+  $: hasHiddenMembers = data.user.list_private || data.members.some((m) => m.unlisted);
 </script>
 
 <svelte:head>
@@ -53,6 +56,15 @@
         >
           Authentication
         </ListGroupItem>
+        <!--{#if hasHiddenMembers}-->
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/members"}
+          href="/settings/members"
+        >
+          Hidden members
+        </ListGroupItem>
+        <!--{/if}-->
         {#if data.invitesEnabled}
           <ListGroupItem
             tag="a"

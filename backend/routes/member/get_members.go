@@ -19,9 +19,10 @@ type memberListResponse struct {
 	Links       []string          `json:"links"`
 	Names       []db.FieldEntry   `json:"names"`
 	Pronouns    []db.PronounEntry `json:"pronouns"`
+	Unlisted    bool              `json:"unlisted"`
 }
 
-func membersToMemberList(ms []db.Member) []memberListResponse {
+func membersToMemberList(ms []db.Member, isSelf bool) []memberListResponse {
 	resps := make([]memberListResponse, len(ms))
 	for i := range ms {
 		resps[i] = memberListResponse{
@@ -32,6 +33,10 @@ func membersToMemberList(ms []db.Member) []memberListResponse {
 			Links:    db.NotNull(ms[i].Links),
 			Names:    db.NotNull(ms[i].Names),
 			Pronouns: db.NotNull(ms[i].Pronouns),
+		}
+
+		if isSelf {
+			resps[i].Unlisted = ms[i].Unlisted
 		}
 	}
 
@@ -66,7 +71,7 @@ func (s *Server) getUserMembers(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, membersToMemberList(ms))
+	render.JSON(w, r, membersToMemberList(ms, isSelf))
 	return nil
 }
 
@@ -79,6 +84,6 @@ func (s *Server) getMeMembers(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, membersToMemberList(ms))
+	render.JSON(w, r, membersToMemberList(ms, true))
 	return nil
 }
