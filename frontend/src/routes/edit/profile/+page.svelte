@@ -60,7 +60,17 @@
 
   let modified = false;
 
-  $: modified = isModified(bio, display_name, links, names, pronouns, fields, avatar, member_title, list_private);
+  $: modified = isModified(
+    bio,
+    display_name,
+    links,
+    names,
+    pronouns,
+    fields,
+    avatar,
+    member_title,
+    list_private,
+  );
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
   const isModified = (
@@ -461,30 +471,36 @@
     </div>
   </TabPane>
   <TabPane tabId="other" tab="Other">
-    <div class="mt-3">
-      <FormGroup floating label={'"Members" header text'}>
-        <Input bind:value={member_title} placeholder="Members" />
+    <div class="row mt-3">
+      <div class="col-md">
+        <FormGroup floating label={'"Members" header text'}>
+          <Input bind:value={member_title} placeholder="Members" />
+          <p class="text-muted mt-1">
+            <Icon name="info-circle-fill" aria-hidden />
+            This is the text used for the "Members" heading. If you leave it blank, the default text
+            will be used.
+          </p>
+        </FormGroup>
+      </div>
+      <div class="col-md">
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            bind:checked={list_private}
+            id="listPrivate"
+          />
+          <label class="form-check-label" for="listPrivate">Hide member list</label>
+        </div>
         <p class="text-muted mt-1">
           <Icon name="info-circle-fill" aria-hidden />
-          This is the text used for the "Members" heading. If you leave it blank, the default text will
-          be used.
+          This only hides your member <em>list</em>.
+          <strong>
+            Your members will still be visible to anyone at
+            <code class="text-nowrap">pronouns.cc/@{data.user.name}/[member-name]</code>.
+          </strong>
         </p>
-      </FormGroup>
-
-      <div class="form-check">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          bind:checked={list_private}
-          id="listPrivate"
-        />
-        <label class="form-check-label" for="listPrivate">Hide member list</label>
       </div>
-      <p class="text-muted mt-1">
-        <Icon name="info-circle-fill" aria-hidden />
-        If this is checked, your member list will be hidden from other users.
-        <strong>This will not make any of your members' pages or information private.</strong>
-      </p>
     </div>
   </TabPane>
 </TabContent>
