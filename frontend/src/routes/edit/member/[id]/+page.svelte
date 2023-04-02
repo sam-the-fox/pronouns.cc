@@ -38,7 +38,7 @@
   import type { PageData } from "./$types";
   import { addToast, delToast } from "$lib/toast";
   import { memberNameRegex } from "$lib/api/regex";
-  import renderMarkdown from "$lib/api/markdown";
+  import { charCount, renderMarkdown } from "$lib/utils";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -445,7 +445,7 @@
         <textarea class="form-control" style="height: 200px;" bind:value={bio} />
       </div>
       <p class="text-muted mt-1">
-        Using {bio.length}/{MAX_DESCRIPTION_LENGTH} characters
+        Using {charCount(bio)}/{MAX_DESCRIPTION_LENGTH} characters
       </p>
       <p class="text-muted my-2">
         <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited

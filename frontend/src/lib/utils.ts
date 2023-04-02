@@ -6,6 +6,8 @@ const md = new MarkdownIt({
   breaks: true,
 }).disable(["heading", "link", "table"]);
 
-export default function renderMarkdown(src: string | null) {
+export function renderMarkdown(src: string | null) {
   return src ? sanitize(md.render(src)) : null;
 }
+
+export const charCount = (str: string) => [...str].length;

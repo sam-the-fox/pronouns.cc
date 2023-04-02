@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/common"
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
@@ -109,22 +110,22 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// validate display name/bio
-	if req.Name != nil && len(*req.Name) > db.MaxMemberNameLength {
+	if common.StringLength(req.Name) > db.MaxMemberNameLength {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Name name too long (max %d, current %d)", db.MaxMemberNameLength, len(*req.Name)),
+			Details: fmt.Sprintf("Name name too long (max %d, current %d)", db.MaxMemberNameLength, common.StringLength(req.Name)),
 		}
 	}
-	if req.DisplayName != nil && len(*req.DisplayName) > db.MaxDisplayNameLength {
+	if common.StringLength(req.DisplayName) > db.MaxDisplayNameLength {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Display name too long (max %d, current %d)", db.MaxDisplayNameLength, len(*req.DisplayName)),
+			Details: fmt.Sprintf("Display name too long (max %d, current %d)", db.MaxDisplayNameLength, common.StringLength(req.DisplayName)),
 		}
 	}
-	if req.Bio != nil && len(*req.Bio) > db.MaxUserBioLength {
+	if common.StringLength(req.Bio) > db.MaxUserBioLength {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, len(*req.Bio)),
+			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, common.StringLength(req.Name)),
 		}
 	}
 

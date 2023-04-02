@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/common"
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
@@ -80,6 +81,25 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Member name cannot contain any of the following: @, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
+		}
+	}
+
+	if common.StringLength(&cmr.Name) > db.MaxMemberNameLength {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: fmt.Sprintf("Name name too long (max %d, current %d)", db.MaxMemberNameLength, common.StringLength(&cmr.Name)),
+		}
+	}
+	if common.StringLength(cmr.DisplayName) > db.MaxDisplayNameLength {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: fmt.Sprintf("Display name too long (max %d, current %d)", db.MaxDisplayNameLength, common.StringLength(cmr.DisplayName)),
+		}
+	}
+	if common.StringLength(&cmr.Bio) > db.MaxUserBioLength {
+		return server.APIError{
+			Code:    server.ErrBadRequest,
+			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, common.StringLength(&cmr.Bio)),
 		}
 	}
 

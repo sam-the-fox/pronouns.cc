@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/common"
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
@@ -64,23 +65,22 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// validate display name/bio
-	if req.DisplayName != nil && len(*req.DisplayName) > db.MaxDisplayNameLength {
+	if common.StringLength(req.Username) > db.MaxUsernameLength {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Display name too long (max %d, current %d)", db.MaxDisplayNameLength, len(*req.DisplayName)),
+			Details: fmt.Sprintf("Name name too long (max %d, current %d)", db.MaxUsernameLength, common.StringLength(req.Username)),
 		}
 	}
-	if req.Bio != nil && len(*req.Bio) > db.MaxUserBioLength {
+	if common.StringLength(req.DisplayName) > db.MaxDisplayNameLength {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, len(*req.Bio)),
+			Details: fmt.Sprintf("Display name too long (max %d, current %d)", db.MaxDisplayNameLength, common.StringLength(req.DisplayName)),
 		}
 	}
-	// this is considered a name
-	if req.MemberTitle != nil && len(*req.MemberTitle) > db.MaxDisplayNameLength {
+	if common.StringLength(req.Bio) > db.MaxUserBioLength {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: fmt.Sprintf("Member title too long (max %d, current %d)", db.MaxDisplayNameLength, len(*req.MemberTitle)),
+			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, common.StringLength(req.Bio)),
 		}
 	}
 

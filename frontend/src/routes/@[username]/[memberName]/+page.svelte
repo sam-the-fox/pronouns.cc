@@ -9,7 +9,7 @@
   import { memberAvatars, pronounDisplay, WordStatus } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { userStore } from "$lib/store";
-  import renderMarkdown from "$lib/api/markdown";
+  import { renderMarkdown } from "$lib/utils";
   import ReportButton from "../ReportButton.svelte";
   import ProfileLink from "../ProfileLink.svelte";
   import StatusLine from "$lib/components/StatusLine.svelte";

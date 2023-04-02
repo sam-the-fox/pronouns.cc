@@ -30,7 +30,7 @@
   import { apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { goto } from "$app/navigation";
-  import renderMarkdown from "$lib/api/markdown";
+  import {renderMarkdown} from "$lib/utils"
   import ReportButton from "./ReportButton.svelte";
   import ProfileLink from "./ProfileLink.svelte";
   import { memberNameRegex } from "$lib/api/regex";
