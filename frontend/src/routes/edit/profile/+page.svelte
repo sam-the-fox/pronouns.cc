@@ -35,6 +35,7 @@
   import { addToast, delToast } from "$lib/toast";
   import type { PageData } from "./$types";
   import { charCount, renderMarkdown } from "$lib/utils";
+  import MarkdownHelp from "../MarkdownHelp.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -327,6 +328,7 @@
               static.
             </p>
             <p>
+              <!-- svelte-ignore a11y-invalid-attribute -->
               <a href="" on:click={() => (avatar = "")}>Remove avatar</a>
             </p>
           </div>
@@ -376,13 +378,7 @@
         Using {charCount(bio)}/{MAX_DESCRIPTION_LENGTH} characters
       </p>
       <p class="text-muted my-2">
-        <Icon name="info-circle-fill" aria-hidden /> Your bio supports limited
-        <a
-          class="text-reset"
-          href="https://commonmark.org/help/"
-          target="_blank"
-          rel="noopener noreferrer">Markdown</a
-        >.
+        <MarkdownHelp />
       </p>
       {#if bio}
         <hr />
