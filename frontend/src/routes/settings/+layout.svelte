@@ -56,15 +56,15 @@
         >
           Authentication
         </ListGroupItem>
-        <!--{#if hasHiddenMembers}-->
-        <ListGroupItem
-          tag="a"
-          active={$page.url.pathname === "/settings/members"}
-          href="/settings/members"
-        >
-          Hidden members
-        </ListGroupItem>
-        <!--{/if}-->
+        {#if hasHiddenMembers}
+          <ListGroupItem
+            tag="a"
+            active={$page.url.pathname === "/settings/members"}
+            href="/settings/members"
+          >
+            Hidden members
+          </ListGroupItem>
+        {/if}
         {#if data.invitesEnabled}
           <ListGroupItem
             tag="a"

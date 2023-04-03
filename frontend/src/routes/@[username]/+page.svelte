@@ -12,7 +12,6 @@
     ModalFooter,
   } from "sveltestrap";
   import FieldCard from "$lib/components/FieldCard.svelte";
-  import StatusIcon from "$lib/components/StatusIcon.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
@@ -44,7 +43,7 @@
   let memberPage: number = 0;
   let memberSlice: PartialMember[] = [];
   $: memberSlice = data.members.slice(memberPage * 20, (memberPage + 1) * 20);
-  const totalPages = Math.floor(data.members.length / 20) + 1;
+  const totalPages = Math.ceil(data.members.length / 20);
 
   const prevPage = () => {
     if (memberPage === 0) {

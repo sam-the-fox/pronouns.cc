@@ -457,12 +457,15 @@
         >.
       </p>
       <hr />
-      <Card>
-        <CardHeader>Preview</CardHeader>
-        <CardBody>
-          {@html renderMarkdown(bio)}
-        </CardBody>
-      </Card>
+      {#if bio}
+        <hr />
+        <Card>
+          <CardHeader>Preview</CardHeader>
+          <CardBody>
+            {@html renderMarkdown(bio)}
+          </CardBody>
+        </Card>
+      {/if}
     </div>
   </TabPane>
   <TabPane tabId="pronouns" tab="Pronouns">

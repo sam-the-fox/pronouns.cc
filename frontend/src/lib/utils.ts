@@ -4,7 +4,8 @@ import sanitize from "sanitize-html";
 const md = new MarkdownIt({
   html: false,
   breaks: true,
-}).disable(["heading", "link", "table"]);
+  linkify: true,
+}).disable(["heading", "lheading", "link", "table", "blockquote"]);
 
 export function renderMarkdown(src: string | null) {
   return src ? sanitize(md.render(src)) : null;
