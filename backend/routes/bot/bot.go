@@ -177,7 +177,7 @@ func respond(w http.ResponseWriter, r *http.Request, embeds ...*discordgo.Messag
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: embeds,
-			Flags:  uint64(discordgo.MessageFlagsEphemeral),
+			Flags:  discordgo.MessageFlagsEphemeral,
 		},
 	})
 }

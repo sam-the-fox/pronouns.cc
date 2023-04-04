@@ -6,7 +6,7 @@ import (
 	"time"
 
 	dbpkg "codeberg.org/u1f320/pronouns.cc/backend/db"
-	"github.com/georgysavva/scany/pgxscan"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/joho/godotenv"
 	"github.com/rs/xid"
 	"github.com/urfave/cli/v2"

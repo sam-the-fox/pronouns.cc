@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"emperror.dev/errors"
-	"github.com/georgysavva/scany/pgxscan"
-	"github.com/jackc/pgx/v4"
+	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/oauth2"
 )
 

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
@@ -25,7 +25,7 @@ func run(c *cli.Context) error {
 
 	ctx := c.Context
 
-	pool, err := pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println("error opening database:", err)
 		return err

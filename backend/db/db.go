@@ -9,8 +9,8 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mediocregopher/radix/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -35,7 +35,7 @@ type DB struct {
 }
 
 func New() (*DB, error) {
-	pool, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating postgres client")
 	}
