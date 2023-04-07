@@ -131,7 +131,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	}
 
 	// set names, pronouns, fields
-	err = s.DB.SetMemberNamesPronouns(ctx, tx, m.ID, cmr.Names, cmr.Pronouns)
+	err = s.DB.SetMemberNamesPronouns(ctx, tx, m.ID, db.NotNull(cmr.Names), db.NotNull(cmr.Pronouns))
 	if err != nil {
 		log.Errorf("setting names and pronouns for member %v: %v", m.ID, err)
 		return err
