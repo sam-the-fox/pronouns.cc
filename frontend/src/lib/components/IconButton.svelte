@@ -14,7 +14,16 @@
   let button: HTMLElement;
 </script>
 
-<Tooltip target={button} placement="top">{tooltip}</Tooltip>
-<Button {type} {color} {active} {disabled} {href} on:click={click} bind:inner={button}>
+<Tooltip target={button} aria-hidden placement="top">{tooltip}</Tooltip>
+<Button
+  {type}
+  {color}
+  {active}
+  {disabled}
+  {href}
+  aria-label={tooltip}
+  on:click={click}
+  bind:inner={button}
+>
   <Icon name={icon} />
 </Button>
