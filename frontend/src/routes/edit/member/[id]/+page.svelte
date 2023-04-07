@@ -499,7 +499,7 @@
     </div>
   </TabPane>
   <TabPane tabId="fields" tab="Fields">
-    {#if data.user.fields.length === 0}
+    {#if data.member.fields.length === 0}
       <Alert class="mt-3" color="secondary" fade={false}>
         Fields are extra categories you can add separate from names and pronouns.<br />
         For example, you could use them for gender terms, honorifics, or compliments.
