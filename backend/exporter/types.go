@@ -17,25 +17,35 @@ type userExport struct {
 	Pronouns []db.PronounEntry `json:"pronouns"`
 	Fields   []db.Field        `json:"fields"`
 
+	Fediverse         *string `json:"fediverse"`
+	FediverseUsername *string `json:"fediverse_username"`
+	FediverseInstance *string `json:"fediverse_instance"`
+
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
 
 	MaxInvites int `json:"max_invites"`
+
+	Warnings []db.Warning `json:"warnings"`
 }
 
-func dbUserToExport(u db.User, fields []db.Field) userExport {
+func dbUserToExport(u db.User, fields []db.Field, warnings []db.Warning) userExport {
 	return userExport{
-		ID:              u.ID,
-		Username:        u.Username,
-		DisplayName:     u.DisplayName,
-		Bio:             u.Bio,
-		Links:           u.Links,
-		Names:           u.Names,
-		Pronouns:        u.Pronouns,
-		Fields:          fields,
-		Discord:         u.Discord,
-		DiscordUsername: u.DiscordUsername,
-		MaxInvites:      u.MaxInvites,
+		ID:                u.ID,
+		Username:          u.Username,
+		DisplayName:       u.DisplayName,
+		Bio:               u.Bio,
+		Links:             db.NotNull(u.Links),
+		Names:             db.NotNull(u.Names),
+		Pronouns:          db.NotNull(u.Pronouns),
+		Fields:            db.NotNull(fields),
+		Discord:           u.Discord,
+		DiscordUsername:   u.DiscordUsername,
+		MaxInvites:        u.MaxInvites,
+		Fediverse:         u.Fediverse,
+		FediverseUsername: u.FediverseUsername,
+		FediverseInstance: u.FediverseInstance,
+		Warnings:          db.NotNull(warnings),
 	}
 }
 
@@ -48,6 +58,7 @@ type memberExport struct {
 	Names       []db.FieldEntry   `json:"names"`
 	Pronouns    []db.PronounEntry `json:"pronouns"`
 	Fields      []db.Field        `json:"fields"`
+	Unlisted    bool              `json:"unlisted"`
 }
 
 func dbMemberToExport(m db.Member, fields []db.Field) memberExport {
@@ -56,9 +67,10 @@ func dbMemberToExport(m db.Member, fields []db.Field) memberExport {
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
 		Bio:         m.Bio,
-		Links:       m.Links,
-		Names:       m.Names,
-		Pronouns:    m.Pronouns,
-		Fields:      fields,
+		Links:       db.NotNull(m.Links),
+		Names:       db.NotNull(m.Names),
+		Pronouns:    db.NotNull(m.Pronouns),
+		Fields:      db.NotNull(fields),
+		Unlisted:    m.Unlisted,
 	}
 }

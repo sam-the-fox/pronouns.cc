@@ -118,6 +118,11 @@ func (s *server) doExport(u db.User) {
 
 	log.Debugf("[%v] starting export of user", u.ID)
 
+	jsonBuffer := new(bytes.Buffer)
+	encoder := json.NewEncoder(jsonBuffer)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "  ")
+
 	outBuffer := new(bytes.Buffer)
 	zw := zip.NewWriter(outBuffer)
 	defer zw.Close()
@@ -136,19 +141,28 @@ func (s *server) doExport(u db.User) {
 		return
 	}
 
+	log.Debugf("[%v] getting user warnings", u.ID)
+
+	warnings, err := s.DB.Warnings(ctx, u.ID, false)
+	if err != nil {
+		log.Errorf("[%v] getting warnings: %v", u.ID, err)
+		return
+	}
+
 	log.Debugf("[%v] writing user json", u.ID)
 
-	ub, err := json.Marshal(dbUserToExport(u, fields))
+	err = encoder.Encode(dbUserToExport(u, fields, warnings))
 	if err != nil {
 		log.Errorf("[%v] marshaling user: %v", u.ID, err)
 		return
 	}
 
-	_, err = w.Write(ub)
+	_, err = io.Copy(w, jsonBuffer)
 	if err != nil {
 		log.Errorf("[%v] writing user: %v", u.ID, err)
 		return
 	}
+	jsonBuffer.Reset()
 
 	if u.Avatar != nil {
 		log.Debugf("[%v] getting user avatar", u.ID)
@@ -196,17 +210,18 @@ func (s *server) doExport(u db.User) {
 			return
 		}
 
-		mb, err := json.Marshal(dbMemberToExport(m, fields))
+		err = encoder.Encode(dbMemberToExport(m, fields))
 		if err != nil {
 			log.Errorf("[%v] marshaling member %v: %v", u.ID, m.ID, err)
 			return
 		}
 
-		_, err = w.Write(mb)
+		_, err = io.Copy(w, jsonBuffer)
 		if err != nil {
 			log.Errorf("[%v] writing member %v json: %v", u.ID, m.ID, err)
 			return
 		}
+		jsonBuffer.Reset()
 
 		if m.Avatar != nil {
 			log.Debugf("[%v] getting member %v avatar", u.ID, m.ID)
