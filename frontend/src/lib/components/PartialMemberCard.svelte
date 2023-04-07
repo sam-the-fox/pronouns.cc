@@ -35,7 +35,7 @@
     <FallbackImage urls={memberAvatars(member)} width={200} alt="Avatar for {member.name}" />
   </a>
   <p class="m-2">
-    <a class="text-reset fs-5" href="/@{user.name}/{member.name}">
+    <a class="text-reset fs-5 text-break" href="/@{user.name}/{member.name}">
       {member.display_name ?? member.name}
     </a>
     {#if pronouns}
