@@ -253,6 +253,7 @@
   />
   <meta property="og:url" content="{PUBLIC_BASE_URL}/@{data.name}" />
   <meta name="description" content="@{data.name} on pronouns.cc" />
+  <meta name="robots" content="noindex" />
 
   {#if data.avatar}
     <meta property="og:image" content={userAvatars(data)[0]} />
