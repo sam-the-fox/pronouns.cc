@@ -11,6 +11,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/server/rate"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/go-chi/render"
 )
@@ -48,6 +49,15 @@ func New() (*Server, error) {
 		s.Router.Use(middleware.Logger)
 	}
 	s.Router.Use(middleware.Recoverer)
+	// add CORS
+	s.Router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"HEAD", "GET"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
+
 	// enable authentication for all routes (but don't require it)
 	s.Router.Use(s.maybeAuth)
 
