@@ -23,6 +23,7 @@ specifiers:
   markdown-it: ^13.0.1
   prettier: ^2.8.7
   prettier-plugin-svelte: ^2.10.0
+  pretty-bytes: ^6.1.0
   sanitize-html: ^2.10.0
   svelte: ^3.58.0
   svelte-check: ^3.1.4
@@ -41,6 +42,7 @@ dependencies:
   jose: 4.13.1
   luxon: 3.3.0
   markdown-it: 13.0.1
+  pretty-bytes: 6.1.0
   sanitize-html: 2.10.0
 
 devDependencies:
@@ -1801,6 +1803,11 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
+
+  /pretty-bytes/6.1.0:
+    resolution: {integrity: sha512-Rk753HI8f4uivXi4ZCIYdhmG1V+WKzvRMg/X+M42a6t7D07RcmopXJMDNk6N++7Bl75URRGsb40ruvg7Hcp2wQ==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+    dev: false
 
   /punycode/2.3.0:
     resolution: {integrity: sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==}

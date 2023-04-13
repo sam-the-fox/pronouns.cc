@@ -36,6 +36,7 @@
   import type { PageData } from "./$types";
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "../MarkdownHelp.svelte";
+  import prettyBytes from "pretty-bytes";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -137,7 +138,15 @@
 
   const getAvatar = async (list: FileList | null) => {
     if (!list || list.length === 0) return null;
-    if (list[0].size > MAX_AVATAR_BYTES) return null;
+    if (list[0].size > MAX_AVATAR_BYTES) {
+      addToast({
+        header: "Avatar too large",
+        body: `This avatar is too large, please resize it (maximum is ${prettyBytes(
+          MAX_AVATAR_BYTES,
+        )}, the file you tried to upload is ${prettyBytes(list[0].size)})`,
+      });
+      return null;
+    }
 
     const buffer = await list[0].arrayBuffer();
     const base64 = encode(buffer);
