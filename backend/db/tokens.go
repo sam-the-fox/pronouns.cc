@@ -61,7 +61,7 @@ func (db *DB) Tokens(ctx context.Context, userID xid.ID) (ts []Token, err error)
 }
 
 // 3 months, might be customizable later
-const ExpiryTime = 3 * 30 * 24 * time.Hour
+const TokenExpiryTime = 3 * 30 * 24 * time.Hour
 
 // SaveToken saves a token to the database.
 func (db *DB) SaveToken(ctx context.Context, userID xid.ID, tokenID xid.ID, apiOnly, readOnly bool) (t Token, err error) {
@@ -69,7 +69,7 @@ func (db *DB) SaveToken(ctx context.Context, userID xid.ID, tokenID xid.ID, apiO
 		SetMap(map[string]any{
 			"user_id":   userID,
 			"token_id":  tokenID,
-			"expires":   time.Now().Add(ExpiryTime),
+			"expires":   time.Now().Add(TokenExpiryTime),
 			"api_only":  apiOnly,
 			"read_only": readOnly,
 		}).

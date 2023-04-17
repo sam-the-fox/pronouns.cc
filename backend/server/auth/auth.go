@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/golang-jwt/jwt/v4"
@@ -46,14 +47,11 @@ func New() *Verifier {
 	return &Verifier{key: key}
 }
 
-// ExpireDays is after how many days the token will expire.
-const ExpireDays = 30
-
 // CreateToken creates a token for the given user ID.
-// It expires after 30 days.
+// It expires after three months.
 func (v *Verifier) CreateToken(userID, tokenID xid.ID, isAdmin bool, isAPIToken bool, isWriteToken bool) (token string, err error) {
 	now := time.Now()
-	expires := now.Add(ExpireDays * 24 * time.Hour)
+	expires := now.Add(db.TokenExpiryTime)
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		UserID:      userID,

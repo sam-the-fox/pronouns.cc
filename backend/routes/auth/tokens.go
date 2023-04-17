@@ -96,9 +96,14 @@ func (s *Server) createToken(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting me user")
+	}
+
 	readOnly := r.FormValue("read_only") == "true"
 	tokenID := xid.New()
-	tokenStr, err := s.Auth.CreateToken(claims.UserID, tokenID, false, true, !readOnly)
+	tokenStr, err := s.Auth.CreateToken(claims.UserID, tokenID, u.IsAdmin, true, !readOnly)
 	if err != nil {
 		return errors.Wrap(err, "creating token")
 	}
