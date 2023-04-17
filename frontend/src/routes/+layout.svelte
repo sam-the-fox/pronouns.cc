@@ -39,16 +39,21 @@
 
   <footer class="container">
     <hr />
-    <p>
-      pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
-      {#if versionMismatch}
-        (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}"
-          >{data.git_commit}</a
-        >)
-      {/if} &middot;
-      <a href="/page/about">About & contact</a> &middot;
-      <a href="/page/terms">Terms of service</a> &middot;
-      <a href="/page/privacy">Privacy policy</a>
-    </p>
+    <div class="d-flex flex-column flex-md-row">
+      <p>
+        pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
+        {#if versionMismatch}
+          (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}"
+            >{data.git_commit}</a
+          >)
+        {/if} &middot;
+        <a href="/page/about">About & contact</a> &middot;
+        <a href="/page/terms">Terms of service</a> &middot;
+        <a href="/page/privacy">Privacy policy</a>
+      </p>
+      <p class="ms-auto">
+        Users: <strong>{data.users}</strong> &middot; Members: <strong>{data.members}</strong>
+      </p>
+    </div>
   </footer>
 </div>
