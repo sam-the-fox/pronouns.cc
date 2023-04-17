@@ -20,8 +20,8 @@
           return pronouns.display_text;
         } else {
           const split = pronouns.pronouns.split("/");
-          if (split.length < 2) return split.join("/");
-          else return split.slice(0, 2).join("/");
+          if (split.length === 5) return split.splice(0, 2).join("/");
+          return pronouns.pronouns;
         }
       })
       .join(", ");
