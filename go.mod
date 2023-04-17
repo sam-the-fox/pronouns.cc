@@ -10,6 +10,7 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httprate v0.7.1
 	github.com/go-chi/render v1.0.2
 	github.com/gobwas/glob v0.2.3
@@ -18,6 +19,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mediocregopher/radix/v4 v4.1.2
 	github.com/minio/minio-go/v7 v7.0.50
+	github.com/prometheus/client_golang v1.15.0
 	github.com/rs/xid v1.4.0
 	github.com/rubenv/sql-migrate v1.4.0
 	github.com/urfave/cli/v2 v2.25.1
@@ -27,10 +29,10 @@ require (
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -43,11 +45,15 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
+	github.com/prometheus/common v0.42.0 // indirect
+	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect

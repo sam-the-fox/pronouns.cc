@@ -107,11 +107,16 @@ func New() (*Server, error) {
 	rateLimiter.Scope("*", "/auth/invites", 10)
 	rateLimiter.Scope("POST", "/auth/discord/*", 10)
 
-	// rate limit handling
-	// - 120 req/minute (2/s)
-	// - keyed by Authorization header if valid token is provided, otherwise by IP
-	// - returns rate limit reset info in error
 	s.Router.Use(rateLimiter.Handler())
+
+	// increment the total requests counter whenever a request is made
+	s.Router.Use(func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			s.DB.TotalRequests.Inc()
+			next.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(fn)
+	})
 
 	// return an API error for not found + method not allowed
 	s.Router.NotFound(func(w http.ResponseWriter, r *http.Request) {

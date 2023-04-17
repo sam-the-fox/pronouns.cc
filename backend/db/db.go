@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -14,6 +15,7 @@ import (
 	"github.com/mediocregopher/radix/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
@@ -32,19 +34,24 @@ type DB struct {
 	minio       *minio.Client
 	minioBucket string
 	baseURL     *url.URL
+
+	TotalRequests prometheus.Counter
 }
 
 func New() (*DB, error) {
+	log.Debug("creating postgres client")
 	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating postgres client")
 	}
 
+	log.Debug("creating redis client")
 	redis, err := (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating redis client")
 	}
 
+	log.Debug("creating minio client")
 	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
 		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY_ID"), os.Getenv("MINIO_ACCESS_KEY_SECRET"), ""),
 		Secure: os.Getenv("MINIO_SSL") == "true",
@@ -65,6 +72,12 @@ func New() (*DB, error) {
 		minio:       minioClient,
 		minioBucket: os.Getenv("MINIO_BUCKET"),
 		baseURL:     baseURL,
+	}
+
+	log.Debug("initializing metrics")
+	err = db.initMetrics()
+	if err != nil {
+		return nil, errors.Wrap(err, "initializing metrics")
 	}
 
 	return db, nil
