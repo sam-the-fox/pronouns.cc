@@ -32,12 +32,12 @@ func (s *Server) meta(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	var numUsers, numMembers int64
-	err := s.DB.QueryRow(ctx, "SELECT COUNT(*) FROM users").Scan(&numUsers)
+	err := s.DB.QueryRow(ctx, "SELECT COUNT(*) FROM users WHERE deleted_at IS NULL").Scan(&numUsers)
 	if err != nil {
 		return errors.Wrap(err, "querying user count")
 	}
 
-	err = s.DB.QueryRow(ctx, "SELECT COUNT(*) FROM members").Scan(&numMembers)
+	err = s.DB.QueryRow(ctx, "SELECT COUNT(*) FROM members WHERE unlisted = false AND user_id = ANY(SELECT id FROM users WHERE deleted_at IS NULL)").Scan(&numMembers)
 	if err != nil {
 		return errors.Wrap(err, "querying user count")
 	}
