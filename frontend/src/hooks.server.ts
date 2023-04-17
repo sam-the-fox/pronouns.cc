@@ -7,11 +7,11 @@ Sentry.init({ dsn: PRIVATE_SENTRY_DSN });
 export const handleError = (({ error, event }) => {
   console.log(error);
   console.log(event);
-  const id = Sentry.captureException(error);
+  // const id = Sentry.captureException(error);
 
   return {
     message: "Internal server error",
     code: 500,
-    id,
+    //id,
   };
 }) satisfies HandleServerError;
