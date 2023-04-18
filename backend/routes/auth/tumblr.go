@@ -156,7 +156,7 @@ func (s *Server) tumblrCallback(w http.ResponseWriter, r *http.Request) error {
 			return nil
 		}
 
-		err = u.UpdateFromTumblr(ctx, s.DB, tumblrName, tumblrID)
+		err = u.UpdateFromTumblr(ctx, s.DB, tumblrID, tumblrName)
 		if err != nil {
 			log.Errorf("updating user %v with Tumblr info: %v", u.ID, err)
 		}
