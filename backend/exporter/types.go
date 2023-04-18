@@ -27,6 +27,9 @@ type userExport struct {
 	Tumblr         *string `json:"tumblr"`
 	TumblrUsername *string `json:"tumblr_username"`
 
+	Google         *string `json:"google"`
+	GoogleUsername *string `json:"google_username"`
+
 	MaxInvites int `json:"max_invites"`
 
 	Warnings []db.Warning `json:"warnings"`
@@ -46,6 +49,8 @@ func dbUserToExport(u db.User, fields []db.Field, warnings []db.Warning) userExp
 		DiscordUsername:   u.DiscordUsername,
 		Tumblr:            u.Tumblr,
 		TumblrUsername:    u.TumblrUsername,
+		Google:            u.Google,
+		GoogleUsername:    u.GoogleUsername,
 		MaxInvites:        u.MaxInvites,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,

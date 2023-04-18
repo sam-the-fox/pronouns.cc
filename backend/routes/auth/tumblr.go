@@ -68,7 +68,7 @@ type tumblrCallbackResponse struct {
 func (s *Server) tumblrCallback(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	decoded, err := Decode[discordOauthCallbackRequest](r)
+	decoded, err := Decode[oauthCallbackRequest](r)
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest}
 	}
@@ -296,7 +296,7 @@ func (s *Server) tumblrUnlink(w http.ResponseWriter, r *http.Request) error {
 func (s *Server) tumblrSignup(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	req, err := Decode[discordSignupRequest](r)
+	req, err := Decode[signupRequest](r)
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest}
 	}

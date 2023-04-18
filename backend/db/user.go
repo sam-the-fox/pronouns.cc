@@ -39,6 +39,9 @@ type User struct {
 	Tumblr         *string
 	TumblrUsername *string
 
+	Google         *string
+	GoogleUsername *string
+
 	MaxInvites  int
 	IsAdmin     bool
 	ListPrivate bool
@@ -56,6 +59,9 @@ func (u User) NumProviders() (numProviders int) {
 		numProviders++
 	}
 	if u.Tumblr != nil {
+		numProviders++
+	}
+	if u.Google != nil {
 		numProviders++
 	}
 	return numProviders
@@ -303,6 +309,67 @@ func (u *User) UnlinkTumblr(ctx context.Context, ex Execer) error {
 
 	u.Tumblr = nil
 	u.TumblrUsername = nil
+
+	return nil
+}
+
+// GoogleUser fetches a user by Google user ID.
+func (db *DB) GoogleUser(ctx context.Context, googleID string) (u User, err error) {
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("google = ?", googleID).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "executing query")
+	}
+	return u, nil
+}
+
+func (u *User) UpdateFromGoogle(ctx context.Context, ex Execer, googleID, googleUsername string) error {
+	sql, args, err := sq.Update("users").
+		Set("google", googleID).
+		Set("google_username", googleUsername).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Google = &googleID
+	u.GoogleUsername = &googleUsername
+
+	return nil
+}
+
+func (u *User) UnlinkGoogle(ctx context.Context, ex Execer) error {
+	sql, args, err := sq.Update("users").
+		Set("google", nil).
+		Set("google_username", nil).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Google = nil
+	u.GoogleUsername = nil
 
 	return nil
 }

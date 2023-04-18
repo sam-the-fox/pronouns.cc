@@ -17,7 +17,6 @@
     ModalFooter,
   } from "sveltestrap";
   import type { PageData } from "./$types";
-  import fediverse from "./fediverse.svg";
 
   export let data: PageData;
 
@@ -63,6 +62,7 @@
         <ListGroupItem tag="button" on:click={toggleModal}>Log in with the Fediverse</ListGroupItem>
         <ListGroupItem tag="a" href={data.discord}>Log in with Discord</ListGroupItem>
         <ListGroupItem tag="a" href={data.tumblr}>Log in with Tumblr</ListGroupItem>
+        <ListGroupItem tag="a" href={data.google}>Log in with Google</ListGroupItem>
       </ListGroup>
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
         <ModalBody>

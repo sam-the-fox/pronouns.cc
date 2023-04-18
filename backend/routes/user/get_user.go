@@ -38,6 +38,9 @@ type GetMeResponse struct {
 	Tumblr         *string `json:"tumblr"`
 	TumblrUsername *string `json:"tumblr_username"`
 
+	Google         *string `json:"google"`
+	GoogleUsername *string `json:"google_username"`
+
 	Fediverse         *string `json:"fediverse"`
 	FediverseUsername *string `json:"fediverse_username"`
 	FediverseInstance *string `json:"fediverse_instance"`
@@ -196,6 +199,8 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		DiscordUsername:   u.DiscordUsername,
 		Tumblr:            u.Tumblr,
 		TumblrUsername:    u.TumblrUsername,
+		Google:            u.Google,
+		GoogleUsername:    u.GoogleUsername,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,
 		FediverseInstance: u.FediverseInstance,

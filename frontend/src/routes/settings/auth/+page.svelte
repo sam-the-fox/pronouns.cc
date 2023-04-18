@@ -21,7 +21,7 @@
   let canUnlink = false;
 
   $: canUnlink =
-    [data.user.discord, data.user.fediverse, data.user.tumblr]
+    [data.user.discord, data.user.fediverse, data.user.tumblr, data.user.google]
       .map<number>((entry) => (entry === null ? 0 : 1))
       .reduce((prev, current) => prev + current) >= 2;
 
@@ -40,6 +40,9 @@
 
   let tumblrUnlinkModalOpen = false;
   let toggleTumblrUnlinkModal = () => (tumblrUnlinkModalOpen = !tumblrUnlinkModalOpen);
+
+  let googleUnlinkModalOpen = false;
+  let toggleGoogleUnlinkModal = () => (googleUnlinkModalOpen = !googleUnlinkModalOpen);
 
   const fediLogin = async () => {
     fediDisabled = true;
@@ -84,6 +87,17 @@
       data.user = resp;
       addToast({ header: "Unlinked account", body: "Successfully unlinked Tumblr account!" });
       toggleTumblrUnlinkModal();
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const googleUnlink = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/auth/google/remove-provider", "POST");
+      data.user = resp;
+      addToast({ header: "Unlinked account", body: "Successfully unlinked Google account!" });
+      toggleGoogleUnlinkModal();
     } catch (e) {
       error = e as APIError;
     }
@@ -158,6 +172,28 @@
             >
           {:else}
             <Button color="secondary" href={data.urls.tumblr}>Link account</Button>
+          {/if}
+        </CardBody>
+      </Card>
+    </div>
+    <div class="my-2">
+      <Card>
+        <CardBody>
+          <CardTitle>Google</CardTitle>
+          <CardText>
+            {#if data.user.google}
+              Your currently linked Google account is <b>{data.user.google_username}</b>
+              (<code>{data.user.google}</code>).
+            {:else}
+              You do not have a linked Google account.
+            {/if}
+          </CardText>
+          {#if data.user.google}
+            <Button color="danger" disabled={!canUnlink} on:click={toggleGoogleUnlinkModal}
+              >Unlink account</Button
+            >
+          {:else}
+            <Button color="secondary" href={data.urls.google}>Link account</Button>
           {/if}
         </CardBody>
       </Card>
@@ -241,6 +277,28 @@
       <ModalFooter>
         <Button color="danger" on:click={tumblrUnlink}>Unlink account</Button>
         <Button color="secondary" on:click={toggleTumblrUnlinkModal}>Cancel</Button>
+      </ModalFooter>
+    </Modal>
+
+    <Modal
+      header="Unlink Google account"
+      isOpen={googleUnlinkModalOpen}
+      toggle={toggleGoogleUnlinkModal}
+    >
+      <ModalBody>
+        <p>
+          Are you sure you want to unlink your Google account? You will no longer be able to use it
+          to log in.
+        </p>
+        {#if error}
+          <div class="mt-2">
+            <ErrorAlert {error} />
+          </div>
+        {/if}
+      </ModalBody>
+      <ModalFooter>
+        <Button color="danger" on:click={googleUnlink}>Unlink account</Button>
+        <Button color="secondary" on:click={toggleGoogleUnlinkModal}>Cancel</Button>
       </ModalFooter>
     </Modal>
   </div>

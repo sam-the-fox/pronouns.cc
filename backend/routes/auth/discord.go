@@ -27,7 +27,7 @@ var discordOAuthConfig = oauth2.Config{
 	Scopes: []string{"identify"},
 }
 
-type discordOauthCallbackRequest struct {
+type oauthCallbackRequest struct {
 	CallbackDomain string `json:"callback_domain"`
 	Code           string `json:"code"`
 	State          string `json:"state"`
@@ -52,7 +52,7 @@ type discordCallbackResponse struct {
 func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	decoded, err := Decode[discordOauthCallbackRequest](r)
+	decoded, err := Decode[oauthCallbackRequest](r)
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest}
 	}
@@ -245,7 +245,7 @@ func (s *Server) discordUnlink(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-type discordSignupRequest struct {
+type signupRequest struct {
 	Ticket     string `json:"ticket"`
 	Username   string `json:"username"`
 	InviteCode string `json:"invite_code"`
@@ -259,7 +259,7 @@ type signupResponse struct {
 func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	req, err := Decode[discordSignupRequest](r)
+	req, err := Decode[signupRequest](r)
 	if err != nil {
 		return server.APIError{Code: server.ErrBadRequest}
 	}

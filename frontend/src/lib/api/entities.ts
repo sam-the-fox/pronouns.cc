@@ -24,6 +24,8 @@ export interface MeUser extends User {
   discord_username: string | null;
   tumblr: string | null;
   tumblr_username: string | null;
+  google: string | null;
+  google_username: string | null;
   fediverse: string | null;
   fediverse_username: string | null;
   fediverse_instance: string | null;
