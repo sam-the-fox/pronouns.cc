@@ -221,5 +221,27 @@
         <Button color="secondary" on:click={toggleDiscordUnlinkModal}>Cancel</Button>
       </ModalFooter>
     </Modal>
+
+    <Modal
+      header="Unlink Tumblr account"
+      isOpen={tumblrUnlinkModalOpen}
+      toggle={toggleTumblrUnlinkModal}
+    >
+      <ModalBody>
+        <p>
+          Are you sure you want to unlink your Tumblr account? You will no longer be able to use it
+          to log in.
+        </p>
+        {#if error}
+          <div class="mt-2">
+            <ErrorAlert {error} />
+          </div>
+        {/if}
+      </ModalBody>
+      <ModalFooter>
+        <Button color="danger" on:click={tumblrUnlink}>Unlink account</Button>
+        <Button color="secondary" on:click={toggleTumblrUnlinkModal}>Cancel</Button>
+      </ModalFooter>
+    </Modal>
   </div>
 </div>
