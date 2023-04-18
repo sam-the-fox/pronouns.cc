@@ -25,6 +25,11 @@ func (s *Server) getFediverseURL(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrBadRequest, Details: "Instance URL is empty"}
 	}
 
+	// Too many people tried using @username@fediverse.example despite the warning
+	if strings.Contains(instance, "@") {
+		return server.APIError{Code: server.ErrBadRequest, Details: "Instance URL should only be the base URL, without username"}
+	}
+
 	app, err := s.DB.FediverseApp(ctx, instance)
 	if err != nil {
 		return s.noAppFediverseURL(ctx, w, r, instance)
