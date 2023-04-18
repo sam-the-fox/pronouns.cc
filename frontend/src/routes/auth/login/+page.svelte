@@ -60,12 +60,9 @@
   <div class="row">
     <div class="col-md-4 mb-1">
       <ListGroup>
-        <ListGroupItem tag="button" on:click={toggleModal}>
-          <img height="16px" src={fediverse} alt="Fediverse logo" aria-hidden /> Log in with the Fediverse
-        </ListGroupItem>
-        <ListGroupItem tag="a" href={data.discord}>
-          <Icon name="discord" /> Log in with Discord
-        </ListGroupItem>
+        <ListGroupItem tag="button" on:click={toggleModal}>Log in with the Fediverse</ListGroupItem>
+        <ListGroupItem tag="a" href={data.discord}>Log in with Discord</ListGroupItem>
+        <ListGroupItem tag="a" href={data.tumblr}>Log in with Tumblr</ListGroupItem>
       </ListGroup>
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
         <ModalBody>

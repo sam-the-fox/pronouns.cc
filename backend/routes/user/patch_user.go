@@ -251,6 +251,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		ListPrivate:       u.ListPrivate,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
+		Tumblr:            u.Tumblr,
+		TumblrUsername:    u.TumblrUsername,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,
 		FediverseInstance: fediInstance,

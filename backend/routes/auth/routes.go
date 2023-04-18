@@ -34,6 +34,9 @@ type userResponse struct {
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
 
+	Tumblr         *string `json:"tumblr"`
+	TumblrUsername *string `json:"tumblr_username"`
+
 	Fediverse         *string `json:"fediverse"`
 	FediverseUsername *string `json:"fediverse_username"`
 	FediverseInstance *string `json:"fediverse_instance"`
@@ -52,6 +55,8 @@ func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 		Fields:            db.NotNull(fields),
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
+		Tumblr:            u.Tumblr,
+		TumblrUsername:    u.TumblrUsername,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,
 		FediverseInstance: u.FediverseInstance,
@@ -82,6 +87,13 @@ func Mount(srv *server.Server, r chi.Router) {
 			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.discordLink))
 			// removes discord link from existing account
 			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.discordUnlink))
+		})
+
+		r.Route("/tumblr", func(r chi.Router) {
+			r.Post("/callback", server.WrapHandler(s.tumblrCallback))
+			r.Post("/signup", server.WrapHandler(s.tumblrSignup))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.tumblrLink))
+			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.tumblrUnlink))
 		})
 
 		r.Route("/mastodon", func(r chi.Router) {
@@ -121,6 +133,7 @@ type oauthURLsRequest struct {
 
 type oauthURLsResponse struct {
 	Discord string `json:"discord"`
+	Tumblr  string `json:"tumblr"`
 }
 
 func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
@@ -140,9 +153,13 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 	// copy Discord config and set redirect url
 	discordCfg := discordOAuthConfig
 	discordCfg.RedirectURL = req.CallbackDomain + "/auth/login/discord"
+	// copy tumblr config
+	tumblrCfg := tumblrOAuthConfig
+	tumblrCfg.RedirectURL = req.CallbackDomain + "/auth/login/tumblr"
 
 	render.JSON(w, r, oauthURLsResponse{
 		Discord: discordCfg.AuthCodeURL(state) + "&prompt=none",
+		Tumblr:  tumblrCfg.AuthCodeURL(state),
 	})
 	return nil
 }

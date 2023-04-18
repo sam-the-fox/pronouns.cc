@@ -21,7 +21,7 @@
   let canUnlink = false;
 
   $: canUnlink =
-    [data.user.discord, data.user.fediverse]
+    [data.user.discord, data.user.fediverse, data.user.tumblr]
       .map<number>((entry) => (entry === null ? 0 : 1))
       .reduce((prev, current) => prev + current) >= 2;
 
@@ -37,6 +37,9 @@
 
   let discordUnlinkModalOpen = false;
   let toggleDiscordUnlinkModal = () => (discordUnlinkModalOpen = !discordUnlinkModalOpen);
+
+  let tumblrUnlinkModalOpen = false;
+  let toggleTumblrUnlinkModal = () => (tumblrUnlinkModalOpen = !tumblrUnlinkModalOpen);
 
   const fediLogin = async () => {
     fediDisabled = true;
@@ -70,6 +73,17 @@
       data.user = resp;
       addToast({ header: "Unlinked account", body: "Successfully unlinked Discord account!" });
       toggleDiscordUnlinkModal();
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const tumblrUnlink = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/auth/tumblr/remove-provider", "POST");
+      data.user = resp;
+      addToast({ header: "Unlinked account", body: "Successfully unlinked Tumblr account!" });
+      toggleTumblrUnlinkModal();
     } catch (e) {
       error = e as APIError;
     }
@@ -122,6 +136,28 @@
             >
           {:else}
             <Button color="secondary" href={data.urls.discord}>Link account</Button>
+          {/if}
+        </CardBody>
+      </Card>
+    </div>
+    <div class="my-2">
+      <Card>
+        <CardBody>
+          <CardTitle>Tumblr</CardTitle>
+          <CardText>
+            {#if data.user.tumblr}
+              Your currently linked Tumblr account is <b>{data.user.tumblr_username}</b>
+              (<code>{data.user.tumblr}</code>).
+            {:else}
+              You do not have a linked Tumblr account.
+            {/if}
+          </CardText>
+          {#if data.user.tumblr}
+            <Button color="danger" disabled={!canUnlink} on:click={toggleTumblrUnlinkModal}
+              >Unlink account</Button
+            >
+          {:else}
+            <Button color="secondary" href={data.urls.tumblr}>Link account</Button>
           {/if}
         </CardBody>
       </Card>

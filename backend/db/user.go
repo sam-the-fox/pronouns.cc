@@ -36,6 +36,9 @@ type User struct {
 	FediverseAppID    *int64
 	FediverseInstance *string
 
+	Tumblr         *string
+	TumblrUsername *string
+
 	MaxInvites  int
 	IsAdmin     bool
 	ListPrivate bool
@@ -50,6 +53,9 @@ func (u User) NumProviders() (numProviders int) {
 		numProviders++
 	}
 	if u.Fediverse != nil {
+		numProviders++
+	}
+	if u.Tumblr != nil {
 		numProviders++
 	}
 	return numProviders
@@ -236,6 +242,67 @@ func (u *User) UnlinkDiscord(ctx context.Context, ex Execer) error {
 
 	u.Discord = nil
 	u.DiscordUsername = nil
+
+	return nil
+}
+
+// TumblrUser fetches a user by Tumblr user ID.
+func (db *DB) TumblrUser(ctx context.Context, tumblrID string) (u User, err error) {
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("tumblr = ?", tumblrID).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "executing query")
+	}
+	return u, nil
+}
+
+func (u *User) UpdateFromTumblr(ctx context.Context, ex Execer, tumblrID, tumblrUsername string) error {
+	sql, args, err := sq.Update("users").
+		Set("tumblr", tumblrID).
+		Set("tumblr_username", tumblrUsername).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Tumblr = &tumblrID
+	u.TumblrUsername = &tumblrUsername
+
+	return nil
+}
+
+func (u *User) UnlinkTumblr(ctx context.Context, ex Execer) error {
+	sql, args, err := sq.Update("users").
+		Set("tumblr", nil).
+		Set("tumblr_username", nil).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Tumblr = nil
+	u.TumblrUsername = nil
 
 	return nil
 }
