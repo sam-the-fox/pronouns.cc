@@ -60,9 +60,15 @@
     <div class="col-md-4 mb-1">
       <ListGroup>
         <ListGroupItem tag="button" on:click={toggleModal}>Log in with the Fediverse</ListGroupItem>
-        <ListGroupItem tag="a" href={data.discord}>Log in with Discord</ListGroupItem>
-        <ListGroupItem tag="a" href={data.tumblr}>Log in with Tumblr</ListGroupItem>
-        <ListGroupItem tag="a" href={data.google}>Log in with Google</ListGroupItem>
+        {#if data.discord}
+          <ListGroupItem tag="a" href={data.discord}>Log in with Discord</ListGroupItem>
+        {/if}
+        {#if data.tumblr}
+          <ListGroupItem tag="a" href={data.tumblr}>Log in with Tumblr</ListGroupItem>
+        {/if}
+        {#if data.google}
+          <ListGroupItem tag="a" href={data.google}>Log in with Google</ListGroupItem>
+        {/if}
       </ListGroup>
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
         <ModalBody>

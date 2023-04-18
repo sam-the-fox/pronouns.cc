@@ -14,9 +14,9 @@ export interface MetaResponse {
 }
 
 export interface UrlsResponse {
-  discord: string;
-  tumblr: string;
-  google: string;
+  discord?: string;
+  tumblr?: string;
+  google?: string;
 }
 
 export interface ExportResponse {

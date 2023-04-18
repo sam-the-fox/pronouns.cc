@@ -144,9 +144,9 @@ type oauthURLsRequest struct {
 }
 
 type oauthURLsResponse struct {
-	Discord string `json:"discord"`
-	Tumblr  string `json:"tumblr"`
-	Google  string `json:"google"`
+	Discord string `json:"discord,omitempty"`
+	Tumblr  string `json:"tumblr,omitempty"`
+	Google  string `json:"google,omitempty"`
 }
 
 func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
@@ -162,22 +162,25 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "setting CSRF state")
 	}
+	var resp oauthURLsResponse
 
-	// copy Discord config and set redirect url
-	discordCfg := discordOAuthConfig
-	discordCfg.RedirectURL = req.CallbackDomain + "/auth/login/discord"
-	// copy tumblr config
-	tumblrCfg := tumblrOAuthConfig
-	tumblrCfg.RedirectURL = req.CallbackDomain + "/auth/login/tumblr"
-	// copy google config
-	googleCfg := googleOAuthConfig
-	googleCfg.RedirectURL = req.CallbackDomain + "/auth/login/google"
+	if discordOAuthConfig.ClientID != "" {
+		discordCfg := discordOAuthConfig
+		discordCfg.RedirectURL = req.CallbackDomain + "/auth/login/discord"
+		resp.Discord = discordCfg.AuthCodeURL(state) + "&prompt=none"
+	}
+	if tumblrOAuthConfig.ClientID != "" {
+		tumblrCfg := tumblrOAuthConfig
+		tumblrCfg.RedirectURL = req.CallbackDomain + "/auth/login/tumblr"
+		resp.Tumblr = tumblrCfg.AuthCodeURL(state)
+	}
+	if googleOAuthConfig.ClientID != "" {
+		googleCfg := googleOAuthConfig
+		googleCfg.RedirectURL = req.CallbackDomain + "/auth/login/google"
+		resp.Google = googleCfg.AuthCodeURL(state)
+	}
 
-	render.JSON(w, r, oauthURLsResponse{
-		Discord: discordCfg.AuthCodeURL(state) + "&prompt=none",
-		Tumblr:  tumblrCfg.AuthCodeURL(state),
-		Google:  googleCfg.AuthCodeURL(state),
-	})
+	render.JSON(w, r, resp)
 	return nil
 }
 

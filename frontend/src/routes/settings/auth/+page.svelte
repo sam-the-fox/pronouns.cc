@@ -132,72 +132,78 @@
         </CardBody>
       </Card>
     </div>
-    <div class="my-2">
-      <Card>
-        <CardBody>
-          <CardTitle>Discord</CardTitle>
-          <CardText>
+    {#if data.user.discord || data.urls.discord}
+      <div class="my-2">
+        <Card>
+          <CardBody>
+            <CardTitle>Discord</CardTitle>
+            <CardText>
+              {#if data.user.discord}
+                Your currently linked Discord account is <b>{data.user.discord_username}</b>
+                (<code>{data.user.discord}</code>).
+              {:else}
+                You do not have a linked Discord account.
+              {/if}
+            </CardText>
             {#if data.user.discord}
-              Your currently linked Discord account is <b>{data.user.discord_username}</b>
-              (<code>{data.user.discord}</code>).
-            {:else}
-              You do not have a linked Discord account.
+              <Button color="danger" disabled={!canUnlink} on:click={toggleDiscordUnlinkModal}
+                >Unlink account</Button
+              >
+            {:else if data.urls.discord}
+              <Button color="secondary" href={data.urls.discord}>Link account</Button>
             {/if}
-          </CardText>
-          {#if data.user.discord}
-            <Button color="danger" disabled={!canUnlink} on:click={toggleDiscordUnlinkModal}
-              >Unlink account</Button
-            >
-          {:else}
-            <Button color="secondary" href={data.urls.discord}>Link account</Button>
-          {/if}
-        </CardBody>
-      </Card>
-    </div>
-    <div class="my-2">
-      <Card>
-        <CardBody>
-          <CardTitle>Tumblr</CardTitle>
-          <CardText>
+          </CardBody>
+        </Card>
+      </div>
+    {/if}
+    {#if data.user.tumblr || data.urls.tumblr}
+      <div class="my-2">
+        <Card>
+          <CardBody>
+            <CardTitle>Tumblr</CardTitle>
+            <CardText>
+              {#if data.user.tumblr}
+                Your currently linked Tumblr account is <b>{data.user.tumblr_username}</b>
+                (<code>{data.user.tumblr}</code>).
+              {:else}
+                You do not have a linked Tumblr account.
+              {/if}
+            </CardText>
             {#if data.user.tumblr}
-              Your currently linked Tumblr account is <b>{data.user.tumblr_username}</b>
-              (<code>{data.user.tumblr}</code>).
-            {:else}
-              You do not have a linked Tumblr account.
+              <Button color="danger" disabled={!canUnlink} on:click={toggleTumblrUnlinkModal}
+                >Unlink account</Button
+              >
+            {:else if data.urls.tumblr}
+              <Button color="secondary" href={data.urls.tumblr}>Link account</Button>
             {/if}
-          </CardText>
-          {#if data.user.tumblr}
-            <Button color="danger" disabled={!canUnlink} on:click={toggleTumblrUnlinkModal}
-              >Unlink account</Button
-            >
-          {:else}
-            <Button color="secondary" href={data.urls.tumblr}>Link account</Button>
-          {/if}
-        </CardBody>
-      </Card>
-    </div>
-    <div class="my-2">
-      <Card>
-        <CardBody>
-          <CardTitle>Google</CardTitle>
-          <CardText>
+          </CardBody>
+        </Card>
+      </div>
+    {/if}
+    {#if data.user.google || data.urls.google}
+      <div class="my-2">
+        <Card>
+          <CardBody>
+            <CardTitle>Google</CardTitle>
+            <CardText>
+              {#if data.user.google}
+                Your currently linked Google account is <b>{data.user.google_username}</b>
+                (<code>{data.user.google}</code>).
+              {:else}
+                You do not have a linked Google account.
+              {/if}
+            </CardText>
             {#if data.user.google}
-              Your currently linked Google account is <b>{data.user.google_username}</b>
-              (<code>{data.user.google}</code>).
-            {:else}
-              You do not have a linked Google account.
+              <Button color="danger" disabled={!canUnlink} on:click={toggleGoogleUnlinkModal}
+                >Unlink account</Button
+              >
+            {:else if data.urls.google}
+              <Button color="secondary" href={data.urls.google}>Link account</Button>
             {/if}
-          </CardText>
-          {#if data.user.google}
-            <Button color="danger" disabled={!canUnlink} on:click={toggleGoogleUnlinkModal}
-              >Unlink account</Button
-            >
-          {:else}
-            <Button color="secondary" href={data.urls.google}>Link account</Button>
-          {/if}
-        </CardBody>
-      </Card>
-    </div>
+          </CardBody>
+        </Card>
+      </div>
+    {/if}
     <Modal header="Pick an instance" isOpen={fediLinkModalOpen} toggle={toggleFediLinkModal}>
       <ModalBody>
         <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
