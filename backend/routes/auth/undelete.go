@@ -67,7 +67,7 @@ func (s *Server) saveUndeleteToken(ctx context.Context, userID xid.ID, token str
 
 func (s *Server) getUndeleteToken(ctx context.Context, token string) (userID xid.ID, err error) {
 	var idString string
-	err = s.DB.Redis.Do(ctx, radix.Cmd(&idString, "GETDEL", "undelete:"+token))
+	err = s.DB.Redis.Do(ctx, radix.Cmd(&idString, "GET", "undelete:"+token))
 	if err != nil {
 		return userID, errors.Wrap(err, "getting undelete key")
 	}
@@ -75,6 +75,11 @@ func (s *Server) getUndeleteToken(ctx context.Context, token string) (userID xid
 	userID, err = xid.FromString(idString)
 	if err != nil {
 		return userID, errors.Wrap(err, "parsing ID")
+	}
+
+	err = s.DB.Redis.Do(ctx, radix.Cmd(nil, "DEL", "undelete:"+token))
+	if err != nil {
+		return userID, errors.Wrap(err, "deleting undelete key")
 	}
 	return userID, nil
 }

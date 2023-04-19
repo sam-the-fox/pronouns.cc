@@ -137,30 +137,6 @@ func (db *DB) GetJSON(ctx context.Context, key string, v any) error {
 	return nil
 }
 
-// GetDelJSON gets the given key as a JSON object and deletes it.
-func (db *DB) GetDelJSON(ctx context.Context, key string, v any) error {
-	var b []byte
-
-	err := db.Redis.Do(ctx, radix.Cmd(&b, "GETDEL", key))
-	if err != nil {
-		return errors.Wrap(err, "reading from Redis")
-	}
-
-	if b == nil {
-		return nil
-	}
-
-	if v == nil {
-		return fmt.Errorf("nil pointer passed into GetDelJSON")
-	}
-
-	err = json.Unmarshal(b, v)
-	if err != nil {
-		return errors.Wrap(err, "unmarshaling json")
-	}
-	return nil
-}
-
 // NotNull is a little helper that returns an *empty slice* when the slice's length is 0.
 // This is to prevent nil slices from being marshaled as JSON null
 func NotNull[T any](slice []T) []T {
