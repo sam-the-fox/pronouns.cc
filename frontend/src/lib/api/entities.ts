@@ -58,13 +58,13 @@ export interface Field {
 
 export interface FieldEntry {
   value: string;
-  status: WordStatus;
+  status: string;
 }
 
 export interface Pronoun {
   pronouns: string;
   display_text: string | null;
-  status: WordStatus;
+  status: string;
 }
 
 export enum WordStatus {

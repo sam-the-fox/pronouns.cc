@@ -13,7 +13,7 @@
 
   let currentPreference: CustomPreference;
   $: currentPreference =
-    status in mergedPreferences ? mergedPreferences[status] : defaultPreferences.okay;
+    status in mergedPreferences ? mergedPreferences[status] : defaultPreferences.missing;
 
   let classes: string;
   $: classes = setClasses(currentPreference);

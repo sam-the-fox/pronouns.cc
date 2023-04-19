@@ -153,10 +153,9 @@
     if (list[0].size > MAX_AVATAR_BYTES) {
       addToast({
         header: "Avatar too large",
-        body:
-          `This avatar is too large, please resize it (maximum is ${prettyBytes(
-            MAX_AVATAR_BYTES,
-          )}, the file you tried to upload is ${prettyBytes(list[0].size)})`,
+        body: `This avatar is too large, please resize it (maximum is ${prettyBytes(
+          MAX_AVATAR_BYTES,
+        )}, the file you tried to upload is ${prettyBytes(list[0].size)})`,
       });
       return null;
     }
@@ -440,6 +439,7 @@
         <EditableName
           bind:value={names[index].value}
           bind:status={names[index].status}
+          preferences={data.user.custom_preferences}
           moveUp={() => moveName(index, true)}
           moveDown={() => moveName(index, false)}
           remove={() => removeName(index)}
@@ -479,6 +479,7 @@
         {#each pronouns as _, index}
           <EditablePronouns
             bind:pronoun={pronouns[index]}
+            preferences={data.user.custom_preferences}
             moveUp={() => movePronoun(index, true)}
             moveDown={() => movePronoun(index, false)}
             remove={() => removePronoun(index)}
@@ -520,6 +521,7 @@
         {#each fields as _, index}
           <EditableField
             bind:field={fields[index]}
+            preferences={data.user.custom_preferences}
             deleteField={() => removeField(index)}
             moveField={(up) => moveField(index, up)}
           />

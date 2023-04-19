@@ -30,10 +30,17 @@ const defaultPreferences: CustomPreferences = {
     favourite: false,
   },
   avoid: {
-    icon: "people",
+    icon: "hand-thumbs-down",
     tooltip: "Avoid",
     size: PreferenceSize.Small,
     muted: true,
+    favourite: false,
+  },
+  missing: {
+    icon: "question-lg",
+    tooltip: "Unknown (missing)",
+    size: PreferenceSize.Normal,
+    muted: false,
     favourite: false,
   },
 };
