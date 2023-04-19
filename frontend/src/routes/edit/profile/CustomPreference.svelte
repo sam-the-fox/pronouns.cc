@@ -24,7 +24,12 @@
 
   let searchBox = "";
   let filteredIcons: string[] = [];
-  $: filteredIcons = searchBox ? icons.filter((icon) => icon.includes(searchBox)).slice(0, 15) : [];
+  $: filteredIcons = searchBox
+    ? icons
+        .filter((icon) => icon.startsWith(searchBox))
+        .sort()
+        .slice(0, 15)
+    : [];
 </script>
 
 <InputGroup class="m-1">
