@@ -59,7 +59,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		req.Fields == nil &&
 		req.Names == nil &&
 		req.Pronouns == nil &&
-		req.Avatar == nil {
+		req.Avatar == nil &&
+		req.CustomPreferences == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -105,15 +106,15 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := validateSlicePtr("name", req.Names); err != nil {
+	if err := validateSlicePtr("name", req.Names, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
+	if err := validateSlicePtr("pronoun", req.Pronouns, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("field", req.Fields); err != nil {
+	if err := validateSlicePtr("field", req.Fields, u.CustomPreferences); err != nil {
 		return *err
 	}
 
@@ -201,7 +202,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash)
+	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash, req.CustomPreferences)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err
@@ -278,12 +279,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 }
 
 type validator interface {
-	Validate() string
+	Validate(custom db.CustomPreferences) string
 }
 
 // validateSlicePtr validates a slice of validators.
 // If the slice is nil, a nil error is returned (assuming that the field is not required)
-func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
+func validateSlicePtr[T validator](typ string, slice *[]T, custom db.CustomPreferences) *server.APIError {
 	if slice == nil {
 		return nil
 	}
@@ -303,7 +304,7 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 
 	// validate all fields
 	for i, pronouns := range *slice {
-		if s := pronouns.Validate(); s != "" {
+		if s := pronouns.Validate(custom); s != "" {
 			return &server.APIError{
 				Code:    server.ErrBadRequest,
 				Details: fmt.Sprintf("%s %d: %s", typ, i+1, s),

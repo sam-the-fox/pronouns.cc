@@ -41,6 +41,11 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMemberNotFound}
 	}
 
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
 	m, err := s.DB.Member(ctx, id)
 	if err != nil {
 		if err == db.ErrMemberNotFound {
@@ -148,15 +153,15 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := validateSlicePtr("name", req.Names); err != nil {
+	if err := validateSlicePtr("name", req.Names, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
+	if err := validateSlicePtr("pronoun", req.Pronouns, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("field", req.Fields); err != nil {
+	if err := validateSlicePtr("field", req.Fields, u.CustomPreferences); err != nil {
 		return *err
 	}
 
@@ -269,11 +274,6 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		log.Errorf("committing transaction: %v", err)
 		return err
-	}
-
-	u, err := s.DB.User(ctx, claims.UserID)
-	if err != nil {
-		return errors.Wrap(err, "getting user")
 	}
 
 	// echo the updated member back on success

@@ -498,8 +498,9 @@ func (db *DB) UpdateUser(
 	memberTitle *string, listPrivate *bool,
 	links *[]string,
 	avatar *string,
+	customPreferences *CustomPreferences,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && customPreferences == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -540,6 +541,9 @@ func (db *DB) UpdateUser(
 	}
 	if listPrivate != nil {
 		builder = builder.Set("list_private", *listPrivate)
+	}
+	if customPreferences != nil {
+		builder = builder.Set("custom_preferences", *customPreferences)
 	}
 
 	if avatar != nil {

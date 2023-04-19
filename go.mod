@@ -15,6 +15,7 @@ require (
 	github.com/go-chi/render v1.0.2
 	github.com/gobwas/glob v0.2.3
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/mediocregopher/radix/v4 v4.1.2
@@ -40,7 +41,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/s2a-go v0.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
