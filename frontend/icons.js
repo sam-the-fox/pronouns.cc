@@ -9,9 +9,9 @@ const keys = Object.keys(icons);
 
 console.log(`Found ${keys.length} icons`);
 const output = JSON.stringify(keys);
-console.log(`Saving file as src/icons.json`);
+console.log(`Saving file as src/icons.ts`);
 
-writeFileSync("src/icons.json", output);
+writeFileSync("src/icons.ts", `const icons = ${output};\nexport default icons;`);
 
 const goCode1 = `// Generated code. DO NOT EDIT
 package icons
