@@ -146,7 +146,7 @@
           <h3>Names</h3>
           <ul class="list-unstyled fs-5">
             {#each data.names as name}
-              <li><StatusLine status={name.status}>{name.value}</StatusLine></li>
+              <li><StatusLine preferences={data.custom_preferences} status={name.status}>{name.value}</StatusLine></li>
             {/each}
           </ul>
         </div>
@@ -156,14 +156,14 @@
           <h3>Pronouns</h3>
           <ul class="list-unstyled fs-5">
             {#each data.pronouns as pronouns}
-              <li><StatusLine status={pronouns.status}><PronounLink {pronouns} /></StatusLine></li>
+              <li><StatusLine preferences={data.custom_preferences} status={pronouns.status}><PronounLink {pronouns} /></StatusLine></li>
             {/each}
           </ul>
         </div>
       {/if}
       {#each data.fields as field}
         <div class="col">
-          <FieldCard {field} />
+          <FieldCard preferences={data.custom_preferences} {field} />
         </div>
       {/each}
     </div>

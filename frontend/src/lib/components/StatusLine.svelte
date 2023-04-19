@@ -1,14 +1,44 @@
 <script lang="ts">
-  import { WordStatus } from "$lib/api/entities";
+  import { PreferenceSize } from "$lib/api/entities";
   import StatusIcon from "$lib/components/StatusIcon.svelte";
 
-  export let status: WordStatus;
+  import type { CustomPreference, CustomPreferences } from "$lib/api/entities";
+  import defaultPreferences from "$lib/api/default_preferences";
+
+  export let preferences: CustomPreferences;
+  export let status: string;
+
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign(defaultPreferences, preferences);
+
+  let currentPreference: CustomPreference;
+  $: currentPreference =
+    status in mergedPreferences ? mergedPreferences[status] : defaultPreferences.okay;
+
+  let classes: string;
+  $: classes = setClasses(currentPreference);
+
+  const setClasses = (pref: CustomPreference) => {
+    let classes = "";
+    if (pref.muted) {
+      classes += "text-muted ";
+    }
+    switch (pref.size) {
+      case PreferenceSize.Large:
+        classes += "fs-5";
+        break;
+      case PreferenceSize.Normal:
+        break;
+      case PreferenceSize.Small:
+        classes += "fs-6";
+    }
+
+    return classes.trim();
+  };
 </script>
 
-{#if status === WordStatus.Favourite}
-  <strong class="fs-5"><StatusIcon {status} /> <slot /></strong>
-{:else if status === WordStatus.Avoid}
-  <span class="fs-6 text-muted"><StatusIcon {status} /> <slot /></span>
+{#if currentPreference.size === PreferenceSize.Large}
+  <strong class={classes}><StatusIcon {preferences} {status} /> <slot /></strong>
 {:else}
-  <StatusIcon {status} /> <slot />
+  <span class={classes}><StatusIcon {preferences} {status} /> <slot /></span>
 {/if}

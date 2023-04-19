@@ -16,6 +16,25 @@ export interface User {
   pronouns: Pronoun[];
   members: PartialMember[];
   fields: Field[];
+  custom_preferences: CustomPreferences;
+}
+
+export interface CustomPreferences {
+  [key: string]: CustomPreference;
+}
+
+export interface CustomPreference {
+  icon: string;
+  tooltip: string;
+  size: PreferenceSize;
+  muted: boolean;
+  favourite: boolean;
+}
+
+export enum PreferenceSize {
+  Large = "large",
+  Normal = "normal",
+  Small = "small",
 }
 
 export interface MeUser extends User {
@@ -80,6 +99,7 @@ export interface MemberPartialUser {
   name: string;
   display_name: string | null;
   avatar: string | null;
+  custom_preferences: CustomPreferences;
 }
 
 export interface Invite {
