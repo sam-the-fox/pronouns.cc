@@ -42,10 +42,11 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, isOwnMember boo
 		Fields:   db.NotNull(fields),
 
 		User: PartialUser{
-			ID:          u.ID,
-			Username:    u.Username,
-			DisplayName: u.DisplayName,
-			Avatar:      u.Avatar,
+			ID:                u.ID,
+			Username:          u.Username,
+			DisplayName:       u.DisplayName,
+			Avatar:            u.Avatar,
+			CustomPreferences: u.CustomPreferences,
 		},
 	}
 
@@ -57,10 +58,11 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, isOwnMember boo
 }
 
 type PartialUser struct {
-	ID          xid.ID  `json:"id"`
-	Username    string  `json:"name"`
-	DisplayName *string `json:"display_name"`
-	Avatar      *string `json:"avatar"`
+	ID                xid.ID               `json:"id"`
+	Username          string               `json:"name"`
+	DisplayName       *string              `json:"display_name"`
+	Avatar            *string              `json:"avatar"`
+	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
 }
 
 func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {

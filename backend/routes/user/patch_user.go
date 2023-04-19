@@ -10,19 +10,21 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 )
 
 type PatchUserRequest struct {
-	Username    *string            `json:"username"`
-	DisplayName *string            `json:"display_name"`
-	Bio         *string            `json:"bio"`
-	MemberTitle *string            `json:"member_title"`
-	Links       *[]string          `json:"links"`
-	Names       *[]db.FieldEntry   `json:"names"`
-	Pronouns    *[]db.PronounEntry `json:"pronouns"`
-	Fields      *[]db.Field        `json:"fields"`
-	Avatar      *string            `json:"avatar"`
-	ListPrivate *bool              `json:"list_private"`
+	Username          *string               `json:"username"`
+	DisplayName       *string               `json:"display_name"`
+	Bio               *string               `json:"bio"`
+	MemberTitle       *string               `json:"member_title"`
+	Links             *[]string             `json:"links"`
+	Names             *[]db.FieldEntry      `json:"names"`
+	Pronouns          *[]db.PronounEntry    `json:"pronouns"`
+	Fields            *[]db.Field           `json:"fields"`
+	Avatar            *string               `json:"avatar"`
+	ListPrivate       *bool                 `json:"list_private"`
+	CustomPreferences *db.CustomPreferences `json:"custom_preferences"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
@@ -113,6 +115,19 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 
 	if err := validateSlicePtr("field", req.Fields); err != nil {
 		return *err
+	}
+
+	// validate custom preferences
+	if req.CustomPreferences != nil {
+		for k, v := range *req.CustomPreferences {
+			_, err := uuid.Parse(k)
+			if err != nil {
+				return server.APIError{Code: server.ErrBadRequest, Details: "One or more custom preference IDs is not a UUID."}
+			}
+			if s := v.Validate(); s != "" {
+				return server.APIError{Code: server.ErrBadRequest, Details: s}
+			}
+		}
 	}
 
 	// update avatar

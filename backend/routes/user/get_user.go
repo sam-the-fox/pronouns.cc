@@ -12,17 +12,18 @@ import (
 )
 
 type GetUserResponse struct {
-	ID          xid.ID            `json:"id"`
-	Username    string            `json:"name"`
-	DisplayName *string           `json:"display_name"`
-	Bio         *string           `json:"bio"`
-	MemberTitle *string           `json:"member_title"`
-	Avatar      *string           `json:"avatar"`
-	Links       []string          `json:"links"`
-	Names       []db.FieldEntry   `json:"names"`
-	Pronouns    []db.PronounEntry `json:"pronouns"`
-	Members     []PartialMember   `json:"members"`
-	Fields      []db.Field        `json:"fields"`
+	ID                xid.ID               `json:"id"`
+	Username          string               `json:"name"`
+	DisplayName       *string              `json:"display_name"`
+	Bio               *string              `json:"bio"`
+	MemberTitle       *string              `json:"member_title"`
+	Avatar            *string              `json:"avatar"`
+	Links             []string             `json:"links"`
+	Names             []db.FieldEntry      `json:"names"`
+	Pronouns          []db.PronounEntry    `json:"pronouns"`
+	Members           []PartialMember      `json:"members"`
+	Fields            []db.Field           `json:"fields"`
+	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
 }
 
 type GetMeResponse struct {
@@ -59,16 +60,17 @@ type PartialMember struct {
 
 func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUserResponse {
 	resp := GetUserResponse{
-		ID:          u.ID,
-		Username:    u.Username,
-		DisplayName: u.DisplayName,
-		Bio:         u.Bio,
-		MemberTitle: u.MemberTitle,
-		Avatar:      u.Avatar,
-		Links:       db.NotNull(u.Links),
-		Names:       db.NotNull(u.Names),
-		Pronouns:    db.NotNull(u.Pronouns),
-		Fields:      db.NotNull(fields),
+		ID:                u.ID,
+		Username:          u.Username,
+		DisplayName:       u.DisplayName,
+		Bio:               u.Bio,
+		MemberTitle:       u.MemberTitle,
+		Avatar:            u.Avatar,
+		Links:             db.NotNull(u.Links),
+		Names:             db.NotNull(u.Names),
+		Pronouns:          db.NotNull(u.Pronouns),
+		Fields:            db.NotNull(fields),
+		CustomPreferences: u.CustomPreferences,
 	}
 
 	resp.Members = make([]PartialMember, len(members))
