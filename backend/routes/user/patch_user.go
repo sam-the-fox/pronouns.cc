@@ -120,6 +120,10 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 
 	// validate custom preferences
 	if req.CustomPreferences != nil {
+		if count := len(*req.CustomPreferences); count > db.MaxFields {
+			return server.APIError{Code: server.ErrBadRequest, Details: fmt.Sprintf("Too many custom preferences (max %d, current %d)", db.MaxFields, count)}
+		}
+
 		for k, v := range *req.CustomPreferences {
 			_, err := uuid.Parse(k)
 			if err != nil {
