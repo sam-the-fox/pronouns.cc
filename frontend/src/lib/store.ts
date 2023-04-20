@@ -6,7 +6,7 @@ import type { MeUser } from "./api/entities";
 const initialUserValue = null;
 export const userStore = writable<MeUser | null>(initialUserValue);
 
-let defaultThemeValue = "dark";
+const defaultThemeValue = "dark";
 const initialThemeValue = browser
   ? window.localStorage.getItem("pronouns-theme") ?? defaultThemeValue
   : defaultThemeValue;

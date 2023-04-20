@@ -1,19 +1,20 @@
 <script lang="ts">
-  import { WordStatus, type Field } from "$lib/api/entities";
+  import type { Field, CustomPreferences } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
   import { Button, Input, InputGroup } from "sveltestrap";
   import FieldEntry from "./FieldEntry.svelte";
 
   export let field: Field;
+  export let preferences: CustomPreferences;
   export let deleteField: () => void;
   export let moveField: (up: boolean) => void;
 
-  let newEntry: string = "";
+  let newEntry = "";
 
   const addEntry = (event: Event) => {
     event.preventDefault();
 
-    field.entries = [...field.entries, { value: newEntry, status: WordStatus.Okay }];
+    field.entries = [...field.entries, { value: newEntry, status: "missing" }];
     newEntry = "";
   };
 
@@ -57,6 +58,7 @@
     <FieldEntry
       bind:value={field.entries[index].value}
       bind:status={field.entries[index].status}
+      {preferences}
       moveUp={() => moveEntry(index, true)}
       moveDown={() => moveEntry(index, false)}
       remove={() => removeEntry(index)}

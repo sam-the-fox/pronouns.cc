@@ -8,6 +8,8 @@
     type FieldEntry,
     type MeUser,
     type Pronoun,
+    PreferenceSize,
+    type CustomPreferences,
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
@@ -37,6 +39,7 @@
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "../MarkdownHelp.svelte";
   import prettyBytes from "pretty-bytes";
+  import CustomPreference from "./CustomPreference.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -52,6 +55,7 @@
   let pronouns: Pronoun[] = window.structuredClone(data.user.pronouns);
   let fields: Field[] = window.structuredClone(data.user.fields);
   let list_private = data.user.list_private;
+  let custom_preferences = window.structuredClone(data.user.custom_preferences);
 
   let avatar: string | null;
   let avatar_files: FileList | null;
@@ -59,6 +63,9 @@
   let newName = "";
   let newPronouns = "";
   let newLink = "";
+
+  let preferenceIds: string[];
+  $: preferenceIds = Object.keys(custom_preferences);
 
   let modified = false;
 
@@ -73,6 +80,7 @@
     avatar,
     member_title,
     list_private,
+    custom_preferences,
   );
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
@@ -87,6 +95,7 @@
     avatar: string | null,
     member_title: string,
     list_private: boolean,
+    custom_preferences: CustomPreferences,
   ) => {
     if (bio !== (user.bio || "")) return true;
     if (display_name !== (user.display_name || "")) return true;
@@ -95,6 +104,7 @@
     if (!fieldsEqual(fields, user.fields)) return true;
     if (!namesEqual(names, user.names)) return true;
     if (!pronounsEqual(pronouns, user.pronouns)) return true;
+    if (!customPreferencesEqual(custom_preferences, user.custom_preferences)) return true;
     if (avatar !== null) return true;
     if (list_private !== user.list_private) return true;
 
@@ -134,6 +144,21 @@
   const linksEqual = (arr1: string[], arr2: string[]) => {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((_, i) => arr1[i] === arr2[i]);
+  };
+
+  const customPreferencesEqual = (obj1: CustomPreferences, obj2: CustomPreferences) => {
+    return Object.keys(obj1)
+      .map((key) => {
+        if (!(key in obj2)) return false;
+        return (
+          obj1[key].icon === obj2[key].icon &&
+          obj1[key].tooltip === obj2[key].tooltip &&
+          obj1[key].favourite === obj2[key].favourite &&
+          obj1[key].muted === obj2[key].muted &&
+          obj1[key].size === obj2[key].size
+        );
+      })
+      .every((entry) => entry);
   };
 
   const getAvatar = async (list: FileList | null) => {
@@ -226,6 +251,19 @@
     newLink = "";
   };
 
+  const addPreference = () => {
+    const id = crypto.randomUUID();
+
+    custom_preferences[id] = {
+      icon: "question",
+      tooltip: "New preference",
+      size: PreferenceSize.Normal,
+      muted: false,
+      favourite: false,
+    };
+    custom_preferences = custom_preferences;
+  };
+
   const removeName = (index: number) => {
     names.splice(index, 1);
     names = [...names];
@@ -246,6 +284,11 @@
     fields = [...fields];
   };
 
+  const removePreference = (id: string) => {
+    delete custom_preferences[id];
+    custom_preferences = custom_preferences;
+  };
+
   const updateUser = async () => {
     const toastId = addToast({
       header: "Saving changes",
@@ -264,6 +307,7 @@
         fields,
         member_title,
         list_private,
+        custom_preferences,
       });
 
       data.user = resp;
@@ -367,6 +411,7 @@
         <EditableName
           bind:value={names[index].value}
           bind:status={names[index].status}
+          preferences={data.user.custom_preferences}
           moveUp={() => moveName(index, true)}
           moveDown={() => moveName(index, false)}
           remove={() => removeName(index)}
@@ -447,6 +492,7 @@
         {#each fields as _, index}
           <EditableField
             bind:field={fields[index]}
+            preferences={data.user.custom_preferences}
             deleteField={() => removeField(index)}
             moveField={(up) => moveField(index, up)}
           />
@@ -478,7 +524,7 @@
       </form>
     </div>
   </TabPane>
-  <TabPane tabId="other" tab="Other">
+  <TabPane tabId="other" tab="Preferences & other">
     <div class="row mt-3">
       <div class="col-md">
         <FormGroup floating label={'"Members" header text'}>
@@ -509,6 +555,19 @@
           </strong>
         </p>
       </div>
+    </div>
+    <div>
+      <h3>
+        Preferences <Button on:click={addPreference} color="success"
+          ><Icon name="plus" aria-hidden /> Add new</Button
+        >
+      </h3>
+      {#each preferenceIds as id}
+        <CustomPreference
+          bind:preference={custom_preferences[id]}
+          remove={() => removePreference(id)}
+        />
+      {/each}
     </div>
   </TabPane>
 </TabContent>

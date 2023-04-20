@@ -4,9 +4,12 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"regexp"
 	"time"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/common"
+	"codeberg.org/u1f320/pronouns.cc/backend/icons"
 	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -49,7 +52,46 @@ type User struct {
 	DeletedAt    *time.Time
 	SelfDelete   *bool
 	DeleteReason *string
+
+	CustomPreferences CustomPreferences
 }
+
+type CustomPreferences = map[string]CustomPreference
+
+type CustomPreference struct {
+	Icon      string         `json:"icon"`
+	Tooltip   string         `json:"tooltip"`
+	Size      PreferenceSize `json:"size"`
+	Muted     bool           `json:"muted"`
+	Favourite bool           `json:"favourite"`
+}
+
+func (c CustomPreference) Validate() string {
+	if !icons.IsValid(c.Icon) {
+		return fmt.Sprintf("custom preference icon %q is invalid", c.Icon)
+	}
+
+	if c.Tooltip == "" {
+		return "custom preference tooltip is empty"
+	}
+	if common.StringLength(&c.Tooltip) > FieldEntryMaxLength {
+		return fmt.Sprintf("custom preference tooltip is too long, max %d characters, is %d characters", FieldEntryMaxLength, common.StringLength(&c.Tooltip))
+	}
+
+	if c.Size != PreferenceSizeLarge && c.Size != PreferenceSizeNormal && c.Size != PreferenceSizeSmall {
+		return fmt.Sprintf("custom preference size %q is invalid", string(c.Size))
+	}
+
+	return ""
+}
+
+type PreferenceSize string
+
+const (
+	PreferenceSizeLarge  PreferenceSize = "large"
+	PreferenceSizeNormal PreferenceSize = "normal"
+	PreferenceSizeSmall  PreferenceSize = "small"
+)
 
 func (u User) NumProviders() (numProviders int) {
 	if u.Discord != nil {
@@ -456,8 +498,9 @@ func (db *DB) UpdateUser(
 	memberTitle *string, listPrivate *bool,
 	links *[]string,
 	avatar *string,
+	customPreferences *CustomPreferences,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && customPreferences == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -498,6 +541,9 @@ func (db *DB) UpdateUser(
 	}
 	if listPrivate != nil {
 		builder = builder.Set("list_private", *listPrivate)
+	}
+	if customPreferences != nil {
+		builder = builder.Set("custom_preferences", *customPreferences)
 	}
 
 	if avatar != nil {

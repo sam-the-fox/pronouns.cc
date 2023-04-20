@@ -103,15 +103,15 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		}
 	}
 
-	if err := validateSlicePtr("name", &cmr.Names); err != nil {
+	if err := validateSlicePtr("name", &cmr.Names, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("pronoun", &cmr.Pronouns); err != nil {
+	if err := validateSlicePtr("pronoun", &cmr.Pronouns, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("field", &cmr.Fields); err != nil {
+	if err := validateSlicePtr("field", &cmr.Fields, u.CustomPreferences); err != nil {
 		return *err
 	}
 
@@ -186,12 +186,12 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 }
 
 type validator interface {
-	Validate() string
+	Validate(custom db.CustomPreferences) string
 }
 
 // validateSlicePtr validates a slice of validators.
 // If the slice is nil, a nil error is returned (assuming that the field is not required)
-func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
+func validateSlicePtr[T validator](typ string, slice *[]T, custom db.CustomPreferences) *server.APIError {
 	if slice == nil {
 		return nil
 	}
@@ -211,7 +211,7 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 
 	// validate all fields
 	for i, pronouns := range *slice {
-		if s := pronouns.Validate(); s != "" {
+		if s := pronouns.Validate(custom); s != "" {
 			return &server.APIError{
 				Code:    server.ErrBadRequest,
 				Details: fmt.Sprintf("%s %d: %s", typ, i+1, s),

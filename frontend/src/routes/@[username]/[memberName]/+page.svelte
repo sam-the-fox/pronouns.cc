@@ -2,25 +2,40 @@
   import FieldCard from "$lib/components/FieldCard.svelte";
 
   import type { PageData } from "./$types";
-  import StatusIcon from "$lib/components/StatusIcon.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { Alert, Button, Icon } from "sveltestrap";
-  import { memberAvatars, pronounDisplay, WordStatus } from "$lib/api/entities";
+  import {
+    memberAvatars,
+    pronounDisplay,
+    type CustomPreferences,
+    type FieldEntry,
+    type Pronoun,
+  } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { userStore } from "$lib/store";
   import { renderMarkdown } from "$lib/utils";
   import ReportButton from "../ReportButton.svelte";
   import ProfileLink from "../ProfileLink.svelte";
   import StatusLine from "$lib/components/StatusLine.svelte";
+  import defaultPreferences from "$lib/api/default_preferences";
 
   export let data: PageData;
 
   let bio: string | null;
   $: bio = renderMarkdown(data.bio);
 
-  const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
-  const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign(defaultPreferences, data.user.custom_preferences);
+
+  let favNames: FieldEntry[];
+  $: favNames = data.names.filter(
+    (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
+  );
+  let favPronouns: Pronoun[];
+  $: favPronouns = data.pronouns.filter(
+    (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
+  );
 
   let profileEmpty = false;
   $: profileEmpty =
@@ -81,7 +96,11 @@
           <h3>Names</h3>
           <ul class="list-unstyled fs-5">
             {#each data.names as name}
-              <li><StatusLine status={name.status}>{name.value}</StatusLine></li>
+              <li>
+                <StatusLine preferences={data.user.custom_preferences} status={name.status}
+                  >{name.value}</StatusLine
+                >
+              </li>
             {/each}
           </ul>
         </div>
@@ -91,14 +110,18 @@
           <h3>Pronouns</h3>
           <ul class="list-unstyled fs-5">
             {#each data.pronouns as pronouns}
-              <li><StatusLine status={pronouns.status}><PronounLink {pronouns} /></StatusLine></li>
+              <li>
+                <StatusLine preferences={data.user.custom_preferences} status={pronouns.status}
+                  ><PronounLink {pronouns} /></StatusLine
+                >
+              </li>
             {/each}
           </ul>
         </div>
       {/if}
       {#each data.fields as field}
         <div class="col">
-          <FieldCard {field} />
+          <FieldCard preferences={data.user.custom_preferences} {field} />
         </div>
       {/each}
     </div>

@@ -31,7 +31,7 @@
 
   let theme: string;
   let currentUser: MeUser | null;
-  let showMenu: boolean = false;
+  let showMenu = false;
 
   let isAdmin = false;
   let numReports = 0;

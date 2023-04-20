@@ -24,7 +24,7 @@ type Field struct {
 }
 
 // Validate validates this field. If it is invalid, a non-empty string is returned as error message.
-func (f Field) Validate() string {
+func (f Field) Validate(custom CustomPreferences) string {
 	if f.Name == "" {
 		return "name cannot be empty"
 	}
@@ -42,7 +42,7 @@ func (f Field) Validate() string {
 			return fmt.Sprintf("entries.%d: max length is %d characters, length is %d", i, FieldEntryMaxLength, length)
 		}
 
-		if !entry.Status.Valid() {
+		if !entry.Status.Valid(custom) {
 			return fmt.Sprintf("entries.%d: status is invalid", i)
 		}
 	}
