@@ -208,6 +208,11 @@ func (s *Server) googleLink(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrInvalidTicket}
 	}
 
+	if gu.ID == "" {
+		log.Errorf("linking user with id %v: user ID was empty", claims.UserID)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Google user ID is empty"}
+	}
+
 	err = u.UpdateFromGoogle(ctx, s.DB, gu.ID, gu.Email)
 	if err != nil {
 		return errors.Wrap(err, "updating user from google")
@@ -304,6 +309,11 @@ func (s *Server) googleSignup(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		return errors.Wrap(err, "creating user")
+	}
+
+	if gu.ID == "" {
+		log.Errorf("creating user with name %q: user ID was empty", req.Username)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Google user ID is empty"}
 	}
 
 	err = u.UpdateFromGoogle(ctx, tx, gu.ID, gu.Email)

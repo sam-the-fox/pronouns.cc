@@ -193,6 +193,11 @@ func (s *Server) discordLink(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrInvalidTicket}
 	}
 
+	if du.ID == "" {
+		log.Errorf("linking user with id %v: discord user ID was empty", claims.UserID)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Discord user ID is empty"}
+	}
+
 	err = u.UpdateFromDiscord(ctx, s.DB, du)
 	if err != nil {
 		return errors.Wrap(err, "updating user from discord")
@@ -300,6 +305,11 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		return errors.Wrap(err, "creating user")
+	}
+
+	if du.ID == "" {
+		log.Errorf("creating user with name %q: user ID was empty", req.Username)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Discord user ID is empty"}
 	}
 
 	err = u.UpdateFromDiscord(ctx, tx, du)

@@ -220,6 +220,11 @@ func (s *Server) mastodonLink(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrInvalidTicket}
 	}
 
+	if mu.ID == "" {
+		log.Errorf("linking user with id %v: user ID was empty", claims.UserID)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Mastodon user ID is empty"}
+	}
+
 	err = u.UpdateFromFedi(ctx, s.DB, mu.ID, mu.Username, app.ID)
 	if err != nil {
 		return errors.Wrap(err, "updating user from mastoAPI")
@@ -328,6 +333,11 @@ func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		return errors.Wrap(err, "creating user")
+	}
+
+	if mu.ID == "" {
+		log.Errorf("creating user with name %q: user ID was empty", req.Username)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Mastodon user ID is empty"}
 	}
 
 	err = u.UpdateFromFedi(ctx, tx, mu.ID, mu.Username, app.ID)
