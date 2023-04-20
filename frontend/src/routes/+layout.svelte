@@ -49,6 +49,7 @@
           >)
         {/if} &middot;
         <a href="/page/about">About & contact</a> &middot;
+        <a href="/page/changelog">Changelog</a> &middot;
         <Icon name="cash" aria-hidden />
         <a href="https://liberapay.com/u1f320/" target="_blank">Donate</a>
         &middot;

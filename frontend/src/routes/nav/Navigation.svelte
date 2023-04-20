@@ -16,7 +16,7 @@
   } from "sveltestrap";
 
   import Logo from "./Logo.svelte";
-  import { userStore, themeStore } from "$lib/store";
+  import { userStore, themeStore, CURRENT_CHANGELOG } from "$lib/store";
   import {
     ErrorCode,
     type APIError,
@@ -36,11 +36,14 @@
   let isAdmin = false;
   let numReports = 0;
   let numWarnings = 0;
+  let changelogRead = "99.99.99";
 
   $: currentUser = $userStore;
   $: theme = $themeStore;
 
   onMount(() => {
+    changelogRead = localStorage.getItem("changelog-read") || "0.0.0";
+
     const localUser = localStorage.getItem("pronouns-user");
     userStore.set(localUser ? JSON.parse(localUser) : null);
 
@@ -143,6 +146,13 @@
               {#if numReports !== 0}
                 <Badge color="danger">{numReports}</Badge>
               {/if}
+            </NavLink>
+          </NavItem>
+        {/if}
+        {#if changelogRead < CURRENT_CHANGELOG}
+          <NavItem>
+            <NavLink href="/page/changelog">
+              Changelog <Badge color="secondary">v{CURRENT_CHANGELOG}</Badge>
             </NavLink>
           </NavItem>
         {/if}
