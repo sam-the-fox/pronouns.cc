@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { APIError } from "$lib/api/entities";
-  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
+  import { apiFetchClient } from "$lib/api/fetch";
   import { DateTime } from "luxon";
   import {
     Button,

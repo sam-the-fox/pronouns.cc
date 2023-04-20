@@ -9,7 +9,7 @@
   export let deleteField: () => void;
   export let moveField: (up: boolean) => void;
 
-  let newEntry: string = "";
+  let newEntry = "";
 
   const addEntry = (event: Event) => {
     event.preventDefault();

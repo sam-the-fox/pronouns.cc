@@ -3,7 +3,6 @@
   import type { Pronoun, CustomPreference, CustomPreferences } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
   import {
-    Button,
     ButtonDropdown,
     Collapse,
     DropdownItem,

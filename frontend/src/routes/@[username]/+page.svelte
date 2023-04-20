@@ -43,7 +43,7 @@
   let bio: string | null;
   $: bio = renderMarkdown(data.bio);
 
-  let memberPage: number = 0;
+  let memberPage = 0;
   let memberSlice: PartialMember[] = [];
   $: memberSlice = data.members.slice(memberPage * 20, (memberPage + 1) * 20);
   const totalPages = Math.ceil(data.members.length / 20);
