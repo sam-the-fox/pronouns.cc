@@ -20,10 +20,12 @@
     MAX_MEMBERS,
     pronounDisplay,
     userAvatars,
-    WordStatus,
     type APIError,
     type Member,
     type PartialMember,
+    type CustomPreferences,
+    type FieldEntry,
+    type Pronoun,
   } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
   import { apiFetchClient } from "$lib/api/fetch";
@@ -34,6 +36,7 @@
   import ProfileLink from "./ProfileLink.svelte";
   import { memberNameRegex } from "$lib/api/regex";
   import StatusLine from "$lib/components/StatusLine.svelte";
+  import defaultPreferences from "$lib/api/default_preferences";
 
   export let data: PageData;
 
@@ -84,8 +87,17 @@
     }
   };
 
-  const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
-  const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign(defaultPreferences, data.custom_preferences);
+
+  let favNames: FieldEntry[];
+  $: favNames = data.names.filter(
+    (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
+  );
+  let favPronouns: Pronoun[];
+  $: favPronouns = data.pronouns.filter(
+    (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
+  );
 
   let profileEmpty = false;
   $: profileEmpty =
@@ -146,7 +158,11 @@
           <h3>Names</h3>
           <ul class="list-unstyled fs-5">
             {#each data.names as name}
-              <li><StatusLine preferences={data.custom_preferences} status={name.status}>{name.value}</StatusLine></li>
+              <li>
+                <StatusLine preferences={data.custom_preferences} status={name.status}
+                  >{name.value}</StatusLine
+                >
+              </li>
             {/each}
           </ul>
         </div>
@@ -156,7 +172,11 @@
           <h3>Pronouns</h3>
           <ul class="list-unstyled fs-5">
             {#each data.pronouns as pronouns}
-              <li><StatusLine preferences={data.custom_preferences} status={pronouns.status}><PronounLink {pronouns} /></StatusLine></li>
+              <li>
+                <StatusLine preferences={data.custom_preferences} status={pronouns.status}
+                  ><PronounLink {pronouns} /></StatusLine
+                >
+              </li>
             {/each}
           </ul>
         </div>
