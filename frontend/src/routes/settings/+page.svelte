@@ -7,8 +7,18 @@
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
   import { addToast } from "$lib/toast";
-  import { Button, Icon, Modal, ModalBody, ModalFooter, ModalHeader, Table } from "sveltestrap";
+  import {
+    Alert,
+    Button,
+    Icon,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    Table,
+  } from "sveltestrap";
   import type { PageData } from "./$types";
+  import { onMount } from "svelte";
 
   export let data: PageData;
 
@@ -73,7 +83,36 @@
       invalidateError = e as APIError;
     }
   };
+
+  const DONATE_ALERT_STORE = "alert-1681976313";
+  let donateAlertOpen = false;
+  const closeDonateAlert = () => {
+    donateAlertOpen = false;
+    localStorage.setItem(DONATE_ALERT_STORE, "dismissed");
+  };
+
+  onMount(() => {
+    if (!localStorage.getItem(DONATE_ALERT_STORE)) {
+      donateAlertOpen = true;
+    }
+  });
 </script>
+
+<Alert color="secondary" fade={false} isOpen={donateAlertOpen} toggle={closeDonateAlert}>
+  If you find pronouns.cc useful and have the means, I would really appreciate a <a
+    href="https://liberapay.com/u1f320/"
+    target="_blank">donation</a
+  >
+  to keep the site running, fast, and ad-free!
+  <br />
+  It's not required and doesn't give you any perks, but running a website is expensive so it would really
+  help.
+  <br />
+  <span class="text-muted">
+    (If you want to hide this alert, press the <Icon name="x-lg" alt="X" /> in the top right to hide
+    it on this computer or phone)
+  </span>
+</Alert>
 
 <h1>Your profile</h1>
 

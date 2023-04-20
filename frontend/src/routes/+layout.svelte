@@ -8,6 +8,7 @@
   import { version } from "$app/environment";
   import { toastStore } from "$lib/toast";
   import Toast from "$lib/components/Toast.svelte";
+  import { Icon } from "sveltestrap";
 
   export let data: LayoutData;
 
@@ -48,6 +49,9 @@
           >)
         {/if} &middot;
         <a href="/page/about">About & contact</a> &middot;
+        <Icon name="cash" aria-hidden />
+        <a href="https://liberapay.com/u1f320/" target="_blank">Donate</a>
+        &middot;
         <a href="/page/terms">Terms of service</a> &middot;
         <a href="/page/privacy">Privacy policy</a>
       </p>
