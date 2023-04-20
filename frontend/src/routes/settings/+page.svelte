@@ -105,9 +105,8 @@
   >
   to keep the site running, fast, and ad-free!
   <br />
-  It's not required and doesn't give you any perks, but running a website is expensive so it would really
-  help.
-  <br />
+  It's not required and doesn't give you any perks, but running this website takes time and money so
+  it would really help.
   <span class="text-muted">
     (If you want to hide this alert, press the <Icon name="x-lg" alt="X" /> in the top right to hide
     it on this computer or phone)
