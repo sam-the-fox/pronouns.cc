@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { memberAvatars, WordStatus, type PartialMember, type User } from "$lib/api/entities";
+  import defaultPreferences from "$lib/api/default_preferences";
+  import {
+    memberAvatars,
+    type PartialMember,
+    type User,
+    type CustomPreferences,
+  } from "$lib/api/entities";
   import FallbackImage from "./FallbackImage.svelte";
 
   export let user: User;
@@ -7,9 +13,12 @@
 
   let pronouns: string | undefined;
 
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign(defaultPreferences, user.custom_preferences);
+
   const getPronouns = (member: PartialMember) => {
     const filteredPronouns = member.pronouns.filter(
-      (pronouns) => pronouns.status === WordStatus.Favourite,
+      (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
     );
     if (filteredPronouns.length === 0) {
       return undefined;
