@@ -67,15 +67,6 @@ export interface Pronoun {
   status: string;
 }
 
-export enum WordStatus {
-  Unknown = "",
-  Favourite = "favourite",
-  Okay = "okay",
-  Jokingly = "jokingly",
-  FriendsOnly = "friends_only",
-  Avoid = "avoid",
-}
-
 export interface PartialMember {
   id: string;
   name: string;

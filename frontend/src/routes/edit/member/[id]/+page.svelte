@@ -3,7 +3,6 @@
   import {
     MAX_DESCRIPTION_LENGTH,
     memberAvatars,
-    WordStatus,
     type APIError,
     type Field,
     type FieldEntry,
@@ -204,7 +203,7 @@
   const addName = (event: Event) => {
     event.preventDefault();
 
-    names = [...names, { value: newName, status: WordStatus.Okay }];
+    names = [...names, { value: newName, status: "okay" }];
     newName = "";
   };
 
@@ -218,14 +217,11 @@
         {
           pronouns: fullSet.pronouns.join("/"),
           display_text: fullSet.display || null,
-          status: WordStatus.Okay,
+          status: "okay",
         },
       ];
     } else {
-      pronouns = [
-        ...pronouns,
-        { pronouns: newPronouns, display_text: null, status: WordStatus.Okay },
-      ];
+      pronouns = [...pronouns, { pronouns: newPronouns, display_text: null, status: "okay" }];
     }
     newPronouns = "";
   };
@@ -309,7 +305,7 @@
   $: deleteModalPronoun = updateModalPronoun(pronouns);
 
   const updateModalPronoun = (pronouns: Pronoun[]) => {
-    const filtered = pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+    const filtered = pronouns.filter((entry) => entry.status === "favourite");
     if (filtered.length < 1) return "the member's";
 
     const split = filtered[0].pronouns.split("/");

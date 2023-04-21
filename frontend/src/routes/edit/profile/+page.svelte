@@ -2,7 +2,6 @@
   import {
     MAX_DESCRIPTION_LENGTH,
     userAvatars,
-    WordStatus,
     type APIError,
     type Field,
     type FieldEntry,
@@ -218,7 +217,7 @@
   const addName = (event: Event) => {
     event.preventDefault();
 
-    names = [...names, { value: newName, status: WordStatus.Okay }];
+    names = [...names, { value: newName, status: "okay" }];
     newName = "";
   };
 
@@ -232,14 +231,11 @@
         {
           pronouns: fullSet.pronouns.join("/"),
           display_text: fullSet.display || null,
-          status: WordStatus.Okay,
+          status: "okay",
         },
       ];
     } else {
-      pronouns = [
-        ...pronouns,
-        { pronouns: newPronouns, display_text: null, status: WordStatus.Okay },
-      ];
+      pronouns = [...pronouns, { pronouns: newPronouns, display_text: null, status: "okay" }];
     }
     newPronouns = "";
   };
@@ -311,6 +307,7 @@
       });
 
       data.user = resp;
+      custom_preferences = resp.custom_preferences;
       userStore.set(resp);
       localStorage.setItem("pronouns-user", JSON.stringify(resp));
 
@@ -411,7 +408,7 @@
         <EditableName
           bind:value={names[index].value}
           bind:status={names[index].status}
-          preferences={data.user.custom_preferences}
+          preferences={custom_preferences}
           moveUp={() => moveName(index, true)}
           moveDown={() => moveName(index, false)}
           remove={() => removeName(index)}
@@ -451,6 +448,7 @@
         {#each pronouns as _, index}
           <EditablePronouns
             bind:pronoun={pronouns[index]}
+            preferences={custom_preferences}
             moveUp={() => movePronoun(index, true)}
             moveDown={() => movePronoun(index, false)}
             remove={() => removePronoun(index)}
@@ -492,7 +490,7 @@
         {#each fields as _, index}
           <EditableField
             bind:field={fields[index]}
-            preferences={data.user.custom_preferences}
+            preferences={custom_preferences}
             deleteField={() => removeField(index)}
             moveField={(up) => moveField(index, up)}
           />
