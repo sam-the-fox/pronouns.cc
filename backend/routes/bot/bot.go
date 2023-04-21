@@ -144,7 +144,7 @@ func (bot *Bot) userPronouns(w http.ResponseWriter, r *http.Request, ev *discord
 		var favs []db.FieldEntry
 
 		for _, e := range field.Entries {
-			if e.Status == db.StatusFavourite {
+			if e.Status == "favourite" {
 				favs = append(favs, e)
 			}
 		}

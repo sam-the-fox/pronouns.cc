@@ -106,18 +106,6 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := validateSlicePtr("name", req.Names, u.CustomPreferences); err != nil {
-		return *err
-	}
-
-	if err := validateSlicePtr("pronoun", req.Pronouns, u.CustomPreferences); err != nil {
-		return *err
-	}
-
-	if err := validateSlicePtr("field", req.Fields, u.CustomPreferences); err != nil {
-		return *err
-	}
-
 	// validate custom preferences
 	if req.CustomPreferences != nil {
 		if count := len(*req.CustomPreferences); count > db.MaxFields {
@@ -133,6 +121,22 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 				return server.APIError{Code: server.ErrBadRequest, Details: s}
 			}
 		}
+	}
+	customPreferences := u.CustomPreferences
+	if req.CustomPreferences != nil {
+		customPreferences = *req.CustomPreferences
+	}
+
+	if err := validateSlicePtr("name", req.Names, customPreferences); err != nil {
+		return *err
+	}
+
+	if err := validateSlicePtr("pronoun", req.Pronouns, customPreferences); err != nil {
+		return *err
+	}
+
+	if err := validateSlicePtr("field", req.Fields, customPreferences); err != nil {
+		return *err
 	}
 
 	// update avatar

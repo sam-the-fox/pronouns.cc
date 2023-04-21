@@ -7,15 +7,6 @@ import (
 
 type WordStatus string
 
-const (
-	StatusUnknown     WordStatus = ""
-	StatusFavourite   WordStatus = "favourite"
-	StatusOkay        WordStatus = "okay"
-	StatusJokingly    WordStatus = "jokingly"
-	StatusFriendsOnly WordStatus = "friends_only"
-	StatusAvoid       WordStatus = "avoid"
-)
-
 func (w *WordStatus) UnmarshalJSON(src []byte) error {
 	if string(src) == "null" {
 		return nil
@@ -41,7 +32,7 @@ func (w *WordStatus) UnmarshalJSON(src []byte) error {
 }
 
 func (w WordStatus) Valid(extra CustomPreferences) bool {
-	if w == StatusFavourite || w == StatusOkay || w == StatusJokingly || w == StatusFriendsOnly || w == StatusAvoid {
+	if w == "favourite" || w == "okay" || w == "jokingly" || w == "friends_only" || w == "avoid" {
 		return true
 	}
 

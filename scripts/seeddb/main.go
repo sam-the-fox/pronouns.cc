@@ -55,11 +55,11 @@ func run(c *cli.Context) error {
 	}
 
 	err = pg.SetUserNamesPronouns(ctx, tx, u.ID, []db.FieldEntry{
-		{Value: "testing 1", Status: db.StatusFavourite},
-		{Value: "testing 2", Status: db.StatusOkay},
+		{Value: "testing 1", Status: "favourite"},
+		{Value: "testing 2", Status: "okay"},
 	}, []db.PronounEntry{
-		{Pronouns: "it/it/its/its/itself", DisplayText: ptr("it/its"), Status: db.StatusFavourite},
-		{Pronouns: "they/them/their/theirs/themself", Status: db.StatusOkay},
+		{Pronouns: "it/it/its/its/itself", DisplayText: ptr("it/its"), Status: "favourite"},
+		{Pronouns: "they/them/their/theirs/themself", Status: "okay"},
 	})
 	if err != nil {
 		fmt.Println("error setting pronouns:", err)
@@ -70,51 +70,51 @@ func run(c *cli.Context) error {
 		{
 			Name: "Field 1",
 			Entries: []db.FieldEntry{
-				{Value: "Favourite 1", Status: db.StatusFavourite},
-				{Value: "Okay 1", Status: db.StatusOkay},
-				{Value: "Jokingly 1", Status: db.StatusJokingly},
-				{Value: "Friends only 1", Status: db.StatusFriendsOnly},
-				{Value: "Avoid 1", Status: db.StatusAvoid},
+				{Value: "Favourite 1", Status: "favourite"},
+				{Value: "Okay 1", Status: "okay"},
+				{Value: "Jokingly 1", Status: "jokingly"},
+				{Value: "Friends only 1", Status: "friends_only"},
+				{Value: "Avoid 1", Status: "avoid"},
 			},
 		},
 		{
 			Name: "Field 2",
 			Entries: []db.FieldEntry{
-				{Value: "Favourite 2", Status: db.StatusFavourite},
-				{Value: "Okay 2", Status: db.StatusOkay},
-				{Value: "Jokingly 2", Status: db.StatusJokingly},
-				{Value: "Friends only 2", Status: db.StatusFriendsOnly},
-				{Value: "Avoid 2", Status: db.StatusAvoid},
+				{Value: "Favourite 2", Status: "favourite"},
+				{Value: "Okay 2", Status: "okay"},
+				{Value: "Jokingly 2", Status: "jokingly"},
+				{Value: "Friends only 2", Status: "friends_only"},
+				{Value: "Avoid 2", Status: "avoid"},
 			},
 		},
 		{
 			Name: "Field 3",
 			Entries: []db.FieldEntry{
-				{Value: "Favourite 3", Status: db.StatusFavourite},
-				{Value: "Okay 3", Status: db.StatusOkay},
-				{Value: "Jokingly 3", Status: db.StatusJokingly},
-				{Value: "Friends only 3", Status: db.StatusFriendsOnly},
-				{Value: "Avoid 3", Status: db.StatusAvoid},
+				{Value: "Favourite 3", Status: "favourite"},
+				{Value: "Okay 3", Status: "okay"},
+				{Value: "Jokingly 3", Status: "jokingly"},
+				{Value: "Friends only 3", Status: "friends_only"},
+				{Value: "Avoid 3", Status: "avoid"},
 			},
 		},
 		{
 			Name: "Field 4",
 			Entries: []db.FieldEntry{
-				{Value: "Favourite 4", Status: db.StatusFavourite},
-				{Value: "Okay 4", Status: db.StatusOkay},
-				{Value: "Jokingly 4", Status: db.StatusJokingly},
-				{Value: "Friends only 4", Status: db.StatusFriendsOnly},
-				{Value: "Avoid 4", Status: db.StatusAvoid},
+				{Value: "Favourite 4", Status: "favourite"},
+				{Value: "Okay 4", Status: "okay"},
+				{Value: "Jokingly 4", Status: "jokingly"},
+				{Value: "Friends only 4", Status: "friends_only"},
+				{Value: "Avoid 4", Status: "avoid"},
 			},
 		},
 		{
 			Name: "Field 5",
 			Entries: []db.FieldEntry{
-				{Value: "Favourite 5", Status: db.StatusFavourite},
-				{Value: "Okay 5", Status: db.StatusOkay},
-				{Value: "Jokingly 5", Status: db.StatusJokingly},
-				{Value: "Friends only 5", Status: db.StatusFriendsOnly},
-				{Value: "Avoid 5", Status: db.StatusAvoid},
+				{Value: "Favourite 5", Status: "favourite"},
+				{Value: "Okay 5", Status: "okay"},
+				{Value: "Jokingly 5", Status: "jokingly"},
+				{Value: "Friends only 5", Status: "friends_only"},
+				{Value: "Avoid 5", Status: "avoid"},
 			},
 		},
 	})
