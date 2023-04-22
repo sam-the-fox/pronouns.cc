@@ -7,6 +7,7 @@
     ButtonGroup,
     Icon,
     Input,
+    InputGroup,
     Modal,
     ModalBody,
     ModalFooter,
@@ -37,6 +38,7 @@
   import { memberNameRegex } from "$lib/api/regex";
   import StatusLine from "$lib/components/StatusLine.svelte";
   import defaultPreferences from "$lib/api/default_preferences";
+  import { addToast } from "$lib/toast";
 
   export let data: PageData;
 
@@ -105,6 +107,12 @@
     data.pronouns.length === 0 &&
     data.fields.length === 0 &&
     (!data.bio || data.bio.length === 0);
+
+  const copyURL = async () => {
+    const url = `${PUBLIC_BASE_URL}/@${data.name}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the link to your clipboard!", duration: 2000 });
+  };
 </script>
 
 <div class="container">
@@ -187,11 +195,19 @@
         </div>
       {/each}
     </div>
-    {#if $userStore && $userStore.id !== data.id}
-      <div class="row">
-        <ReportButton subject="user" reportUrl="/users/{data.id}/reports" />
+    <div class="row">
+      <div class="col-md-6">
+        <InputGroup>
+          <Button color="secondary" outline on:click={copyURL}>
+            <Icon name="clipboard" /> Copy link
+          </Button>
+          {#if $userStore && $userStore.id !== data.id}
+            <ReportButton subject="user" reportUrl="/users/{data.id}/reports" />
+          {/if}
+        </InputGroup>
       </div>
-    {/if}
+      <div class="col-md-6" />
+    </div>
     {#if data.members.length > 0 || ($userStore && $userStore.id === data.id)}
       <div class="row">
         <div class="col">

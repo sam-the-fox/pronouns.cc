@@ -28,11 +28,9 @@
   };
 </script>
 
-<div>
-  <Button color="danger" outline on:click={toggle}
-    ><Icon name="exclamation-triangle-fill" /> Report {subject}</Button
-  >
-</div>
+<Button color="danger" outline on:click={toggle}
+  ><Icon name="exclamation-triangle-fill" /> Report {subject}</Button
+>
 
 <Modal header="Report {subject}" {isOpen} {toggle}>
   <ModalBody>
