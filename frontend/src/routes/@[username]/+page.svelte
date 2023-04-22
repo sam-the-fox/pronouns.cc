@@ -220,7 +220,7 @@
         </div>
       </div>
       {#if data.members.length > 0}
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 text-center">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 text-center">
           {#each memberSlice as member}
             <PartialMemberCard user={data} {member} />
           {/each}
