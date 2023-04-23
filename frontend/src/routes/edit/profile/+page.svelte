@@ -214,6 +214,17 @@
     fields[newIndex] = temp;
   };
 
+  const moveLink = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == links.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = links[index];
+    links[index] = links[newIndex];
+    links[newIndex] = temp;
+  };
+
   const addName = (event: Event) => {
     event.preventDefault();
 
@@ -507,6 +518,18 @@
     <div class="mt-3">
       {#each links as _, index}
         <div class="input-group m-1">
+          <IconButton
+            icon="chevron-up"
+            color="secondary"
+            tooltip="Move link up"
+            click={() => moveLink(index, true)}
+          />
+          <IconButton
+            icon="chevron-down"
+            color="secondary"
+            tooltip="Move link down"
+            click={() => moveLink(index, false)}
+          />
           <input type="text" class="form-control" bind:value={links[index]} />
           <IconButton
             color="danger"
