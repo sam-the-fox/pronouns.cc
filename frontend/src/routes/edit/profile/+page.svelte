@@ -146,6 +146,8 @@
   };
 
   const customPreferencesEqual = (obj1: CustomPreferences, obj2: CustomPreferences) => {
+    if (Object.keys(obj2).some((key) => !(key in obj1))) return false;
+
     return Object.keys(obj1)
       .map((key) => {
         if (!(key in obj2)) return false;
