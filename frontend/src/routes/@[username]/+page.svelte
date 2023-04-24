@@ -241,6 +241,19 @@
             <PartialMemberCard user={data} {member} />
           {/each}
         </div>
+        {#if totalPages > 1}
+          <div class="text-center">
+            <ButtonGroup>
+              <Button on:click={prevPage} disabled={memberPage === 0}
+                ><Icon name="chevron-left" /> Previous page</Button
+              >
+              <Button disabled>Page {memberPage + 1}/{totalPages}</Button>
+              <Button on:click={nextPage} disabled={memberPage === totalPages - 1}
+                >Next page <Icon name="chevron-right" /></Button
+              >
+            </ButtonGroup>
+          </div>
+        {/if}
       {:else}
         <div>
           <p>
