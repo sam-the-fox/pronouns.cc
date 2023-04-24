@@ -13,4 +13,4 @@ const initialThemeValue = browser
 
 export const themeStore = writable<string>(initialThemeValue);
 
-export const CURRENT_CHANGELOG = "0.4.0";
+export const CURRENT_CHANGELOG = "0.4.1";
