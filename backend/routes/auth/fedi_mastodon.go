@@ -27,9 +27,10 @@ type fediCallbackResponse struct {
 	Token string        `json:"token,omitempty"`
 	User  *userResponse `json:"user,omitempty"`
 
-	Fediverse     string `json:"fediverse,omitempty"` // username, for UI purposes
-	Ticket        string `json:"ticket,omitempty"`
-	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
+	Fediverse      string `json:"fediverse,omitempty"` // username, for UI purposes
+	Ticket         string `json:"ticket,omitempty"`
+	RequireInvite  bool   `json:"require_invite"` // require an invite for signing up
+	RequireCaptcha bool   `json:"require_captcha"`
 
 	IsDeleted    bool       `json:"is_deleted"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -169,10 +170,11 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	render.JSON(w, r, fediCallbackResponse{
-		HasAccount:    false,
-		Fediverse:     mu.Username,
-		Ticket:        ticket,
-		RequireInvite: s.RequireInvite,
+		HasAccount:     false,
+		Fediverse:      mu.Username,
+		Ticket:         ticket,
+		RequireInvite:  s.RequireInvite,
+		RequireCaptcha: s.hcaptchaSecret != "",
 	})
 
 	return nil
@@ -278,10 +280,11 @@ func (s *Server) mastodonUnlink(w http.ResponseWriter, r *http.Request) error {
 }
 
 type fediSignupRequest struct {
-	Instance   string `json:"instance"`
-	Ticket     string `json:"ticket"`
-	Username   string `json:"username"`
-	InviteCode string `json:"invite_code"`
+	Instance        string `json:"instance"`
+	Ticket          string `json:"ticket"`
+	Username        string `json:"username"`
+	InviteCode      string `json:"invite_code"`
+	CaptchaResponse string `json:"captcha_response"`
 }
 
 func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
@@ -324,6 +327,19 @@ func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("getting mastoAPI user for ticket: %v", err)
 
 		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	// check captcha
+	if s.hcaptchaSecret != "" {
+		ok, err := s.verifyCaptcha(ctx, req.CaptchaResponse)
+		if err != nil {
+			log.Errorf("verifying captcha: %v", err)
+			return server.APIError{Code: server.ErrInternalServerError}
+		}
+
+		if !ok {
+			return server.APIError{Code: server.ErrInvalidCaptcha}
+		}
 	}
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)

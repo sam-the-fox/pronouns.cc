@@ -4,6 +4,8 @@
   import { fastFetch } from "$lib/api/fetch";
   import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
+  import { PUBLIC_HCAPTCHA_SITEKEY } from "$env/static/public";
+  import HCaptcha from "svelte-hcaptcha";
   import { userStore } from "$lib/store";
   import { addToast } from "$lib/toast";
   import { DateTime } from "luxon";
@@ -23,6 +25,7 @@
   export let remoteName: string | undefined;
   export let error: APIError | undefined;
   export let requireInvite: boolean | undefined;
+  export let requireCaptcha: boolean | undefined;
   export let isDeleted: boolean | undefined;
   export let ticket: string | undefined;
   export let token: string | undefined;
@@ -54,7 +57,31 @@
   let toggleForceDeleteModal = () => (forceDeleteModalOpen = !forceDeleteModalOpen);
 
   export let linkAccount: () => Promise<void>;
-  export let signupForm: (username: string, inviteCode: string) => Promise<void>;
+  export let signupForm: (
+    username: string,
+    inviteCode: string,
+    captchaToken: string,
+  ) => Promise<void>;
+
+  let captchaToken = "";
+  let captcha: any;
+
+  const captchaSuccess = (token: any) => {
+    captchaToken = token.detail.token;
+  };
+
+  let canSubmit = false;
+  $: canSubmit = usernameValid && (!!captchaToken || !requireCaptcha);
+
+  const captchaError = () => {
+    addToast({
+      header: "Captcha failed",
+      body: "There was an error verifying the captcha, please try again.",
+    });
+    captcha.reset();
+  };
+
+  export const resetCaptcha = (): void => captcha.reset();
 
   const forceDeleteAccount = async () => {
     try {
@@ -116,7 +143,7 @@
     <Button color="secondary" href="/settings/auth">Cancel</Button>
   </div>
 {:else if ticket}
-  <form on:submit|preventDefault={() => signupForm(username, inviteCode)}>
+  <form on:submit|preventDefault={() => signupForm(username, inviteCode, captchaToken)}>
     <div>
       <FormGroup floating label="{authType} username">
         <Input readonly value={remoteName} />
@@ -144,12 +171,22 @@
         </div>
       </div>
     {/if}
+    {#if requireCaptcha}
+      <div class="mt-2 mx-2 mb-1">
+        <HCaptcha
+          bind:this={captcha}
+          sitekey={PUBLIC_HCAPTCHA_SITEKEY}
+          on:success={captchaSuccess}
+          on:error={captchaError}
+        />
+      </div>
+    {/if}
     <div class="text-muted my-1">
       By signing up, you agree to the <a href="/page/terms">terms of service</a> and the
       <a href="/page/privacy">privacy policy</a>.
     </div>
     <p>
-      <Button type="submit" color="primary" disabled={!usernameValid}>Sign up</Button>
+      <Button type="submit" color="primary" disabled={!canSubmit}>Sign up</Button>
       {#if !usernameValid && username.length > 0}
         <span class="text-danger-emphasis mb-2">That username is not valid.</span>
       {/if}

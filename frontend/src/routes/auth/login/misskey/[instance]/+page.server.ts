@@ -29,6 +29,7 @@ interface CallbackResponse {
   fediverse?: string;
   ticket?: string;
   require_invite: boolean;
+  require_captcha: boolean;
 
   is_deleted: boolean;
   deleted_at?: string;

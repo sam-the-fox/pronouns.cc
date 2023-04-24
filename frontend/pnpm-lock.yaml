@@ -27,6 +27,7 @@ specifiers:
   sanitize-html: ^2.10.0
   svelte: ^3.58.0
   svelte-check: ^3.1.4
+  svelte-hcaptcha: ^0.1.1
   sveltestrap: ^5.10.0
   tslib: ^2.5.0
   typescript: ^4.9.5
@@ -62,6 +63,7 @@ devDependencies:
   prettier-plugin-svelte: 2.10.0_ur5pqdgn24bclu6l6i7qojopk4
   svelte: 3.58.0
   svelte-check: 3.1.4_svelte@3.58.0
+  svelte-hcaptcha: 0.1.1
   sveltestrap: 5.10.0_svelte@3.58.0
   tslib: 2.5.0
   typescript: 4.9.5
@@ -2016,6 +2018,10 @@ packages:
       - sass
       - stylus
       - sugarss
+    dev: true
+
+  /svelte-hcaptcha/0.1.1:
+    resolution: {integrity: sha512-iFF3HwfrCRciJnDs4Y9/rpP/BM2U/5zt+vh+9d4tALPAHVkcANiJIKqYuS835pIaTm6gt+xOzjfFI3cgiRI29A==}
     dev: true
 
   /svelte-hmr/0.15.1_svelte@3.58.0:

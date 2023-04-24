@@ -150,6 +150,7 @@ export enum ErrorCode {
   AlreadyLinked = 1014,
   NotLinked = 1015,
   LastProvider = 1016,
+  InvalidCaptcha = 1017,
 
   UserNotFound = 2001,
 

@@ -18,6 +18,9 @@ type Server struct {
 
 	RequireInvite bool
 	BaseURL       string
+
+	hcaptchaSitekey string
+	hcaptchaSecret  string
 }
 
 type userResponse struct {
@@ -70,9 +73,11 @@ func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 
 func Mount(srv *server.Server, r chi.Router) {
 	s := &Server{
-		Server:        srv,
-		RequireInvite: os.Getenv("REQUIRE_INVITE") == "true",
-		BaseURL:       os.Getenv("BASE_URL"),
+		Server:          srv,
+		RequireInvite:   os.Getenv("REQUIRE_INVITE") == "true",
+		BaseURL:         os.Getenv("BASE_URL"),
+		hcaptchaSitekey: os.Getenv("HCAPTCHA_SITEKEY"),
+		hcaptchaSecret:  os.Getenv("HCAPTCHA_SECRET"),
 	}
 
 	r.Route("/auth", func(r chi.Router) {

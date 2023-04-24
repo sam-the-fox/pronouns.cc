@@ -39,9 +39,10 @@ type discordCallbackResponse struct {
 	Token string        `json:"token,omitempty"`
 	User  *userResponse `json:"user,omitempty"`
 
-	Discord       string `json:"discord,omitempty"` // username, for UI purposes
-	Ticket        string `json:"ticket,omitempty"`
-	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
+	Discord        string `json:"discord,omitempty"` // username, for UI purposes
+	Ticket         string `json:"ticket,omitempty"`
+	RequireInvite  bool   `json:"require_invite"` // require an invite for signing up
+	RequireCaptcha bool   `json:"require_captcha"`
 
 	IsDeleted    bool       `json:"is_deleted"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -148,10 +149,11 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	render.JSON(w, r, discordCallbackResponse{
-		HasAccount:    false,
-		Discord:       du.String(),
-		Ticket:        ticket,
-		RequireInvite: s.RequireInvite,
+		HasAccount:     false,
+		Discord:        du.String(),
+		Ticket:         ticket,
+		RequireInvite:  s.RequireInvite,
+		RequireCaptcha: s.hcaptchaSecret != "",
 	})
 
 	return nil
@@ -251,9 +253,10 @@ func (s *Server) discordUnlink(w http.ResponseWriter, r *http.Request) error {
 }
 
 type signupRequest struct {
-	Ticket     string `json:"ticket"`
-	Username   string `json:"username"`
-	InviteCode string `json:"invite_code"`
+	Ticket          string `json:"ticket"`
+	Username        string `json:"username"`
+	InviteCode      string `json:"invite_code"`
+	CaptchaResponse string `json:"captcha_response"`
 }
 
 type signupResponse struct {
@@ -296,6 +299,19 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("getting discord user for ticket: %v", err)
 
 		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	// check captcha
+	if s.hcaptchaSecret != "" {
+		ok, err := s.verifyCaptcha(ctx, req.CaptchaResponse)
+		if err != nil {
+			log.Errorf("verifying captcha: %v", err)
+			return server.APIError{Code: server.ErrInternalServerError}
+		}
+
+		if !ok {
+			return server.APIError{Code: server.ErrInvalidCaptcha}
+		}
 	}
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)

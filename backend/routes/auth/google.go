@@ -33,9 +33,10 @@ type googleCallbackResponse struct {
 	Token string        `json:"token,omitempty"`
 	User  *userResponse `json:"user,omitempty"`
 
-	Google        string `json:"google,omitempty"` // username, for UI purposes
-	Ticket        string `json:"ticket,omitempty"`
-	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
+	Google         string `json:"google,omitempty"` // username, for UI purposes
+	Ticket         string `json:"ticket,omitempty"`
+	RequireInvite  bool   `json:"require_invite"` // require an invite for signing up
+	RequireCaptcha bool   `json:"require_captcha"`
 
 	IsDeleted    bool       `json:"is_deleted"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -167,10 +168,11 @@ func (s *Server) googleCallback(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	render.JSON(w, r, googleCallbackResponse{
-		HasAccount:    false,
-		Google:        googleUsername,
-		Ticket:        ticket,
-		RequireInvite: s.RequireInvite,
+		HasAccount:     false,
+		Google:         googleUsername,
+		Ticket:         ticket,
+		RequireInvite:  s.RequireInvite,
+		RequireCaptcha: s.hcaptchaSecret != "",
 	})
 
 	return nil
@@ -300,6 +302,19 @@ func (s *Server) googleSignup(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("getting google user for ticket: %v", err)
 
 		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	// check captcha
+	if s.hcaptchaSecret != "" {
+		ok, err := s.verifyCaptcha(ctx, req.CaptchaResponse)
+		if err != nil {
+			log.Errorf("verifying captcha: %v", err)
+			return server.APIError{Code: server.ErrInternalServerError}
+		}
+
+		if !ok {
+			return server.APIError{Code: server.ErrInvalidCaptcha}
+		}
 	}
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)

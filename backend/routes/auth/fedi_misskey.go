@@ -149,10 +149,11 @@ func (s *Server) misskeyCallback(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	render.JSON(w, r, fediCallbackResponse{
-		HasAccount:    false,
-		Fediverse:     mu.User.Username,
-		Ticket:        ticket,
-		RequireInvite: s.RequireInvite,
+		HasAccount:     false,
+		Fediverse:      mu.User.Username,
+		Ticket:         ticket,
+		RequireInvite:  s.RequireInvite,
+		RequireCaptcha: s.hcaptchaSecret != "",
 	})
 
 	return nil
@@ -254,6 +255,19 @@ func (s *Server) misskeySignup(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("getting misskey user for ticket: %v", err)
 
 		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	// check captcha
+	if s.hcaptchaSecret != "" {
+		ok, err := s.verifyCaptcha(ctx, req.CaptchaResponse)
+		if err != nil {
+			log.Errorf("verifying captcha: %v", err)
+			return server.APIError{Code: server.ErrInternalServerError}
+		}
+
+		if !ok {
+			return server.APIError{Code: server.ErrInvalidCaptcha}
+		}
 	}
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)

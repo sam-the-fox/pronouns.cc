@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import type { APIError, MeUser } from "$lib/api/entities";
+  import { ErrorCode, type APIError, type MeUser } from "$lib/api/entities";
   import { apiFetch, apiFetchClient } from "$lib/api/fetch";
   import { userStore } from "$lib/store";
   import type { PageData } from "./$types";
@@ -10,7 +10,9 @@
 
   export let data: PageData;
 
-  const signupForm = async (username: string, invite: string) => {
+  let callbackPage: any;
+
+  const signupForm = async (username: string, invite: string, captchaToken: string) => {
     try {
       const resp = await apiFetch<SignupResponse>("/auth/google/signup", {
         method: "POST",
@@ -18,6 +20,7 @@
           ticket: data.ticket,
           username: username,
           invite_code: invite,
+          captcha_response: captchaToken,
         },
       });
 
@@ -27,6 +30,10 @@
       addToast({ header: "Welcome!", body: "Signed up successfully!" });
       goto(`/@${resp.user.name}`);
     } catch (e) {
+      if ((e as APIError).code === ErrorCode.InvalidCaptcha) {
+        callbackPage.resetCaptcha();
+      }
+
       data.error = e as APIError;
     }
   };
@@ -48,10 +55,12 @@
 </script>
 
 <CallbackPage
+  bind:this={callbackPage}
   authType="Google"
   remoteName={data.google}
   error={data.error}
   requireInvite={data.require_invite}
+  requireCaptcha={data.require_captcha}
   isDeleted={data.is_deleted}
   ticket={data.ticket}
   token={data.token}

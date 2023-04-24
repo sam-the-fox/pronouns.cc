@@ -55,9 +55,10 @@ type tumblrCallbackResponse struct {
 	Token string        `json:"token,omitempty"`
 	User  *userResponse `json:"user,omitempty"`
 
-	Tumblr        string `json:"tumblr,omitempty"` // username, for UI purposes
-	Ticket        string `json:"ticket,omitempty"`
-	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
+	Tumblr         string `json:"tumblr,omitempty"` // username, for UI purposes
+	Ticket         string `json:"ticket,omitempty"`
+	RequireInvite  bool   `json:"require_invite"` // require an invite for signing up
+	RequireCaptcha bool   `json:"require_captcha"`
 
 	IsDeleted    bool       `json:"is_deleted"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -200,10 +201,11 @@ func (s *Server) tumblrCallback(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	render.JSON(w, r, tumblrCallbackResponse{
-		HasAccount:    false,
-		Tumblr:        tumblrName,
-		Ticket:        ticket,
-		RequireInvite: s.RequireInvite,
+		HasAccount:     false,
+		Tumblr:         tumblrName,
+		Ticket:         ticket,
+		RequireInvite:  s.RequireInvite,
+		RequireCaptcha: s.hcaptchaSecret != "",
 	})
 
 	return nil
@@ -333,6 +335,19 @@ func (s *Server) tumblrSignup(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("getting tumblr user for ticket: %v", err)
 
 		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	// check captcha
+	if s.hcaptchaSecret != "" {
+		ok, err := s.verifyCaptcha(ctx, req.CaptchaResponse)
+		if err != nil {
+			log.Errorf("verifying captcha: %v", err)
+			return server.APIError{Code: server.ErrInternalServerError}
+		}
+
+		if !ok {
+			return server.APIError{Code: server.ErrInvalidCaptcha}
+		}
 	}
 
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)
