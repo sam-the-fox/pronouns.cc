@@ -10,8 +10,6 @@ git clone https://codeberg.org/u1f320/pronouns.cc.git pronouns
 cd pronouns
 make all
 
-# if required fonts have not been downloaded yet
-./download-fonts.sh
 # if running for the first time
 ./pronouns database migrate
 ```
