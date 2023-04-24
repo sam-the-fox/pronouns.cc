@@ -1,37 +1,3 @@
-@font-face {
-  font-family: "FiraGO";
-  font-display: swap;
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/FiraGO-400.woff") format("woff");
-}
-
-@font-face {
-  font-family: "FiraGO";
-  font-display: swap;
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/FiraGO-400i.woff") format("woff");
-  font-style: italic;
-}
-
-@font-face {
-  font-family: "FiraGO";
-  font-display: swap;
-  font-style: normal;
-  font-weight: 700;
-  src: url("/fonts/FiraGO-700.woff") format("woff");
-}
-
-@font-face {
-  font-family: "FiraGO";
-  font-display: swap;
-  font-style: normal;
-  font-weight: 700;
-  src: url("/fonts/FiraGO-700i.woff") format("woff");
-  font-style: italic;
-}
-
 body {
   font-family: "FiraGO", sans-serif;
 }

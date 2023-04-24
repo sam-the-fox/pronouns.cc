@@ -1,5 +1,9 @@
 <script lang="ts">
   import "bootstrap/dist/css/bootstrap.min.css";
+  import "@fontsource/firago/400.css";
+  import "@fontsource/firago/400-italic.css";
+  import "@fontsource/firago/700.css";
+  import "@fontsource/firago/700-italic.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
   import "./main.css";
 
