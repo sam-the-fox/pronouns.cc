@@ -138,7 +138,7 @@
           <Button color="secondary" outline on:click={copyURL}>
             <Icon name="clipboard" /> Copy link
           </Button>
-          {#if $userStore && $userStore.id !== data.id}
+          {#if $userStore && $userStore.id !== data.user.id}
             <ReportButton subject="member" reportUrl="/members/{data.id}/reports" />
           {/if}
         </InputGroup>
