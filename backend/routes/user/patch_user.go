@@ -14,7 +14,7 @@ import (
 )
 
 type PatchUserRequest struct {
-	Username          *string               `json:"username"`
+	Username          *string               `json:"name"`
 	DisplayName       *string               `json:"display_name"`
 	Bio               *string               `json:"bio"`
 	MemberTitle       *string               `json:"member_title"`

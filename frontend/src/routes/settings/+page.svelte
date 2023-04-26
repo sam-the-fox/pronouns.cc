@@ -29,7 +29,7 @@
 
   const changeUsername = async () => {
     try {
-      const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", { username });
+      const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", { name: username });
 
       data.user = resp;
       userStore.set(resp);
