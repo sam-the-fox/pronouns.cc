@@ -35,7 +35,7 @@ const (
 )
 
 // member names must match this regex
-var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"'$%&()+<=>^|~`,]{1,100}$")
+var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"\\{\\}'$%&()+<=>^|~`,]{1,100}$")
 
 func MemberNameValid(name string) bool {
 	return memberNameRegex.MatchString(name)

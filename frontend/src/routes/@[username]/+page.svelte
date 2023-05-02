@@ -274,7 +274,7 @@
         <p class="text-muted my-2">
           <Icon name="info-circle-fill" aria-label="Info" /> Your members must have distinct names. Member
           names must be 100 characters long at most, and cannot contain the following characters: @ ?
-          ! # / \ [ ] " ' $ % & ( ) + &lt; = &gt; ^ | ~ ` and ,
+          ! # / \ [ ] " ' $ % & ( ) &lbrace; &rbrace; + &lt; = &gt; ^ | ~ ` and ,
         </p>
         {#if newMemberError}
           <ErrorAlert error={newMemberError} />
