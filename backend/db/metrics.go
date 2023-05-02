@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
@@ -37,6 +38,19 @@ func (db *DB) initMetrics() (err error) {
 	if err != nil {
 		return errors.Wrap(err, "registering member count gauge")
 	}
+
+	err = prometheus.Register(prometheus.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "pronouns_database_latency",
+		Help: "The latency to the database in nanoseconds",
+	}, func() float64 {
+		start := time.Now()
+		_, err = db.Exec(context.Background(), "SELECT 1")
+		if err != nil {
+			log.Errorf("pinging database: %v", err)
+			return -1
+		}
+		return float64(time.Since(start))
+	}))
 
 	db.TotalRequests = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "pronouns_api_requests_total",
