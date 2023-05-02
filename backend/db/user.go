@@ -24,6 +24,7 @@ type User struct {
 	DisplayName *string
 	Bio         *string
 	MemberTitle *string
+	LastActive  time.Time
 
 	Avatar *string
 	Links  []string

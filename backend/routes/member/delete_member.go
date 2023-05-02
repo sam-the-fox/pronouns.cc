@@ -9,6 +9,7 @@ import (
 	"github.com/rs/xid"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 )
 
@@ -49,6 +50,13 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return errors.Wrap(err, "deleting member avatar")
 		}
+	}
+
+	// update last active time
+	err = s.DB.UpdateActiveTime(ctx, s.DB, claims.UserID)
+	if err != nil {
+		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
+		return err
 	}
 
 	render.NoContent(w, r)

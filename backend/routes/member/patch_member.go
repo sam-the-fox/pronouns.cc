@@ -270,6 +270,13 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// update last active time
+	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
+	if err != nil {
+		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
+		return err
+	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		log.Errorf("committing transaction: %v", err)
