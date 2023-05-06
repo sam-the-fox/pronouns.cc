@@ -45,7 +45,35 @@ func (db *DB) initMetrics() (err error) {
 		Name: "pronouns_users_active",
 		Help: "The number of users active in the past 30 days",
 	}, func() float64 {
-		count, err := db.ActiveUsers(context.Background())
+		count, err := db.ActiveUsers(context.Background(), ActiveMonth)
+		if err != nil {
+			log.Errorf("getting active user count for metrics: %v", err)
+		}
+		return float64(count)
+	}))
+	if err != nil {
+		return errors.Wrap(err, "registering active user count gauge")
+	}
+
+	err = prometheus.Register(prometheus.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "pronouns_users_active_week",
+		Help: "The number of users active in the past 7 days",
+	}, func() float64 {
+		count, err := db.ActiveUsers(context.Background(), ActiveWeek)
+		if err != nil {
+			log.Errorf("getting active user count for metrics: %v", err)
+		}
+		return float64(count)
+	}))
+	if err != nil {
+		return errors.Wrap(err, "registering active user count gauge")
+	}
+
+	err = prometheus.Register(prometheus.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "pronouns_users_active_day",
+		Help: "The number of users active in the past 1 day",
+	}, func() float64 {
+		count, err := db.ActiveUsers(context.Background(), ActiveDay)
 		if err != nil {
 			log.Errorf("getting active user count for metrics: %v", err)
 		}
@@ -95,10 +123,14 @@ func (db *DB) TotalMemberCount(ctx context.Context) (numMembers int64, err error
 	return numMembers, nil
 }
 
-const activeTime = 30 * 24 * time.Hour
+const (
+	ActiveMonth = 30 * 24 * time.Hour
+	ActiveWeek  = 7 * 24 * time.Hour
+	ActiveDay   = 24 * time.Hour
+)
 
-func (db *DB) ActiveUsers(ctx context.Context) (numUsers int64, err error) {
-	t := time.Now().Add(-activeTime)
+func (db *DB) ActiveUsers(ctx context.Context, dur time.Duration) (numUsers int64, err error) {
+	t := time.Now().Add(-dur)
 	err = db.QueryRow(ctx, "SELECT COUNT(*) FROM users WHERE deleted_at IS NULL AND last_active > $1", t).Scan(&numUsers)
 	if err != nil {
 		return 0, errors.Wrap(err, "querying active user count")

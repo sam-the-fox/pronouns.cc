@@ -61,7 +61,7 @@
         <a href="/page/privacy">Privacy policy</a>
       </p>
       <p class="ms-auto">
-        Users: <strong>{data.users}</strong> &middot; Members: <strong>{data.members}</strong>
+        Users: <strong>{data.users.total}</strong> &middot; Members: <strong>{data.members}</strong>
       </p>
     </div>
   </footer>
