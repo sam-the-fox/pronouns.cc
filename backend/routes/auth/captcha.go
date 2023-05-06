@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -47,7 +46,7 @@ func (s *Server) verifyCaptcha(ctx context.Context, response string) (ok bool, e
 	if err != nil {
 		return false, errors.Wrap(err, "reading body")
 	}
-	fmt.Println(string(b))
+
 	var hr hcaptchaResponse
 	err = json.Unmarshal(b, &hr)
 	if err != nil {

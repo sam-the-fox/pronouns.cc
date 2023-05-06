@@ -43,7 +43,7 @@ func (db *DB) ConvertAvatar(data string) (
 
 	img, _, err := image.Decode(bytes.NewReader(rawData))
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "decodign image")
+		return nil, nil, errors.Wrap(err, "decoding image")
 	}
 
 	resized := imaging.Fill(img, 512, 512, imaging.Center, imaging.Linear)
