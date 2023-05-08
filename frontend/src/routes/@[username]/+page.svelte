@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageData } from "./$types";
+  import { onMount } from "svelte";
 
   import {
     Alert,
@@ -113,6 +114,19 @@
     await navigator.clipboard.writeText(url);
     addToast({ body: "Copied the link to your clipboard!", duration: 2000 });
   };
+
+  onMount(async () => {
+    if ($userStore && $userStore.id === data.id) {
+      console.log("User is current user, fetching members")
+      try {
+        const members = await apiFetchClient<PartialMember[]>("/users/@me/members");
+        data.members = members;
+      } catch (e) {
+        // If it fails, we fail silently but log to console anyway
+        console.error("Fetching members:", e)
+      }
+    }
+  })
 </script>
 
 <div class="container">
