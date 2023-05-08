@@ -121,9 +121,10 @@
 >
   <NavbarBrand href="/" aria-label="pronouns.cc landing page">
     <Logo />
-    <span id="beta-text">beta</span>
     {#if commit === "[unknown]"}
-      <Badge color="danger">DEV</Badge>
+      <strong id="beta-text" class="text-danger">dev</strong>
+    {:else}
+      <span id="beta-text">beta</span>
     {/if}
   </NavbarBrand>
   <NavbarToggler on:click={toggleMenu} aria-label="Toggle menu" />
