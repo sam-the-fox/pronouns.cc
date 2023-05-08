@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { decodeJwt } from "jose";
@@ -129,10 +130,15 @@
     <Nav class="ms-auto" navbar>
       {#if currentUser}
         <NavItem>
-          <NavLink href="/@{currentUser.name}">@{currentUser.name}</NavLink>
+          <NavLink
+            href="/@{currentUser.name}"
+            active={$page.url.pathname === `/@${currentUser.name}`}
+          >
+            @{currentUser.name}
+          </NavLink>
         </NavItem>
         <NavItem>
-          <NavLink href="/settings">
+          <NavLink href="/settings" active={$page.url.pathname.startsWith("/settings")}>
             Settings
             {#if numWarnings}
               <Badge color="danger">{numWarnings}</Badge>
@@ -141,7 +147,7 @@
         </NavItem>
         {#if isAdmin}
           <NavItem>
-            <NavLink href="/reports">
+            <NavLink href="/reports" active={$page.url.pathname.startsWith("/reports")}>
               Reports
               {#if numReports !== 0}
                 <Badge color="danger">{numReports}</Badge>
@@ -151,14 +157,14 @@
         {/if}
         {#if changelogRead < CURRENT_CHANGELOG}
           <NavItem>
-            <NavLink href="/page/changelog">
+            <NavLink href="/page/changelog" active={$page.url.pathname === "/page/changelog"}>
               Changelog <Badge color="secondary">v{CURRENT_CHANGELOG}</Badge>
             </NavLink>
           </NavItem>
         {/if}
       {:else}
         <NavItem>
-          <NavLink href="/auth/login">Log in</NavLink>
+          <NavLink href="/auth/login" active={$page.url.pathname === "/auth/login"}>Log in</NavLink>
         </NavItem>
       {/if}
       <NavItem>
