@@ -580,6 +580,13 @@
           <label class="form-check-label" for="unlisted">Hide from member list</label>
         </div>
         <p class="text-muted mt-1">
+          {#if data.user.list_private}
+            <Icon name="exclamation-triangle-fill" aria-hidden />
+            Your member list is currently hidden, so <strong>this setting has no effect</strong>. If
+            you want to make your member list visible again,
+            <a href="/edit/profile">edit your user profile</a>.
+            <br />
+          {/if}
           <Icon name="info-circle-fill" aria-hidden />
           This <em>only</em> hides this member from your member list.
           <strong>

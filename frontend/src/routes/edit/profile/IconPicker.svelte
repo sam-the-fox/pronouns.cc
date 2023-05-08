@@ -1,6 +1,5 @@
 <script lang="ts">
   import {
-    Button,
     ButtonDropdown,
     DropdownItem,
     DropdownMenu,
