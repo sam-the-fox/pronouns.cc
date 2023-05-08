@@ -121,6 +121,7 @@
 >
   <NavbarBrand href="/" aria-label="pronouns.cc landing page">
     <Logo />
+    <span id="beta-text">beta</span>
     {#if commit === "[unknown]"}
       <Badge color="danger">DEV</Badge>
     {/if}
@@ -179,3 +180,14 @@
     </Nav>
   </Collapse>
 </Navbar>
+
+<style>
+  /* These exact values make it look almost identical to the SVG version, which is what we want */
+  #beta-text {
+    font-size: 0.7em;
+    position: relative;
+    font-style: italic;
+    bottom: 12px;
+    right: 3px;
+  }
+</style>
