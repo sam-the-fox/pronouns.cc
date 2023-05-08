@@ -7,51 +7,22 @@
     DropdownMenu,
     DropdownToggle,
     Icon,
-    Input,
     InputGroup,
     Tooltip,
   } from "sveltestrap";
-  import icons from "../../../icons";
+  import IconPicker from "./IconPicker.svelte";
 
   export let preference: CustomPreference;
   export let remove: () => void;
 
-  let iconButton: HTMLElement;
   let sizeButton: HTMLElement;
 
   const toggleMuted = () => (preference.muted = !preference.muted);
   const toggleFavourite = () => (preference.favourite = !preference.favourite);
-
-  let searchBox = "";
-  let filteredIcons: string[] = [];
-  $: filteredIcons = searchBox
-    ? icons
-        .filter((icon) => icon.startsWith(searchBox))
-        .sort()
-        .slice(0, 15)
-    : [];
 </script>
 
 <InputGroup class="m-1">
-  <ButtonDropdown>
-    <Tooltip target={iconButton} placement="top">Change icon</Tooltip>
-    <DropdownToggle color="secondary" caret bind:inner={iconButton}>
-      <Icon name={preference.icon} alt="Current icon" />
-    </DropdownToggle>
-    <DropdownMenu>
-      <p class="px-2">
-        <Input type="text" placeholder="Search for icons" bind:value={searchBox} />
-      </p>
-      <DropdownItem divider />
-      {#each filteredIcons as icon}
-        <DropdownItem active={preference.icon === icon} on:click={() => (preference.icon = icon)}
-          ><Icon name={icon} alt="Icon: {icon}" /> {icon}</DropdownItem
-        >
-      {:else}
-        <p class="px-2">Start typing to filter</p>
-      {/each}
-    </DropdownMenu>
-  </ButtonDropdown>
+  <IconPicker bind:icon={preference.icon} />
   <input type="text" class="form-control" bind:value={preference.tooltip} />
   <Tooltip target={sizeButton} placement="top">Change text size</Tooltip>
   <ButtonDropdown>
