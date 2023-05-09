@@ -26,13 +26,14 @@ func membersToMemberList(ms []db.Member, isSelf bool) []memberListResponse {
 	resps := make([]memberListResponse, len(ms))
 	for i := range ms {
 		resps[i] = memberListResponse{
-			ID:       ms[i].ID,
-			Name:     ms[i].Name,
-			Bio:      ms[i].Bio,
-			Avatar:   ms[i].Avatar,
-			Links:    db.NotNull(ms[i].Links),
-			Names:    db.NotNull(ms[i].Names),
-			Pronouns: db.NotNull(ms[i].Pronouns),
+			ID:          ms[i].ID,
+			Name:        ms[i].Name,
+			DisplayName: ms[i].DisplayName,
+			Bio:         ms[i].Bio,
+			Avatar:      ms[i].Avatar,
+			Links:       db.NotNull(ms[i].Links),
+			Names:       db.NotNull(ms[i].Names),
+			Pronouns:    db.NotNull(ms[i].Pronouns),
 		}
 
 		if isSelf {
