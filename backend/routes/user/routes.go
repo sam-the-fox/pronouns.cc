@@ -29,6 +29,11 @@ func Mount(srv *server.Server, r chi.Router) {
 
 			r.Get("/@me/export/start", server.WrapHandler(s.startExport))
 			r.Get("/@me/export", server.WrapHandler(s.getExport))
+
+			r.Get("/@me/flags", server.WrapHandler(s.getUserFlags))
+			r.Post("/@me/flags", server.WrapHandler(s.postUserFlag))
+			r.Patch("/@me/flags", server.WrapHandler(s.patchUserFlag))
+			r.Delete("/@me/flags", server.WrapHandler(s.deleteUserFlag))
 		})
 	})
 }
