@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.2 - May 11th 2023
+
+- The report button will no longer show up for your own members.
+- Added a warning on the edit member page if your member list is hidden.
+- Fixed hidden members not showing up when viewing your _own_ user page.
+- The site will now default to a dark theme while loading, to remove the white flash when using a dark theme.
+  Sadly, it's one or the other, so light theme users will now see a _dark_ flash when the site is loading—
+  having asked multiple users, the general consensus is that a dark flash is better than a light flash.
+
 ## 0.4.1 - April 24th 2023
 
 - Added buttons to change the order of links on profiles.
