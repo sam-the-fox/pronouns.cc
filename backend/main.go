@@ -10,6 +10,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/go-chi/render"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli/v2"
@@ -22,6 +23,9 @@ var Command = &cli.Command{
 }
 
 func run(c *cli.Context) error {
+	vips.Startup(nil)
+	defer vips.Shutdown()
+
 	port := ":" + os.Getenv("PORT")
 
 	s, err := server.New()

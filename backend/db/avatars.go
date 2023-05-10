@@ -6,19 +6,15 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"image"
 	_ "image/gif"
-	"image/jpeg"
 	_ "image/png"
 	"io"
 	"strings"
 
 	"emperror.dev/errors"
-	"github.com/disintegration/imaging"
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
-
-	"github.com/chai2010/webp"
 )
 
 const ErrInvalidDataURI = errors.Sentinel("invalid data URI")
@@ -30,6 +26,8 @@ func (db *DB) ConvertAvatar(data string) (
 	jpgOut *bytes.Buffer,
 	err error,
 ) {
+	defer vips.ShutdownThread()
+
 	data = strings.TrimSpace(data)
 	if !strings.Contains(data, ",") || !strings.Contains(data, ":") || !strings.Contains(data, ";") {
 		return nil, nil, ErrInvalidDataURI
@@ -41,28 +39,31 @@ func (db *DB) ConvertAvatar(data string) (
 		return nil, nil, errors.Wrap(err, "invalid base64 data")
 	}
 
-	img, _, err := image.Decode(bytes.NewReader(rawData))
+	image, err := vips.LoadImageFromBuffer(rawData, nil)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "decoding image")
 	}
 
-	resized := imaging.Fill(img, 512, 512, imaging.Center, imaging.Linear)
-
-	webpOut = new(bytes.Buffer)
-	err = webp.Encode(webpOut, resized, &webp.Options{
-		Quality: 90,
-	})
+	err = image.ThumbnailWithSize(512, 512, vips.InterestingCentre, vips.SizeBoth)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "encoding WebP image")
+		return nil, nil, errors.Wrap(err, "resizing image")
 	}
 
-	jpgOut = new(bytes.Buffer)
-	err = jpeg.Encode(jpgOut, resized, &jpeg.Options{
-		Quality: 80,
-	})
+	webpExport := vips.NewWebpExportParams()
+	webpExport.Quality = 90
+	webpB, _, err := image.ExportWebp(webpExport)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "encoding JPEG image")
+		return nil, nil, errors.Wrap(err, "exporting webp image")
 	}
+	webpOut = bytes.NewBuffer(webpB)
+
+	jpegExport := vips.NewJpegExportParams()
+	jpegExport.Quality = 80
+	jpegB, _, err := image.ExportJpeg(jpegExport)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "exporting jpeg image")
+	}
+	jpgOut = bytes.NewBuffer(jpegB)
 
 	return webpOut, jpgOut, nil
 }

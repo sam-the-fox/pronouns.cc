@@ -6,8 +6,7 @@ require (
 	emperror.dev/errors v0.8.1
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/chai2010/webp v1.1.1
-	github.com/disintegration/imaging v1.6.2
+	github.com/davidbyttow/govips/v2 v2.13.0
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
