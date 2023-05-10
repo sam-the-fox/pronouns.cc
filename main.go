@@ -8,6 +8,8 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/exporter"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"codeberg.org/u1f320/pronouns.cc/scripts/cleandb"
+	"codeberg.org/u1f320/pronouns.cc/scripts/genid"
+	"codeberg.org/u1f320/pronouns.cc/scripts/genkey"
 	"codeberg.org/u1f320/pronouns.cc/scripts/migrate"
 	"codeberg.org/u1f320/pronouns.cc/scripts/seeddb"
 	"github.com/urfave/cli/v2"
@@ -28,6 +30,15 @@ var app = &cli.App{
 				migrate.Command,
 				seeddb.Command,
 				cleandb.Command,
+			},
+		},
+		{
+			Name:    "generate",
+			Aliases: []string{"gen"},
+			Usage:   "Generate various strings",
+			Subcommands: []*cli.Command{
+				genid.Command,
+				genkey.Command,
 			},
 		},
 	},
