@@ -38,6 +38,11 @@ const (
 var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"\\{\\}'$%&()+<=>^|~`,]{1,100}$")
 
 func MemberNameValid(name string) bool {
+	// These two names will break routing, but periods should still be allowed in names otherwise.
+	if name == "." || name == ".." {
+		return false
+	}
+
 	return memberNameRegex.MatchString(name)
 }
 
