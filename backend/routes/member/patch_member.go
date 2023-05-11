@@ -109,7 +109,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		if !db.MemberNameValid(*req.Name) {
 			return server.APIError{
 				Code:    server.ErrBadRequest,
-				Details: "Member name cannot contain any of the following: @, \\, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
+				Details: "Member name cannot contain any of the following: @, \\, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, , and cannot be one or two periods.",
 			}
 		}
 	}
