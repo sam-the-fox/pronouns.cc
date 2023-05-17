@@ -27,6 +27,7 @@
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#aa8ed6" />
   <meta property="og:site_name" content="pronouns.cc" />
+  <script defer data-domain="pronouns.cc" src="https://plausible.pronouns.cc/js/script.js"></script>
 </svelte:head>
 
 <div class="d-flex flex-column min-vh-100">
