@@ -3,7 +3,7 @@
   import { fastFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast } from "$lib/toast";
-  import { Button, FormGroup, Modal, ModalBody, ModalFooter } from "sveltestrap";
+  import { Button, ButtonGroup, FormGroup, Modal, ModalBody, ModalFooter } from "sveltestrap";
   import type { PageData } from "./$types";
   import ReportCard from "./ReportCard.svelte";
 
@@ -88,6 +88,18 @@
       error = e as APIError;
     }
   };
+
+  const urlParamsWith = (name: string, value: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set(name, value);
+    return params.toString();
+  };
+
+  const urlParamsWithout = (name: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete(name);
+    return params.toString();
+  };
 </script>
 
 <svelte:head>
@@ -96,6 +108,36 @@
 
 <div class="container">
   <h1>Reports</h1>
+
+  <div>
+    <ButtonGroup>
+      {#if data.userId || data.reporterId}
+        <Button color="secondary" disabled>Showing all reports</Button>
+      {:else if data.isClosed}
+        <Button color="primary" href="/reports?{urlParamsWith('closed', 'false')}"
+          >Showing closed reports</Button
+        >
+      {:else}
+        <Button color="secondary" href="/reports?{urlParamsWith('closed', 'true')}"
+          >Showing open reports</Button
+        >
+      {/if}
+      {#if data.userId}
+        <Button color="secondary" href="/reports?{urlParamsWithout('user_id')}"
+          >Filtering on specific user</Button
+        >
+      {:else}
+        <Button color="secondary" disabled>Not filtering on user</Button>
+      {/if}
+      {#if data.reporterId}
+        <Button color="secondary" href="/reports?{urlParamsWithout('reporter_id')}"
+          >Filtering on specific reporter</Button
+        >
+      {:else}
+        <Button color="secondary" disabled>Not filtering on reporter</Button>
+      {/if}
+    </ButtonGroup>
+  </div>
 
   <div>
     {#each data.reports as report, index}
@@ -111,12 +153,27 @@
           <Button outline color="secondary" size="sm" on:click={() => openIgnoreModalFor(index)}
             >Ignore report</Button
           >
+          &bull;
+          <a href="/reports?user_id={report.user_id}">Show all reports of this user</a>
+          &bull;
+          <a href="/reports?reporter_id={report.reporter_id}">Show all reports by this reporter</a>
         </ReportCard>
       </div>
     {:else}
-      There are no open reports :)
+      There are no reports matching your search!
     {/each}
   </div>
+
+  {#if data.reports.length >= 100}
+    <div>
+      <a
+        href="/reports?{urlParamsWith(
+          'before',
+          data.reports[data.reports.length - 1].id.toString(),
+        )}">Load more reports</a
+      >
+    </div>
+  {/if}
 
   <Modal header="Warn user" isOpen={warnModalOpen} toggle={toggleWarnModal}>
     <ModalBody>
