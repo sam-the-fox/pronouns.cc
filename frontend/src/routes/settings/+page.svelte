@@ -1,6 +1,12 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { type MeUser, userAvatars, type APIError, MAX_MEMBERS } from "$lib/api/entities";
+  import {
+    type MeUser,
+    userAvatars,
+    type APIError,
+    MAX_MEMBERS,
+    MAX_FIELDS,
+  } from "$lib/api/entities";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
@@ -19,6 +25,7 @@
   } from "sveltestrap";
   import type { PageData } from "./$types";
   import { onMount } from "svelte";
+  import { DateTime } from "luxon";
 
   export let data: PageData;
 
@@ -189,13 +196,35 @@
             <td><code>{data.user.id}</code></td>
           </tr>
           <tr>
+            <th scope="row">Account created at</th>
+            <td
+              >{DateTime.fromISO(data.user.created_at)
+                .toLocal()
+                .toLocaleString(DateTime.DATETIME_MED)}</td
+            >
+          </tr>
+          <tr>
             <th scope="row">Members</th>
             <td>{data.user.members.length}/{MAX_MEMBERS}</td>
+          </tr>
+          <tr>
+            <th scope="row">Member list hidden?</th>
+            <td>{data.user.list_private ? "Yes" : "No"}</td>
+          </tr>
+          <tr>
+            <th scope="row">Custom preferences</th>
+            <td>{Object.keys(data.user.custom_preferences).length}/{MAX_FIELDS}</td>
           </tr>
           {#if data.invitesEnabled}
             <tr>
               <th scope="row">Invites</th>
               <td>{data.invites.length}/{data.user.max_invites}</td>
+            </tr>
+          {/if}
+          {#if data.user.is_admin}
+            <tr>
+              <th scope="row">Admin?</th>
+              <td>Yes</td>
             </tr>
           {/if}
         </tbody>

@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"time"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/log"
@@ -28,6 +29,8 @@ type GetUserResponse struct {
 
 type GetMeResponse struct {
 	GetUserResponse
+
+	CreatedAt time.Time `json:"created_at"`
 
 	MaxInvites  int  `json:"max_invites"`
 	IsAdmin     bool `json:"is_admin"`
@@ -194,6 +197,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 
 	render.JSON(w, r, GetMeResponse{
 		GetUserResponse:   dbUserToResponse(u, fields, members),
+		CreatedAt:         u.ID.Time(),
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,

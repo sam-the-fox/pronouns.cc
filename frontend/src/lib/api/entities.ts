@@ -1,6 +1,7 @@
 import { PUBLIC_BASE_URL } from "$env/static/public";
 
 export const MAX_MEMBERS = 500;
+export const MAX_FIELDS = 25;
 export const MAX_DESCRIPTION_LENGTH = 1000;
 
 export interface User {
@@ -38,7 +39,9 @@ export enum PreferenceSize {
 }
 
 export interface MeUser extends User {
+  created_at: string;
   max_invites: number;
+  is_admin: boolean;
   discord: string | null;
   discord_username: string | null;
   tumblr: string | null;
