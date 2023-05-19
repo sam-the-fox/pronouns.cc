@@ -1,0 +1,978 @@
+---
+openapi: 3.0.2
+info:
+  title: pronouns.cc
+  version: 1.0.0
+  description: The pronouns.cc REST API
+  license:
+    name: GNU AGPLv3
+    url: https://www.gnu.org/licenses/agpl.txt
+servers:
+- url: https://pronouns.cc/api/v1
+  description: ""
+paths:
+  /users/{userRef}:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User was found and is not deleted.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+              examples:
+                User not found:
+                  value:
+                    code: 2001
+                    message: User not found
+          description: User was not found or is deleted.
+      operationId: GetUser
+      summary: Get a user
+      description: Get a user object. Accepts either ID or username.
+    parameters:
+    - name: userRef
+      description: |-
+        A user reference, either an ID or a username.
+        IDs are always prioritized, if a user's username is the same as another user's ID, the user with that ID is returned.
+      schema:
+        type: string
+      in: path
+      required: true
+  /users/@me:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeUser'
+          description: The token is valid.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The token is invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: No token was supplied.
+      security:
+      - TokenAuth: []
+      operationId: GetMe
+      summary: Get your own user
+      description: Get the user object associated with the provided token.
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeUser'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeUser'
+          description: The full updated user object.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The token is invalid.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The supplied data is invalid.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: No token was supplied.
+      operationId: PatchMe
+      summary: Update your own user
+      description: Update the current user.
+  /users/{userRef}/members:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartialMember'
+          description: The user was found.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The user was not found.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The user's member list is private.
+      operationId: GetMembers
+      summary: Get a user's member list
+    parameters:
+    - name: userRef
+      description: "A user ID, username, or `@me` for yourself."
+      schema:
+        type: string
+      in: path
+      required: true
+  /members:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: The created member.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The provided token is read-only or this is not your member.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: "You have reached the member limit, or the request was empty\
+            \ or has invalid fields."
+      security:
+      - TokenAuth: []
+      operationId: CreateMember
+      summary: Create a member
+  /members/{memberRef}:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: The member was found.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The member was not found.
+      operationId: GetMember
+      summary: Get a member by ID
+    delete:
+      responses:
+        "204":
+          description: The member was successfully deleted.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The member was not found.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The provided token is read-only or this is not your member.
+      security:
+      - TokenAuth: []
+      operationId: DeleteMember
+      summary: Delete a member
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: The updated member.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The provided token is read-only or this is not your member.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The provided member was invalid or empty.
+      security:
+      - TokenAuth: []
+      operationId: PatchMember
+      summary: Update a member
+    parameters:
+    - name: memberRef
+      description: The member's unique ID.
+      schema:
+        type: string
+      in: path
+      required: true
+  /users/{userRef}/members/{memberRef}:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: The user and member were found.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: The user or member was not found.
+      operationId: GetUserMember
+      summary: Get a member by ID or name
+    parameters:
+    - name: userRef
+      description: A user ID or username.
+      schema:
+        type: string
+      in: path
+      required: true
+    - name: memberRef
+      description: A member ID or name.
+      schema:
+        type: string
+      in: path
+      required: true
+  /meta:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meta'
+          description: Successfully fetched meta data.
+      operationId: GetMeta
+      summary: Get meta info
+components:
+  schemas:
+    User:
+      title: Root Type for User
+      description: An unauthenticated user object
+      required: []
+      type: object
+      properties:
+        id:
+          description: The user's unique and unchanging ID.
+          type: string
+          readOnly: true
+        name:
+          description: "The user's username, a unique string that identifies them\
+            \ in URLs."
+          maxLength: 40
+          minLength: 2
+          type: string
+        display_name:
+          description: The user's display name.
+          maxLength: 100
+          minLength: 1
+          type: string
+        bio:
+          description: The user's bio/description.
+          type: string
+        member_title:
+          description: Optional text used for the "Members" heading on the user's
+            profile page.
+          type: string
+        avatar:
+          description: "A hash of the user's avatar, if set."
+          type: string
+        links:
+          description: Links the user has added to their profile.
+          type: array
+          items:
+            type: string
+        names:
+          description: The user's preferred names.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+        pronouns:
+          description: The user's preferred pronouns.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+        members:
+          description: List of the user's members.
+          type: array
+          items:
+            $ref: '#/components/schemas/PartialMember'
+          readOnly: true
+        fields:
+          description: The user's custom label fields.
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+        custom_preferences:
+          $ref: '#/components/schemas/CustomPreferences'
+          description: The user's custom preferences.
+          properties:
+            "375d362a-6215-4cc0-a80e-3396281760b9":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "4811fd6f-153c-4780-b6c9-6990d5da8a22":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "6877632b-1d50-48cb-b300-d5f379ad71e1":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "75622b3d-58d0-4576-9fc9-12d71106b4db":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+    FieldEntry:
+      title: Root Type for FieldEntry
+      description: A field entry or name object.
+      required:
+      - status
+      - value
+      type: object
+      properties:
+        value:
+          description: The field entry's value.
+          maxLength: 100
+          minLength: 1
+          type: string
+        status:
+          $ref: '#/components/schemas/EntryPreference'
+          description: The field entry's status.
+    EntryPreference:
+      description: |-
+        A unique string to denote the preference associated with a name, label, or pronoun.
+        Can be any of "favourite", "okay", "jokingly", "friends_only", "avoid", or a custom preference UUID.
+      type: string
+    PronounEntry:
+      description: A version of FieldEntry for pronouns.
+      required:
+      - pronouns
+      - status
+      type: object
+      properties:
+        pronouns:
+          description: The full version of the pronoun set.
+          type: string
+        display_text:
+          description: "The pronoun set's display text. If not set, is derived from\
+            \ the first two forms of `pronouns`."
+          type: string
+        status:
+          $ref: '#/components/schemas/EntryPreference'
+          description: The pronoun entry's status.
+    APIError:
+      title: Root Type for APIError
+      description: An API error response.
+      required:
+      - code
+      - message
+      type: object
+      properties:
+        code:
+          format: int32
+          description: A numeric error code.
+          type: integer
+          readOnly: false
+        message:
+          description: A human-readable error description.
+          type: string
+        details:
+          description: Optional extra details about an error.
+          type: string
+        ratelimit_reset:
+          format: int64
+          description: "If this is a rate limit error, the time the rate limit resets\
+            \ at."
+          type: integer
+      example:
+        code: 2001
+        message: User not found
+    CustomPreference:
+      title: Root Type for CustomPreference
+      description: A single custom preference.
+      required:
+      - icon
+      - size
+      - tooltip
+      type: object
+      properties:
+        icon:
+          description: The name of the Bootstrap icon used for the preference.
+          type: string
+        tooltip:
+          description: The tooltip used to describe the preference.
+          type: string
+        size:
+          description: The size of the preference text.
+          enum:
+          - large
+          - normal
+          - small
+          type: string
+        muted:
+          description: Whether or not the preference will show up in a muted colour.
+          type: boolean
+        favourite:
+          description: Whether or not the preference will be treated as favourite
+            in embeds.
+          type: boolean
+    Field:
+      description: A label field.
+      required:
+      - name
+      - entries
+      type: object
+      properties:
+        name:
+          description: The field's name or title.
+          type: string
+        entries:
+          description: The field's entries.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+    PartialMember:
+      title: Root Type for PartialMember
+      description: A partial member object.
+      required:
+      - links
+      - id
+      - name
+      - names
+      - pronouns
+      type: object
+      properties:
+        id:
+          writeOnly: false
+          description: The member's unique ID.
+          type: string
+          readOnly: true
+        name:
+          description: The member's unique name.
+          type: string
+        display_name:
+          type: string
+        bio:
+          type: string
+        avatar:
+          type: string
+        links:
+          description: The member's profile links.
+          type: array
+          items:
+            type: string
+        names:
+          description: The member's preferred names.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+        pronouns:
+          description: The member's preferred pronouns.
+          type: array
+          items:
+            $ref: '#/components/schemas/PronounEntry'
+    MeUser:
+      title: Root Type for User
+      description: An authenticated user object.
+      required: []
+      type: object
+      properties:
+        id:
+          description: The user's unique and unchanging ID.
+          type: string
+          readOnly: true
+        name:
+          description: "The user's username, a unique string that identifies them\
+            \ in URLs."
+          maxLength: 40
+          minLength: 2
+          type: string
+        display_name:
+          description: The user's display name.
+          maxLength: 100
+          minLength: 1
+          type: string
+        bio:
+          description: The user's bio/description.
+          maxLength: 1000
+          minLength: 1
+          type: string
+        member_title:
+          description: Optional text used for the "Members" heading on the user's
+            profile page.
+          type: string
+        avatar:
+          description: |-
+            A hash of the user's avatar, if set.
+
+            When editing, a base64-encoded PNG, JPEG, GIF, or WebP image file.
+          type: string
+        links:
+          description: Links the user has added to their profile.
+          type: array
+          items:
+            type: string
+        names:
+          description: The user's preferred names.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+        pronouns:
+          description: The user's preferred pronouns.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+        members:
+          description: List of your members.
+          type: array
+          items:
+            $ref: '#/components/schemas/PartialMember'
+          readOnly: true
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+        custom_preferences:
+          $ref: '#/components/schemas/CustomPreferences'
+          description: The user's custom preferences.
+          properties:
+            "375d362a-6215-4cc0-a80e-3396281760b9":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "4811fd6f-153c-4780-b6c9-6990d5da8a22":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "6877632b-1d50-48cb-b300-d5f379ad71e1":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "75622b3d-58d0-4576-9fc9-12d71106b4db":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+        max_invites:
+          description: "The maximum number of invites you can make, only useful if\
+            \ invites are required."
+          type: integer
+          readOnly: true
+        is_admin:
+          description: Whether you are an admin.
+          type: boolean
+          readOnly: true
+        list_private:
+          description: Whether your member list is private.
+          type: boolean
+        discord:
+          description: "Your Discord user ID, if linked."
+          type: string
+          readOnly: true
+        discord_username:
+          description: The linked Discord user's username.
+          type: string
+          readOnly: true
+        tumblr:
+          description: The linked Tumblr account's ID.
+          type: string
+          readOnly: true
+        tumblr_username:
+          description: The linked Tumblr account's username.
+          type: string
+          readOnly: true
+        google:
+          description: The linked Google account's ID.
+          type: string
+          readOnly: true
+        google_username:
+          description: The linked Google account's email.
+          type: string
+          readOnly: true
+        fediverse:
+          description: The linked fediverse account's ID.
+          type: string
+          readOnly: true
+        fediverse_username:
+          description: The linked fediverse account's (local) username.
+          type: string
+          readOnly: true
+        fediverse_instance:
+          description: The linked fediverse account's instance.
+          type: string
+          readOnly: true
+    PartialUser:
+      title: Root Type for PartialUser
+      description: A partial user object as returned from a member endpoint.
+      required: []
+      type: object
+      properties:
+        id:
+          description: The user's unique unchanging ID.
+          type: string
+        name:
+          description: "The user's username, a unique string that identifies them\
+            \ in URLs."
+          type: string
+        display_name:
+          description: "The user's display name, if set."
+          type: string
+        avatar:
+          description: "A hash of the user's avatar, if set."
+          type: string
+        custom_preferences:
+          $ref: '#/components/schemas/CustomPreferences'
+          description: The user's custom preferences.
+          properties:
+            "375d362a-6215-4cc0-a80e-3396281760b9":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "4811fd6f-153c-4780-b6c9-6990d5da8a22":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "6877632b-1d50-48cb-b300-d5f379ad71e1":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+            "75622b3d-58d0-4576-9fc9-12d71106b4db":
+              type: object
+              properties:
+                icon:
+                  type: string
+                tooltip:
+                  type: string
+                size:
+                  type: string
+                muted:
+                  type: boolean
+                favourite:
+                  type: boolean
+    CustomPreferences:
+      description: A user's custom preferences.
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/CustomPreference'
+    Member:
+      title: Root Type for Member
+      description: A full member object.
+      type: object
+      properties:
+        id:
+          description: "The member's unique, unchanging ID."
+          type: string
+          readOnly: true
+        name:
+          description: "The member's unique (per-user) name, used to identify them\
+            \ in URLs. Case insensitive."
+          type: string
+        display_name:
+          description: The member's display name.
+          type: string
+        bio:
+          description: The member's bio/description.
+          type: string
+        avatar:
+          description: |-
+            A hash of the member's avatar, if set.
+
+            When editing, a base64-encoded PNG, JPEG, GIF, or WebP image file.
+          type: string
+        links:
+          description: The member's profile links.
+          type: array
+          items:
+            type: string
+        names:
+          description: The member's preferred names.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldEntry'
+        pronouns:
+          description: The member's preferred pronouns.
+          type: array
+          items:
+            $ref: '#/components/schemas/PronounEntry'
+        fields:
+          description: The member's custom label fields.
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+        user:
+          $ref: '#/components/schemas/PartialUser'
+          description: A partial user object.
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            display_name:
+              type: string
+            avatar:
+              type: string
+            custom_preferences:
+              type: object
+              properties:
+                "375d362a-6215-4cc0-a80e-3396281760b9":
+                  type: object
+                  properties:
+                    icon:
+                      type: string
+                    tooltip:
+                      type: string
+                    size:
+                      type: string
+                    muted:
+                      type: boolean
+                    favourite:
+                      type: boolean
+                "4811fd6f-153c-4780-b6c9-6990d5da8a22":
+                  type: object
+                  properties:
+                    icon:
+                      type: string
+                    tooltip:
+                      type: string
+                    size:
+                      type: string
+                    muted:
+                      type: boolean
+                    favourite:
+                      type: boolean
+                "6877632b-1d50-48cb-b300-d5f379ad71e1":
+                  type: object
+                  properties:
+                    icon:
+                      type: string
+                    tooltip:
+                      type: string
+                    size:
+                      type: string
+                    muted:
+                      type: boolean
+                    favourite:
+                      type: boolean
+                "75622b3d-58d0-4576-9fc9-12d71106b4db":
+                  type: object
+                  properties:
+                    icon:
+                      type: string
+                    tooltip:
+                      type: string
+                    size:
+                      type: string
+                    muted:
+                      type: boolean
+                    favourite:
+                      type: boolean
+    Meta:
+      title: Root Type for Meta
+      description: The response from the /api/v1/meta endpoint.
+      type: object
+      properties:
+        git_repository:
+          description: URL to the Git repository.
+          type: string
+        git_commit:
+          description: The Git commit the server is currently running.
+          type: string
+        users:
+          $ref: '#/components/schemas/MetaUsers'
+          description: Number of users.
+          properties:
+            total:
+              format: int32
+              type: integer
+            active_month:
+              format: int32
+              type: integer
+            active_week:
+              format: int32
+              type: integer
+            active_day:
+              format: int32
+              type: integer
+        members:
+          format: int32
+          description: Total number of members.
+          type: integer
+        require_invite:
+          description: Whether this instance requires an invite.
+          type: boolean
+      example:
+        git_repository: https://codeberg.org/u1f320/pronouns.cc
+        git_commit: 130a199
+        users:
+          total: 3985
+          active_month: 3985
+          active_week: 1327
+          active_day: 276
+        members: 11462
+        require_invite: false
+    MetaUsers:
+      title: Root Type for MetaUsers
+      description: ""
+      type: object
+      properties:
+        total:
+          format: int32
+          type: integer
+        active_month:
+          format: int32
+          type: integer
+        active_week:
+          format: int32
+          type: integer
+        active_day:
+          format: int32
+          type: integer
+      example:
+        total: 3985
+        active_month: 3985
+        active_week: 1327
+        active_day: 276
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      description: Token auth
+      name: Authorization
+      in: header
