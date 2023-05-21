@@ -23,6 +23,9 @@ var Command = &cli.Command{
 }
 
 func run(c *cli.Context) error {
+	// set vips log level to WARN, else it will spam logs on info level
+	vips.LoggingSettings(nil, vips.LogLevelWarning)
+
 	vips.Startup(nil)
 	defer vips.Shutdown()
 
