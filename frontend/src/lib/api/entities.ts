@@ -1,4 +1,4 @@
-import { PUBLIC_BASE_URL } from "$env/static/public";
+import { PUBLIC_BASE_URL, PUBLIC_MEDIA_URL } from "$env/static/public";
 
 export const MAX_MEMBERS = 500;
 export const MAX_FIELDS = 25;
@@ -178,8 +178,8 @@ export const userAvatars = (user: User | MeUser | MemberPartialUser) => {
   if (!user.avatar) return defaultAvatars;
 
   return [
-    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.webp`,
-    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.jpg`,
+    `${PUBLIC_MEDIA_URL}/users/${user.id}/${user.avatar}.webp`,
+    `${PUBLIC_MEDIA_URL}/users/${user.id}/${user.avatar}.jpg`,
   ];
 };
 
@@ -187,8 +187,8 @@ export const memberAvatars = (member: Member | PartialMember) => {
   if (!member.avatar) return defaultAvatars;
 
   return [
-    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.webp`,
-    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.jpg`,
+    `${PUBLIC_MEDIA_URL}/members/${member.id}/${member.avatar}.webp`,
+    `${PUBLIC_MEDIA_URL}/members/${member.id}/${member.avatar}.jpg`,
   ];
 };
 
