@@ -20,7 +20,7 @@ type DataExport struct {
 }
 
 func (de DataExport) Path() string {
-	return "/exports/" + de.UserID.String() + "/" + de.Filename + ".zip"
+	return "exports/" + de.UserID.String() + "/" + de.Filename + ".zip"
 }
 
 const ErrNoExport = errors.Sentinel("no data export exists")

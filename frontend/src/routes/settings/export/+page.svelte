@@ -69,7 +69,7 @@
         Download your export file below:
       </p>
       <p>
-        <Button color="primary" href="{PUBLIC_MEDIA_URL}{data.exportData.path}" target="_blank"
+        <Button color="primary" href="{PUBLIC_MEDIA_URL}/{data.exportData.path}" target="_blank"
           >Download data export</Button
         >
       </p>
