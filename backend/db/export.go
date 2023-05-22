@@ -67,7 +67,8 @@ func (db *DB) CreateExport(ctx context.Context, userID xid.ID, filename string, 
 	}
 
 	_, err = db.minio.PutObject(ctx, db.minioBucket, de.Path(), file, int64(file.Len()), minio.PutObjectOptions{
-		ContentType: "application/zip",
+		ContentType:    "application/zip",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return de, errors.Wrap(err, "writing export file")

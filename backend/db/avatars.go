@@ -81,14 +81,16 @@ func (db *DB) WriteUserAvatar(ctx context.Context,
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
 	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
-		ContentType: "image/webp",
+		ContentType:    "image/webp",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
 	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
-		ContentType: "image/jpeg",
+		ContentType:    "image/jpeg",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading jpeg avatar")
@@ -110,14 +112,16 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
 	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
-		ContentType: "image/webp",
+		ContentType:    "image/webp",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
 	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
-		ContentType: "image/jpeg",
+		ContentType:    "image/jpeg",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading jpeg avatar")
