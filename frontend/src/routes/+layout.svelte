@@ -53,6 +53,7 @@
             >{data.git_commit}</a
           >)
         {/if} &middot;
+        <a href="https://status.pronouns.cc/" target="_blank">Status</a> &middot;
         <a href="/page/about">About & contact</a> &middot;
         <a href="/page/changelog">Changelog</a> &middot;
         <Icon name="cash" aria-hidden />
