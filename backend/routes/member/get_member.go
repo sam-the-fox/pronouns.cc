@@ -6,6 +6,7 @@ import (
 
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/rs/xid"
@@ -137,6 +138,31 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	render.JSON(w, r, dbMemberToMember(u, m, fields, isOwnMember))
+	return nil
+}
+
+func (s *Server) getMeMember(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting me user")
+	}
+
+	m, err := s.DB.UserMember(ctx, claims.UserID, chi.URLParam(r, "memberRef"))
+	if err != nil {
+		return server.APIError{
+			Code: server.ErrMemberNotFound,
+		}
+	}
+
+	fields, err := s.DB.MemberFields(ctx, m.ID)
+	if err != nil {
+		return err
+	}
+
+	render.JSON(w, r, dbMemberToMember(u, m, fields, true))
 	return nil
 }
 

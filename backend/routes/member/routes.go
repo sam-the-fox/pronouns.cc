@@ -19,6 +19,7 @@ func Mount(srv *server.Server, r chi.Router) {
 
 	// user-scoped member lookup (including custom urls)
 	r.Get("/users/{userRef}/members/{memberRef}", server.WrapHandler(s.getUserMember))
+	r.With(server.MustAuth).Get("/users/@me/members/{memberRef}", server.WrapHandler(s.getMeMember))
 
 	r.Route("/members", func(r chi.Router) {
 		// any member by ID

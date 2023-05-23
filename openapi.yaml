@@ -261,7 +261,7 @@ paths:
       summary: Get a member by ID or name
     parameters:
     - name: userRef
-      description: A user ID or username.
+      description: "A user ID, username, or `@me` for yourself."
       schema:
         type: string
       in: path
