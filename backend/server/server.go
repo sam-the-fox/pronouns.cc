@@ -51,8 +51,9 @@ func New() (*Server, error) {
 	s.Router.Use(middleware.Recoverer)
 	// add CORS
 	s.Router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"HEAD", "GET"},
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// Allow all methods normally used by the API
+		AllowedMethods:   []string{"HEAD", "GET", "POST", "PATCH", "DELETE"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: false,
 		MaxAge:           300,
