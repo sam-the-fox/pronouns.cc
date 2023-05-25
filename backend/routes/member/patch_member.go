@@ -284,6 +284,6 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// echo the updated member back on success
-	render.JSON(w, r, dbMemberToMember(u, m, fields, true))
+	render.JSON(w, r, dbMemberToMember(u, m, fields, nil, true))
 	return nil
 }

@@ -9,10 +9,12 @@ import (
 	"io"
 	"strings"
 
+	"codeberg.org/u1f320/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
 )
@@ -51,6 +53,10 @@ const (
 	MaxPrideFlagDescLength  = 200
 )
 
+const (
+	ErrInvalidFlagID = errors.Sentinel("invalid flag ID")
+)
+
 func (db *DB) AccountFlags(ctx context.Context, userID xid.ID) (fs []PrideFlag, err error) {
 	sql, args, err := sq.Select("*").From("pride_flags").Where("user_id = ?", userID).OrderBy("id").ToSql()
 	if err != nil {
@@ -67,7 +73,7 @@ func (db *DB) AccountFlags(ctx context.Context, userID xid.ID) (fs []PrideFlag, 
 func (db *DB) UserFlags(ctx context.Context, userID xid.ID) (fs []UserFlag, err error) {
 	sql, args, err := sq.Select("u.id", "u.flag_id", "f.user_id", "f.hash", "f.name", "f.description").
 		From("user_flags AS u").
-		Where("u.user_id = $1").
+		Where("u.user_id = $1", userID).
 		Join("pride_flags AS f ON u.flag_id = f.id").
 		OrderBy("u.id ASC").
 		ToSql()
@@ -82,10 +88,10 @@ func (db *DB) UserFlags(ctx context.Context, userID xid.ID) (fs []UserFlag, err 
 	return NotNull(fs), nil
 }
 
-func (db *DB) MemberFlags(ctx context.Context, userID xid.ID) (fs []MemberFlag, err error) {
+func (db *DB) MemberFlags(ctx context.Context, memberID xid.ID) (fs []MemberFlag, err error) {
 	sql, args, err := sq.Select("m.id", "m.flag_id", "m.member_id", "f.hash", "f.name", "f.description").
 		From("member_flags AS m").
-		Where("m.member_id = $1").
+		Where("m.member_id = $1", memberID).
 		Join("pride_flags AS f ON m.flag_id = f.id").
 		OrderBy("m.id ASC").
 		ToSql()
@@ -98,6 +104,68 @@ func (db *DB) MemberFlags(ctx context.Context, userID xid.ID) (fs []MemberFlag, 
 		return nil, errors.Wrap(err, "executing query")
 	}
 	return NotNull(fs), nil
+}
+
+func (db *DB) SetUserFlags(ctx context.Context, tx pgx.Tx, userID xid.ID, flags []xid.ID) (err error) {
+	sql, args, err := sq.Delete("user_flags").Where("user_id = ?", userID).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "deleting existing flags")
+	}
+
+	n, err := tx.CopyFrom(ctx, pgx.Identifier{"user_flags"}, []string{"user_id", "flag_id"},
+		pgx.CopyFromSlice(len(flags), func(i int) ([]any, error) {
+			return []any{userID, flags[i]}, nil
+		}))
+	if err != nil {
+		pge := &pgconn.PgError{}
+		if errors.As(err, &pge) {
+			if pge.Code == foreignKeyViolation {
+				return ErrInvalidFlagID
+			}
+		}
+
+		return errors.Wrap(err, "copying new flags")
+	}
+	if n > 0 {
+		log.Debugf("set %v flags for user %v", n, userID)
+	}
+	return nil
+}
+
+func (db *DB) SetMemberFlags(ctx context.Context, tx pgx.Tx, memberID xid.ID, flags []xid.ID) (err error) {
+	sql, args, err := sq.Delete("member_flags").Where("member_id = ?", memberID).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "deleting existing flags")
+	}
+
+	n, err := tx.CopyFrom(ctx, pgx.Identifier{"member_flags"}, []string{"member_id", "flag_id"},
+		pgx.CopyFromSlice(len(flags), func(i int) ([]any, error) {
+			return []any{memberID, flags[i]}, nil
+		}))
+	if err != nil {
+		pge := &pgconn.PgError{}
+		if errors.As(err, &pge) {
+			if pge.Code == foreignKeyViolation {
+				return ErrInvalidFlagID
+			}
+		}
+
+		return errors.Wrap(err, "copying new flags")
+	}
+	if n > 0 {
+		log.Debugf("set %v flags for member %v", n, memberID)
+	}
+	return nil
 }
 
 func (db *DB) CreateFlag(ctx context.Context, tx pgx.Tx, userID xid.ID, name, desc string) (f PrideFlag, err error) {

@@ -171,7 +171,7 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
 			// unique constraint violation
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return u, ErrUsernameTaken
 			}
 		}
@@ -494,7 +494,7 @@ func (db *DB) UpdateUsername(ctx context.Context, tx pgx.Tx, id xid.ID, newName 
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
 			// unique constraint violation
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return ErrUsernameTaken
 			}
 		}

@@ -22,6 +22,11 @@ var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 const ErrNothingToUpdate = errors.Sentinel("nothing to update")
 
+const (
+	uniqueViolation     = "23505"
+	foreignKeyViolation = "23503"
+)
+
 type Execer interface {
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error)
 }
