@@ -25,6 +25,7 @@ type PatchMemberRequest struct {
 	Fields      *[]db.Field        `json:"fields"`
 	Avatar      *string            `json:"avatar"`
 	Unlisted    *bool              `json:"unlisted"`
+	Flags       *[]xid.ID          `json:"flags"`
 }
 
 func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
@@ -74,7 +75,8 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		req.Fields == nil &&
 		req.Names == nil &&
 		req.Pronouns == nil &&
-		req.Avatar == nil {
+		req.Avatar == nil &&
+		req.Flags == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -270,6 +272,19 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// update flags
+	if req.Flags != nil {
+		err = s.DB.SetMemberFlags(ctx, tx, m.ID, *req.Flags)
+		if err != nil {
+			if err == db.ErrInvalidFlagID {
+				return server.APIError{Code: server.ErrBadRequest, Details: "One or more flag IDs are unknown"}
+			}
+
+			log.Errorf("updating flags for member %v: %v", m.ID, err)
+			return err
+		}
+	}
+
 	// update last active time
 	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
 	if err != nil {
@@ -283,7 +298,14 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// get flags to return (we need to return full flag objects, not the array of IDs in the request body)
+	flags, err := s.DB.MemberFlags(ctx, m.ID)
+	if err != nil {
+		log.Errorf("getting user flags: %v", err)
+		return err
+	}
+
 	// echo the updated member back on success
-	render.JSON(w, r, dbMemberToMember(u, m, fields, nil, true))
+	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, true))
 	return nil
 }
