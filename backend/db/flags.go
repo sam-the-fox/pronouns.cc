@@ -50,7 +50,7 @@ type MemberFlag struct {
 const (
 	MaxPrideFlags           = 100
 	MaxPrideFlagTitleLength = 100
-	MaxPrideFlagDescLength  = 200
+	MaxPrideFlagDescLength  = 500
 )
 
 const (

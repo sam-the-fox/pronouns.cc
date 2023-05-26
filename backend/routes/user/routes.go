@@ -32,7 +32,7 @@ func Mount(srv *server.Server, r chi.Router) {
 
 			r.Get("/@me/flags", server.WrapHandler(s.getUserFlags))
 			r.Post("/@me/flags", server.WrapHandler(s.postUserFlag))
-			r.Patch("/@me/flags", server.WrapHandler(s.patchUserFlag))
+			r.Patch("/@me/flags/{flagID}", server.WrapHandler(s.patchUserFlag))
 			r.Delete("/@me/flags", server.WrapHandler(s.deleteUserFlag))
 		})
 	})
