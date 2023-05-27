@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PUBLIC_BASE_URL } from "$env/static/public";
-  import { Alert, Button } from "sveltestrap";
+  import { Button } from "sveltestrap";
   import { userStore } from "$lib/store";
 </script>
 
@@ -11,13 +11,6 @@
   <meta property="og:description" content="Create and share your preferred names and pronouns!" />
   <meta property="og:url" content={PUBLIC_BASE_URL} />
 </svelte:head>
-
-<Alert fade={false} dismissible color="secondary">
-  Maintenance notice: I will be migrating pronouns.cc to a new server starting on May 27th at 12:00
-  UTC. I do not expect this migration to take very long, but the site will not be available during
-  that time.
-  <strong>No data will be lost.</strong>
-</Alert>
 
 <div>
   <h1><b>pronouns</b>.cc</h1>
