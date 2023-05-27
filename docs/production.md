@@ -8,6 +8,7 @@ You might have to change paths and ports, but they should work fine as-is.
 ```bash
 git clone https://codeberg.org/u1f320/pronouns.cc.git pronouns
 cd pronouns
+git checkout stable
 make all
 
 # if running for the first time
@@ -43,6 +44,8 @@ one in the repository root (for the backend) and one in the frontend directory.
 
 - `PUBLIC_BASE_URL`: the base URL for the frontend.
 - `PRIVATE_SENTRY_DSN`: your Sentry DSN.
+- `PUBLIC_MEDIA_URL`: the base URL for media.
+  If you're proxying your media through nginx as in `pronounscc.nginx`, set this to `$PUBLIC_BASE_URL/media`.
 
 ## Updating
 
@@ -60,9 +63,6 @@ systemctl start pronouns-exporter # if the exporter was stopped
 Both the backend and frontend are expected to run behind a reverse proxy such as Caddy or nginx.
 This directory contains a sample configuration file for nginx.
 
-Every path should be proxied to the frontend, except:
-
-- `/api/`: this should be proxied to the backend, with the URL being rewritten to remove `/api`
-  (for example, a request to `$DOMAIN/api/v1/users/@me` should be proxied to `localhost:8080/v1/users/@me`)
-- `/media/`: this should be proxied to your object storage.
-  Make sure to rewrite `/media` into your storage bucket's name.
+Every path should be proxied to the frontend, except for `/api/`:
+this should be proxied to the backend, with the URL being rewritten to remove `/api`
+(for example, a request to `$DOMAIN/api/v1/users/@me` should be proxied to `localhost:8080/v1/users/@me`)
