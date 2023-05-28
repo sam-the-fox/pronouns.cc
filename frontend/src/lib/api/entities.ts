@@ -96,6 +96,13 @@ export interface MemberPartialUser {
   custom_preferences: CustomPreferences;
 }
 
+export interface PrideFlag {
+  id: string;
+  hash: string;
+  name: string;
+  description: string | null;
+}
+
 export interface Invite {
   code: string;
   created: string;
@@ -191,6 +198,8 @@ export const memberAvatars = (member: Member | PartialMember) => {
     `${PUBLIC_MEDIA_URL}/members/${member.id}/${member.avatar}.jpg`,
   ];
 };
+
+export const flagURL = ({ hash }: PrideFlag) => `${PUBLIC_MEDIA_URL}/flags/${hash}.webp`;
 
 export const defaultAvatars = [
   `${PUBLIC_BASE_URL}/default/512.webp`,

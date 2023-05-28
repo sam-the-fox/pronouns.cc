@@ -91,6 +91,8 @@ func (s *Server) postUserFlag(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		if err == db.ErrInvalidDataURI {
 			return server.APIError{Code: server.ErrBadRequest, Message: "invalid data URI"}
+		} else if err == db.ErrFileTooLarge {
+			return server.APIError{Code: server.ErrBadRequest, Message: "data URI exceeds 512 KB"}
 		}
 		return errors.Wrap(err, "converting flag")
 	}

@@ -59,7 +59,7 @@ const (
 )
 
 func (db *DB) AccountFlags(ctx context.Context, userID xid.ID) (fs []PrideFlag, err error) {
-	sql, args, err := sq.Select("*").From("pride_flags").Where("user_id = ?", userID).OrderBy("id").ToSql()
+	sql, args, err := sq.Select("*").From("pride_flags").Where("user_id = ?", userID).OrderBy("lower(name)").ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "building query")
 	}
@@ -285,6 +285,8 @@ func (db *DB) FlagObject(ctx context.Context, flagID xid.ID, hash string) (io.Re
 	return obj, nil
 }
 
+const MaxFlagInputSize = 512_000
+
 // ConvertFlag parses a flag from a data URI, converts it to WebP, and returns the result.
 func (db *DB) ConvertFlag(data string) (webpOut *bytes.Buffer, err error) {
 	defer vips.ShutdownThread()
@@ -298,6 +300,10 @@ func (db *DB) ConvertFlag(data string) (webpOut *bytes.Buffer, err error) {
 	rawData, err := base64.StdEncoding.DecodeString(split[1])
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid base64 data")
+	}
+
+	if len(rawData) > MaxFlagInputSize {
+		return nil, ErrFileTooLarge
 	}
 
 	image, err := vips.LoadImageFromBuffer(rawData, nil)

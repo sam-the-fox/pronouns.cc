@@ -155,8 +155,9 @@
       {/if}
     </div>
     <div class="col-lg-4">
-      <FallbackImage width={200} urls={userAvatars(data.user)} alt="Your avatar" />
-      <p>
+      <p class="text-center">
+        <FallbackImage width={200} urls={userAvatars(data.user)} alt="Your avatar" />
+        <br />
         To change your avatar, go to <a href="/edit/profile">edit profile</a>.
       </p>
     </div>
