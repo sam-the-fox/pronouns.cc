@@ -55,6 +55,7 @@ const (
 
 const (
 	ErrInvalidFlagID = errors.Sentinel("invalid flag ID")
+	ErrFlagNotFound  = errors.Sentinel("flag not found")
 )
 
 func (db *DB) AccountFlags(ctx context.Context, userID xid.ID) (fs []PrideFlag, err error) {
@@ -68,6 +69,23 @@ func (db *DB) AccountFlags(ctx context.Context, userID xid.ID) (fs []PrideFlag, 
 		return nil, errors.Wrap(err, "executing query")
 	}
 	return NotNull(fs), nil
+}
+
+func (db *DB) UserFlag(ctx context.Context, flagID xid.ID) (f PrideFlag, err error) {
+	sql, args, err := sq.Select("*").From("pride_flags").Where("id = ?", flagID).ToSql()
+	if err != nil {
+		return f, errors.Wrap(err, "building query")
+	}
+
+	err = pgxscan.Get(ctx, db, &f, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return f, ErrFlagNotFound
+		}
+
+		return f, errors.Wrap(err, "executing query")
+	}
+	return f, nil
 }
 
 func (db *DB) UserFlags(ctx context.Context, userID xid.ID) (fs []UserFlag, err error) {
@@ -241,7 +259,17 @@ func (db *DB) WriteFlag(ctx context.Context, flagID xid.ID, flag *bytes.Buffer) 
 }
 
 func (db *DB) DeleteFlag(ctx context.Context, flagID xid.ID, hash string) error {
-	err := db.minio.RemoveObject(ctx, db.minioBucket, "/flags/"+flagID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
+	sql, args, err := sq.Delete("pride_flags").Where("id = ?", flagID).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = db.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	err = db.minio.RemoveObject(ctx, db.minioBucket, "/flags/"+flagID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting flag")
 	}

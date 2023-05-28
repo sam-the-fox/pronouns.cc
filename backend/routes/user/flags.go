@@ -203,5 +203,35 @@ func (s *Server) patchUserFlag(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Server) deleteUserFlag(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
+	flagID, err := xid.FromString(chi.URLParam(r, "flagID"))
+	if err != nil {
+		return server.APIError{Code: server.ErrNotFound, Details: "Invalid flag ID"}
+	}
+
+	flag, err := s.DB.UserFlag(ctx, flagID)
+	if err != nil {
+		if err == db.ErrFlagNotFound {
+			return server.APIError{Code: server.ErrNotFound, Details: "Flag not found"}
+		}
+
+		return errors.Wrap(err, "getting flag object")
+	}
+	if flag.UserID != claims.UserID {
+		return server.APIError{Code: server.ErrNotFound, Details: "Flag not found"}
+	}
+
+	err = s.DB.DeleteFlag(ctx, flag.ID, flag.Hash)
+	if err != nil {
+		return errors.Wrap(err, "deleting flag")
+	}
+
+	render.NoContent(w, r)
 	return nil
 }
