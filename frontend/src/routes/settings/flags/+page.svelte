@@ -7,7 +7,7 @@
   import { addToast } from "$lib/toast";
   import { encode } from "base64-arraybuffer";
   import unknownFlag from "./unknown_flag.png";
-  import { apiFetchClient } from "$lib/api/fetch";
+  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
 
   const MAX_FLAG_BYTES = 500_000;
@@ -18,11 +18,13 @@
   let error: APIError | null = null;
 
   let filtered: PrideFlag[];
-  $: filtered = search
-    ? data.flags.filter((flag) =>
-        flag.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
-      )
-    : data.flags;
+  $: filtered = filterFlags(search, data.flags);
+
+  const filterFlags = (search: string, flags: PrideFlag[]) => {
+    return search
+      ? flags.filter((flag) => flag.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+      : flags;
+  };
 
   // NEW FLAG UPLOADING CODE
   let modalOpen = false;
@@ -81,6 +83,20 @@
       error = e as APIError;
     }
   };
+
+  // DELETE FLAG CODE
+  const deleteFlag = async (id: string) => {
+    try {
+      await fastFetchClient(`/users/@me/flags/${id}`, "DELETE");
+
+      error = null;
+
+      addToast({ header: "Deleted flag", body: "Successfully deleted flag!" });
+      data.flags = data.flags.filter((entry) => entry.id !== id);
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
 </script>
 
 <h1>Pride flags ({data.flags.length})</h1>
@@ -98,13 +114,13 @@
 </div>
 
 <div class="p-2">
-  {#each filtered as flag}
-    <Flag {flag} />
+  {#each filtered as flag (flag.id)}
+    <Flag bind:flag {deleteFlag} />
   {:else}
     {#if data.flags.length === 0}
       You haven't uploaded any flags yet, press the button above to do so.
     {:else}
-      There are no flags matching your search <strong>{search}</strong>
+      There are no flags matching your search <strong>{search}</strong>.
     {/if}
   {/each}
 </div>
