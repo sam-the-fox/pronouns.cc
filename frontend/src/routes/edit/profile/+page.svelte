@@ -35,7 +35,7 @@
   import EditablePronouns from "../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast, delToast } from "$lib/toast";
-  import type { PageData } from "./$types";
+  import type { PageData, Snapshot } from "./$types";
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "../MarkdownHelp.svelte";
   import prettyBytes from "pretty-bytes";
@@ -377,6 +377,59 @@
     } finally {
       delToast(toastId);
     }
+  };
+
+  interface SnapshotData {
+    bio: string;
+    display_name: string;
+    member_title: string;
+    links: string[];
+    names: FieldEntry[];
+    pronouns: Pronoun[];
+    fields: Field[];
+    flags: PrideFlag[];
+    list_private: boolean;
+    custom_preferences: CustomPreferences;
+
+    avatar: string | null;
+    newName: string;
+    newPronouns: string;
+    newLink: string;
+  }
+
+  export const snapshot: Snapshot<SnapshotData> = {
+    capture: () => ({
+      bio,
+      display_name,
+      member_title,
+      links,
+      names,
+      pronouns,
+      fields,
+      flags,
+      list_private,
+      custom_preferences,
+      avatar,
+      newName,
+      newPronouns,
+      newLink,
+    }),
+    restore: (value) => {
+      bio = value.bio;
+      display_name = value.display_name;
+      member_title = value.member_title;
+      links = value.links;
+      names = value.names;
+      pronouns = value.pronouns;
+      fields = value.fields;
+      flags = value.flags;
+      list_private = value.list_private;
+      custom_preferences = value.custom_preferences;
+      avatar = value.avatar;
+      newName = value.newName;
+      newPronouns = value.newPronouns;
+      newLink = value.newLink;
+    },
   };
 </script>
 

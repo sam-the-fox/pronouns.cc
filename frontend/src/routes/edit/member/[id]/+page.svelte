@@ -36,7 +36,7 @@
   import EditableName from "../../EditableName.svelte";
   import EditablePronouns from "../../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
-  import type { PageData } from "./$types";
+  import type { PageData, Snapshot } from "./$types";
   import { addToast, delToast } from "$lib/toast";
   import { memberNameRegex } from "$lib/api/regex";
   import { charCount, renderMarkdown } from "$lib/utils";
@@ -372,6 +372,56 @@
   const toggleDeleteOpen = () => (deleteOpen = !deleteOpen);
   let deleteName = "";
   let deleteError: APIError | null = null;
+
+  interface SnapshotData {
+    bio: string;
+    name: string;
+    display_name: string;
+    links: string[];
+    names: FieldEntry[];
+    pronouns: Pronoun[];
+    fields: Field[];
+    flags: PrideFlag[];
+    unlisted: boolean;
+
+    avatar: string | null;
+    newName: string;
+    newPronouns: string;
+    newLink: string;
+  }
+
+  export const snapshot: Snapshot<SnapshotData> = {
+    capture: () => ({
+      bio,
+      name,
+      display_name,
+      links,
+      names,
+      pronouns,
+      fields,
+      flags,
+      unlisted,
+      avatar,
+      newName,
+      newPronouns,
+      newLink,
+    }),
+    restore: (value) => {
+      bio = value.bio
+      name = value.name
+      display_name = value.display_name
+      links = value.links
+      names = value.names
+      pronouns = value.pronouns
+      fields = value.fields
+      flags = value.flags
+      unlisted = value.unlisted
+      avatar = value.avatar
+      newName = value.newName
+      newPronouns = value.newPronouns
+      newLink = value.newLink
+    },
+  };
 </script>
 
 <svelte:head>
