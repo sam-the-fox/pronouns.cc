@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 - May 29th 2023
+
+- **Added pride flags!**
+  These will show up below avatars and are completely customizable:
+  you can upload up to one hundred different flags and pick which ones will show up on which profiles.
+- `.` and `..` are no longer valid member names, as these break member pages. Any other number of periods is still allowed.
+- Added Plausible analytics.
+- Added some extra info to the [settings page](/settings).
+- Added [API documentation](/api).
+
 ## 0.4.2 - May 11th 2023
 
 - The report button will no longer show up for your own members.
