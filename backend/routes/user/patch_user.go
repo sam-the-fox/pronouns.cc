@@ -109,6 +109,16 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// validate flag length
+	if req.Flags != nil {
+		if len(*req.Flags) > db.MaxPrideFlags {
+			return server.APIError{
+				Code:    server.ErrBadRequest,
+				Details: fmt.Sprintf("Too many flags (max %d, current %d)", len(*req.Flags), db.MaxPrideFlags),
+			}
+		}
+	}
+
 	// validate custom preferences
 	if req.CustomPreferences != nil {
 		if count := len(*req.CustomPreferences); count > db.MaxFields {
