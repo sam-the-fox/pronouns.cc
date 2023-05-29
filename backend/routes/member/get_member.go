@@ -174,7 +174,12 @@ func (s *Server) getMeMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, fields, true))
+	flags, err := s.DB.MemberFlags(ctx, m.ID)
+	if err != nil {
+		return err
+	}
+
+	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, true))
 	return nil
 }
 
