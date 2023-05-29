@@ -268,12 +268,6 @@ func (db *DB) DeleteFlag(ctx context.Context, flagID xid.ID, hash string) error 
 	if err != nil {
 		return errors.Wrap(err, "executing query")
 	}
-
-	err = db.minio.RemoveObject(ctx, db.minioBucket, "/flags/"+flagID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
-	if err != nil {
-		return errors.Wrap(err, "deleting flag")
-	}
-
 	return nil
 }
 
