@@ -17,6 +17,7 @@ export interface User {
   pronouns: Pronoun[];
   members: PartialMember[];
   fields: Field[];
+  flags: PrideFlag[];
   custom_preferences: CustomPreferences;
 }
 
@@ -83,6 +84,7 @@ export interface PartialMember {
 
 export interface Member extends PartialMember {
   fields: Field[];
+  flags: PrideFlag[];
 
   user: MemberPartialUser;
   unlisted?: boolean;
