@@ -248,8 +248,9 @@ func (db *DB) WriteFlag(ctx context.Context, flagID xid.ID, flag *bytes.Buffer) 
 	}
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/flags/"+hash+".webp", flag, -1, minio.PutObjectOptions{
-		ContentType: "image/webp",
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "flags/"+hash+".webp", flag, -1, minio.PutObjectOptions{
+		ContentType:    "image/webp",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading flag")
