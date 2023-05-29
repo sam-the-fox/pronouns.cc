@@ -40,6 +40,7 @@
   import StatusLine from "$lib/components/StatusLine.svelte";
   import defaultPreferences from "$lib/api/default_preferences";
   import { addToast } from "$lib/toast";
+  import ProfileFlag from "./ProfileFlag.svelte";
 
   export let data: PageData;
 
@@ -117,16 +118,16 @@
 
   onMount(async () => {
     if ($userStore && $userStore.id === data.id) {
-      console.log("User is current user, fetching members")
+      console.log("User is current user, fetching members");
       try {
         const members = await apiFetchClient<PartialMember[]>("/users/@me/members");
         data.members = members;
       } catch (e) {
         // If it fails, we fail silently but log to console anyway
-        console.error("Fetching members:", e)
+        console.error("Fetching members:", e);
       }
     }
-  })
+  });
 </script>
 
 <div class="container">
@@ -140,6 +141,13 @@
     <div class="row">
       <div class="col-md-4 text-center">
         <FallbackImage width={200} urls={userAvatars(data)} alt="Avatar for @{data.name}" />
+        {#if data.flags && data.bio}
+          <div class="d-flex flex-wrap m-4">
+            {#each data.flags as flag}
+              <ProfileFlag {flag} />
+            {/each}
+          </div>
+        {/if}
       </div>
       <div class="col-md">
         {#if data.display_name}
@@ -174,6 +182,13 @@
         </div>
       {/if}
     </div>
+    {#if data.flags && !data.bio}
+      <div class="d-flex flex-wrap m-4">
+        {#each data.flags as flag}
+          <ProfileFlag {flag} />
+        {/each}
+      </div>
+    {/if}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
       {#if data.names.length > 0}
         <div class="col-md">

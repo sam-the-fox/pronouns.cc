@@ -102,6 +102,7 @@ const (
 	// User-related error codes
 	ErrUserNotFound      = 2001
 	ErrMemberListPrivate = 2002
+	ErrFlagLimitReached  = 2003
 
 	// Member-related error codes
 	ErrMemberNotFound     = 3001
@@ -145,7 +146,8 @@ var errCodeMessages = map[int]string{
 	ErrInvalidCaptcha:      "Invalid or missing captcha response",
 
 	ErrUserNotFound:      "User not found",
-	ErrMemberListPrivate: "This user's member list is private.",
+	ErrMemberListPrivate: "This user's member list is private",
+	ErrFlagLimitReached:  "Maximum number of pride flags reached",
 
 	ErrMemberNotFound:     "Member not found",
 	ErrMemberLimitReached: "Member limit reached",
@@ -187,6 +189,7 @@ var errCodeStatuses = map[int]int{
 
 	ErrUserNotFound:      http.StatusNotFound,
 	ErrMemberListPrivate: http.StatusForbidden,
+	ErrFlagLimitReached:  http.StatusBadRequest,
 
 	ErrMemberNotFound:     http.StatusNotFound,
 	ErrMemberLimitReached: http.StatusBadRequest,

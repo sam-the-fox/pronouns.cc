@@ -19,6 +19,7 @@ import (
 
 const ErrInvalidDataURI = errors.Sentinel("invalid data URI")
 const ErrInvalidContentType = errors.Sentinel("invalid avatar content type")
+const ErrFileTooLarge = errors.Sentinel("file to be converted exceeds maximum size")
 
 // ConvertAvatar parses an avatar from a data URI, converts it to WebP and JPEG, and returns the results.
 func (db *DB) ConvertAvatar(data string) (

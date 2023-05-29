@@ -23,13 +23,14 @@ type GetMemberResponse struct {
 	Names    []db.FieldEntry   `json:"names"`
 	Pronouns []db.PronounEntry `json:"pronouns"`
 	Fields   []db.Field        `json:"fields"`
+	Flags    []db.MemberFlag   `json:"flags"`
 
 	User PartialUser `json:"user"`
 
 	Unlisted *bool `json:"unlisted,omitempty"`
 }
 
-func dbMemberToMember(u db.User, m db.Member, fields []db.Field, isOwnMember bool) GetMemberResponse {
+func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.MemberFlag, isOwnMember bool) GetMemberResponse {
 	r := GetMemberResponse{
 		ID:          m.ID,
 		Name:        m.Name,
@@ -41,6 +42,7 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, isOwnMember boo
 		Names:    db.NotNull(m.Names),
 		Pronouns: db.NotNull(m.Pronouns),
 		Fields:   db.NotNull(fields),
+		Flags:    flags,
 
 		User: PartialUser{
 			ID:                u.ID,
@@ -102,7 +104,12 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, fields, isOwnMember))
+	flags, err := s.DB.MemberFlags(ctx, m.ID)
+	if err != nil {
+		return err
+	}
+
+	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, isOwnMember))
 	return nil
 }
 
@@ -137,7 +144,12 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, fields, isOwnMember))
+	flags, err := s.DB.MemberFlags(ctx, m.ID)
+	if err != nil {
+		return err
+	}
+
+	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, isOwnMember))
 	return nil
 }
 

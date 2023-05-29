@@ -20,6 +20,7 @@
   import StatusLine from "$lib/components/StatusLine.svelte";
   import defaultPreferences from "$lib/api/default_preferences";
   import { addToast } from "$lib/toast";
+  import ProfileFlag from "../ProfileFlag.svelte";
 
   export let data: PageData;
 
@@ -69,6 +70,13 @@
     <div class="row">
       <div class="col-md-4 text-center">
         <FallbackImage width={200} urls={memberAvatars(data)} alt="Avatar for @{data.name}" />
+        {#if data.flags && data.bio}
+          <div class="d-flex flex-wrap m-4">
+            {#each data.flags as flag}
+              <ProfileFlag {flag} />
+            {/each}
+          </div>
+        {/if}
       </div>
       <div class="col-md">
         <h2>{data.display_name ?? data.name}</h2>
@@ -97,6 +105,13 @@
         </div>
       {/if}
     </div>
+    {#if data.flags && !data.bio}
+      <div class="d-flex flex-wrap m-4">
+        {#each data.flags as flag}
+          <ProfileFlag {flag} />
+        {/each}
+      </div>
+    {/if}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
       {#if data.names.length > 0}
         <div class="col-md">

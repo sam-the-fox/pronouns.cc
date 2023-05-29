@@ -116,7 +116,7 @@ func (db *DB) CreateMember(
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
 			// unique constraint violation
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return m, ErrMemberNameInUse
 			}
 		}
@@ -223,7 +223,7 @@ func (db *DB) UpdateMember(
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return m, ErrMemberNameInUse
 			}
 		}

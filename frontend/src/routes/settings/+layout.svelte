@@ -42,19 +42,12 @@
 
 <div class="grid">
   <div class="row">
-    <div class="col-md-3 m-3">
+    <div class="col-md-3 p-3">
       <h1>Settings</h1>
 
       <ListGroup>
         <ListGroupItem tag="a" active={$page.url.pathname === "/settings"} href="/settings">
           Your profile
-        </ListGroupItem>
-        <ListGroupItem
-          tag="a"
-          active={$page.url.pathname === "/settings/auth"}
-          href="/settings/auth"
-        >
-          Authentication
         </ListGroupItem>
         {#if hasHiddenMembers}
           <ListGroupItem
@@ -65,6 +58,14 @@
             Hidden members
           </ListGroupItem>
         {/if}
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/flags"}
+          href="/settings/flags">Flags</ListGroupItem
+        >
+      </ListGroup>
+      <br />
+      <ListGroup>
         {#if data.invitesEnabled}
           <ListGroupItem
             tag="a"
@@ -101,7 +102,7 @@
         <ListGroupItem tag="button" on:click={toggle}>Log out</ListGroupItem>
       </ListGroup>
     </div>
-    <div class="col-md m-3">
+    <div class="col-md p-3">
       <slot />
     </div>
   </div>

@@ -11,6 +11,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
+	"github.com/rs/xid"
 )
 
 type PatchUserRequest struct {
@@ -25,6 +26,7 @@ type PatchUserRequest struct {
 	Avatar            *string               `json:"avatar"`
 	ListPrivate       *bool                 `json:"list_private"`
 	CustomPreferences *db.CustomPreferences `json:"custom_preferences"`
+	Flags             *[]xid.ID             `json:"flags"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
@@ -60,7 +62,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		req.Names == nil &&
 		req.Pronouns == nil &&
 		req.Avatar == nil &&
-		req.CustomPreferences == nil {
+		req.CustomPreferences == nil &&
+		req.Flags == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -102,6 +105,16 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 					Code:    server.ErrBadRequest,
 					Details: fmt.Sprintf("Link %d too long (max %d, current %d)", i, db.MaxLinkLength, len(link)),
 				}
+			}
+		}
+	}
+
+	// validate flag length
+	if req.Flags != nil {
+		if len(*req.Flags) > db.MaxPrideFlags {
+			return server.APIError{
+				Code:    server.ErrBadRequest,
+				Details: fmt.Sprintf("Too many flags (max %d, current %d)", len(*req.Flags), db.MaxPrideFlags),
 			}
 		}
 	}
@@ -252,6 +265,19 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// update flags
+	if req.Flags != nil {
+		err = s.DB.SetUserFlags(ctx, tx, claims.UserID, *req.Flags)
+		if err != nil {
+			if err == db.ErrInvalidFlagID {
+				return server.APIError{Code: server.ErrBadRequest, Details: "One or more flag IDs are unknown"}
+			}
+
+			log.Errorf("updating flags for user %v: %v", claims.UserID, err)
+			return err
+		}
+	}
+
 	// update last active time
 	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
 	if err != nil {
@@ -274,9 +300,16 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// get flags to return (we need to return full flag objects, not the array of IDs in the request body)
+	flags, err := s.DB.UserFlags(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user flags: %v", err)
+		return err
+	}
+
 	// echo the updated user back on success
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse:   dbUserToResponse(u, fields, nil),
+		GetUserResponse:   dbUserToResponse(u, fields, nil, flags),
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,

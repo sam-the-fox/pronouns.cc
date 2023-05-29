@@ -8,6 +8,7 @@
     type FieldEntry,
     type Member,
     type Pronoun,
+    type PrideFlag,
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import {
@@ -40,6 +41,7 @@
   import { memberNameRegex } from "$lib/api/regex";
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "../../MarkdownHelp.svelte";
+  import FlagButton from "../../FlagButton.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -59,6 +61,7 @@
   let names: FieldEntry[] = window.structuredClone(data.member.names);
   let pronouns: Pronoun[] = window.structuredClone(data.member.pronouns);
   let fields: Field[] = window.structuredClone(data.member.fields);
+  let flags: PrideFlag[] = window.structuredClone(data.member.flags);
   let unlisted: boolean = data.member.unlisted || false;
 
   let memberNameValid = true;
@@ -71,6 +74,18 @@
   let newPronouns = "";
   let newLink = "";
 
+  let flagSearch = "";
+  let filteredFlags: PrideFlag[];
+  $: filteredFlags = filterFlags(flagSearch, data.flags);
+
+  const filterFlags = (search: string, flags: PrideFlag[]) => {
+    return (
+      search
+        ? flags.filter((flag) => flag.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+        : flags
+    ).slice(0, 25);
+  };
+
   let modified = false;
 
   $: modified = isModified(
@@ -82,6 +97,7 @@
     names,
     pronouns,
     fields,
+    flags,
     avatar,
     unlisted,
   );
@@ -96,6 +112,7 @@
     names: FieldEntry[],
     pronouns: Pronoun[],
     fields: Field[],
+    flags: PrideFlag[],
     avatar: string | null,
     unlisted: boolean,
   ) => {
@@ -104,6 +121,7 @@
     if (display_name !== member.display_name) return true;
     if (!linksEqual(links, member.links)) return true;
     if (!fieldsEqual(fields, member.fields)) return true;
+    if (!flagsEqual(flags, member.flags)) return true;
     if (!namesEqual(names, member.names)) return true;
     if (!pronounsEqual(pronouns, member.pronouns)) return true;
     if (avatar !== null) return true;
@@ -145,6 +163,11 @@
   const linksEqual = (arr1: string[], arr2: string[]) => {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((_, i) => arr1[i] === arr2[i]);
+  };
+
+  const flagsEqual = (arr1: PrideFlag[], arr2: PrideFlag[]) => {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((_, i) => arr1[i].id === arr2[i].id);
   };
 
   const getAvatar = async (list: FileList | null) => {
@@ -209,6 +232,26 @@
     const temp = links[index];
     links[index] = links[newIndex];
     links[newIndex] = temp;
+  };
+
+  const moveFlag = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == flags.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = flags[index];
+    flags[index] = flags[newIndex];
+    flags[newIndex] = temp;
+  };
+
+  const addFlag = (flag: PrideFlag) => {
+    flags = [...flags, flag];
+  };
+
+  const removeFlag = (index: number) => {
+    flags.splice(index, 1);
+    flags = [...flags];
   };
 
   const addName = (event: Event) => {
@@ -281,6 +324,7 @@
         names,
         pronouns,
         fields,
+        flags: flags.map((flag) => flag.id),
         unlisted,
       });
 
@@ -539,6 +583,72 @@
       <Button on:click={() => (fields = [...fields, { name: "New field", entries: [] }])}>
         <Icon name="plus" aria-hidden /> Add new field
       </Button>
+    </div>
+  </TabPane>
+  <TabPane tabId="flags" tab="Flags">
+    <div class="mt-3">
+      {#each flags as _, index}
+        <ButtonGroup class="m-1">
+          <IconButton
+            icon="chevron-left"
+            color="secondary"
+            tooltip="Move flag to the left"
+            click={() => moveFlag(index, true)}
+          />
+          <IconButton
+            icon="chevron-right"
+            color="secondary"
+            tooltip="Move flag to the right"
+            click={() => moveFlag(index, false)}
+          />
+          <FlagButton
+            flag={flags[index]}
+            tooltip="Remove this flag from your profile"
+            on:click={() => removeFlag(index)}
+          />
+        </ButtonGroup>
+      {/each}
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col-md">
+        <Input
+          placeholder="Filter flags"
+          bind:value={flagSearch}
+          disabled={data.flags.length === 0}
+        />
+        <div class="p-2">
+          {#each filteredFlags as flag (flag.id)}
+            <FlagButton
+              {flag}
+              tooltip="Add this flag to your profile"
+              on:click={() => addFlag(flag)}
+            />
+          {:else}
+            {#if data.flags.length === 0}
+              You haven't uploaded any flags yet.
+            {:else}
+              There are no flags matching your search <strong>{flagSearch}</strong>.
+            {/if}
+          {/each}
+        </div>
+      </div>
+      <div class="col-md">
+        <Alert color="secondary" fade={false}>
+          {#if data.flags.length === 0}
+            <p><strong>Why can't I see any flags?</strong></p>
+            <p>
+              There are thousands of pride flags, and it would be impossible to bundle all of them
+              by default. Many labels also have multiple different flags that are favoured by
+              different people. Because of this, there are no flags available by default--instead,
+              you can upload flags in your <a href="/settings/flags">settings</a>. Your main profile
+              and your member profiles can all have different flags.
+            </p>
+          {:else}
+            To upload and delete flags, go to your <a href="/settings/flags">settings</a>.
+          {/if}
+        </Alert>
+      </div>
     </div>
   </TabPane>
   <TabPane tabId="links" tab="Links">

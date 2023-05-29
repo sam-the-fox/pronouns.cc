@@ -25,6 +25,7 @@ type GetUserResponse struct {
 	Members           []PartialMember      `json:"members"`
 	Fields            []db.Field           `json:"fields"`
 	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
+	Flags             []db.UserFlag        `json:"flags"`
 }
 
 type GetMeResponse struct {
@@ -61,7 +62,7 @@ type PartialMember struct {
 	Pronouns    []db.PronounEntry `json:"pronouns"`
 }
 
-func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUserResponse {
+func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags []db.UserFlag) GetUserResponse {
 	resp := GetUserResponse{
 		ID:                u.ID,
 		Username:          u.Username,
@@ -74,6 +75,7 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUser
 		Pronouns:          db.NotNull(u.Pronouns),
 		Fields:            db.NotNull(fields),
 		CustomPreferences: u.CustomPreferences,
+		Flags:             flags,
 	}
 
 	resp.Members = make([]PartialMember, len(members))
@@ -93,56 +95,29 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member) GetUser
 	return resp
 }
 
-func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) getUser(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 
 	userRef := chi.URLParamFromCtx(ctx, "userRef")
 
+	var u db.User
 	if id, err := xid.FromString(userRef); err == nil {
-		u, err := s.DB.User(ctx, id)
-		if err == nil {
-			if u.DeletedAt != nil {
-				return server.APIError{Code: server.ErrUserNotFound}
-			}
-
-			isSelf := false
-			if claims, ok := server.ClaimsFromContext(ctx); ok && claims.UserID == u.ID {
-				isSelf = true
-			}
-
-			fields, err := s.DB.UserFields(ctx, u.ID)
-			if err != nil {
-				log.Errorf("Error getting user fields: %v", err)
-				return err
-			}
-
-			var members []db.Member
-			if !u.ListPrivate || isSelf {
-				members, err = s.DB.UserMembers(ctx, u.ID, isSelf)
-				if err != nil {
-					log.Errorf("Error getting user members: %v", err)
-					return err
-				}
-			}
-
-			render.JSON(w, r, dbUserToResponse(u, fields, members))
-			return nil
-		} else if err != db.ErrUserNotFound {
-			log.Errorf("Error getting user by ID: %v", err)
-			return err
+		u, err = s.DB.User(ctx, id)
+		if err != nil {
+			log.Errorf("getting user by ID: %v", err)
 		}
-		// otherwise, we fall back to checking usernames
 	}
 
-	u, err := s.DB.Username(ctx, userRef)
-	if err == db.ErrUserNotFound {
-		return server.APIError{
-			Code: server.ErrUserNotFound,
+	if u.ID.IsNil() {
+		u, err = s.DB.Username(ctx, userRef)
+		if err == db.ErrUserNotFound {
+			return server.APIError{
+				Code: server.ErrUserNotFound,
+			}
+		} else if err != nil {
+			log.Errorf("Error getting user by username: %v", err)
+			return err
 		}
-
-	} else if err != nil {
-		log.Errorf("Error getting user by username: %v", err)
-		return err
 	}
 
 	if u.DeletedAt != nil {
@@ -160,6 +135,12 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	flags, err := s.DB.UserFlags(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user flags: %v", err)
+		return err
+	}
+
 	var members []db.Member
 	if !u.ListPrivate || isSelf {
 		members, err = s.DB.UserMembers(ctx, u.ID, isSelf)
@@ -169,7 +150,7 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	render.JSON(w, r, dbUserToResponse(u, fields, members))
+	render.JSON(w, r, dbUserToResponse(u, fields, members, flags))
 	return nil
 }
 
@@ -195,8 +176,14 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	flags, err := s.DB.UserFlags(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user flags: %v", err)
+		return err
+	}
+
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse:   dbUserToResponse(u, fields, members),
+		GetUserResponse:   dbUserToResponse(u, fields, members, flags),
 		CreatedAt:         u.ID.Time(),
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,

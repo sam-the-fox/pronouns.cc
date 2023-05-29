@@ -17,6 +17,7 @@ export interface User {
   pronouns: Pronoun[];
   members: PartialMember[];
   fields: Field[];
+  flags: PrideFlag[];
   custom_preferences: CustomPreferences;
 }
 
@@ -83,6 +84,7 @@ export interface PartialMember {
 
 export interface Member extends PartialMember {
   fields: Field[];
+  flags: PrideFlag[];
 
   user: MemberPartialUser;
   unlisted?: boolean;
@@ -94,6 +96,13 @@ export interface MemberPartialUser {
   display_name: string | null;
   avatar: string | null;
   custom_preferences: CustomPreferences;
+}
+
+export interface PrideFlag {
+  id: string;
+  hash: string;
+  name: string;
+  description: string | null;
 }
 
 export interface Invite {
@@ -191,6 +200,8 @@ export const memberAvatars = (member: Member | PartialMember) => {
     `${PUBLIC_MEDIA_URL}/members/${member.id}/${member.avatar}.jpg`,
   ];
 };
+
+export const flagURL = ({ hash }: PrideFlag) => `${PUBLIC_MEDIA_URL}/flags/${hash}.webp`;
 
 export const defaultAvatars = [
   `${PUBLIC_BASE_URL}/default/512.webp`,
