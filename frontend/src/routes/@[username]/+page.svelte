@@ -50,7 +50,8 @@
   let memberPage = 0;
   let memberSlice: PartialMember[] = [];
   $: memberSlice = data.members.slice(memberPage * 20, (memberPage + 1) * 20);
-  const totalPages = Math.ceil(data.members.length / 20);
+  let totalPages: number;
+  $: totalPages = Math.ceil(data.members.length / 20);
 
   const prevPage = () => {
     if (memberPage === 0) {
