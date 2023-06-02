@@ -48,7 +48,7 @@ type MemberFlag struct {
 }
 
 const (
-	MaxPrideFlags           = 100
+	MaxPrideFlags           = 500
 	MaxPrideFlagTitleLength = 100
 	MaxPrideFlagDescLength  = 500
 )
@@ -59,7 +59,7 @@ const (
 )
 
 func (db *DB) AccountFlags(ctx context.Context, userID xid.ID) (fs []PrideFlag, err error) {
-	sql, args, err := sq.Select("*").From("pride_flags").Where("user_id = ?", userID).OrderBy("lower(name)").ToSql()
+	sql, args, err := sq.Select("*").From("pride_flags").Where("user_id = ?", userID).OrderBy("lower(name)", "id").ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "building query")
 	}
