@@ -49,7 +49,7 @@
     <p>
       pronouns.cc is currently <strong>in beta</strong>. There might be issues and some
       functionality is not available or unfinished. Issue reports and pull requests
-      <a href="https://codeberg.org/u1f320/pronouns.cc" rel="noreferrer" target="_blank"
+      <a href="https://codeberg.org/pronounscc/pronouns.cc" rel="noreferrer" target="_blank"
         >in the repository</a
       > are welcome!
     </p>
@@ -67,7 +67,7 @@
     <h2 class="fs-5">Open source</h2>
     <p>
       pronouns.cc is
-      <a href="https://codeberg.org/u1f320/pronouns.cc" rel="noreferrer" target="_blank"
+      <a href="https://codeberg.org/pronounscc/pronouns.cc" rel="noreferrer" target="_blank"
         >open source</a
       >, and licensed under the GNU Affero General Public License. Feel free to contribute!
     </p>

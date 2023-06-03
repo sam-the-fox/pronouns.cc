@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"strings"
 
-	dbpkg "codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	dbpkg "codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"github.com/urfave/cli/v2"
 )
 

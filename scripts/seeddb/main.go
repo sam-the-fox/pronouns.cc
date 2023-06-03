@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"

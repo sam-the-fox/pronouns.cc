@@ -47,9 +47,11 @@
     <hr />
     <div class="d-flex flex-column flex-md-row">
       <p>
-        pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
+        pronouns.cc <a href="https://codeberg.org/pronounscc/pronouns.cc/commit/{commit}"
+          >{version}</a
+        >
         {#if versionMismatch}
-          (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}"
+          (backend: <a href="https://codeberg.org/pronounscc/pronouns.cc/commit/{data.git_commit}"
             >{data.git_commit}</a
           >)
         {/if} &middot;

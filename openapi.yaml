@@ -939,7 +939,7 @@ components:
           description: Whether this instance requires an invite.
           type: boolean
       example:
-        git_repository: https://codeberg.org/u1f320/pronouns.cc
+        git_repository: https://codeberg.org/pronounscc/pronouns.cc
         git_commit: 130a199
         users:
           total: 3985

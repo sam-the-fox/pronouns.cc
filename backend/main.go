@@ -7,8 +7,8 @@ import (
 	"os"
 	"os/signal"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/go-chi/render"

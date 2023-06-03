@@ -8,9 +8,9 @@ import (
 	"github.com/go-chi/render"
 	"github.com/rs/xid"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 )
 
 func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) error {

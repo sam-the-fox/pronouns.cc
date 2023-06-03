@@ -6,7 +6,7 @@ You might have to change paths and ports, but they should work fine as-is.
 ## Building pronouns.cc
 
 ```bash
-git clone https://codeberg.org/u1f320/pronouns.cc.git pronouns
+git clone https://codeberg.org/pronounscc/pronouns.cc.git pronouns
 cd pronouns
 git checkout stable
 make all

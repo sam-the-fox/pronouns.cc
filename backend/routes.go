@@ -3,13 +3,13 @@ package backend
 import (
 	"net/http"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/routes/auth"
-	"codeberg.org/u1f320/pronouns.cc/backend/routes/bot"
-	"codeberg.org/u1f320/pronouns.cc/backend/routes/member"
-	"codeberg.org/u1f320/pronouns.cc/backend/routes/meta"
-	"codeberg.org/u1f320/pronouns.cc/backend/routes/mod"
-	"codeberg.org/u1f320/pronouns.cc/backend/routes/user"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/routes/auth"
+	"codeberg.org/pronounscc/pronouns.cc/backend/routes/bot"
+	"codeberg.org/pronounscc/pronouns.cc/backend/routes/member"
+	"codeberg.org/pronounscc/pronouns.cc/backend/routes/meta"
+	"codeberg.org/pronounscc/pronouns.cc/backend/routes/mod"
+	"codeberg.org/pronounscc/pronouns.cc/backend/routes/user"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 

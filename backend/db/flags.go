@@ -9,7 +9,7 @@ import (
 	"io"
 	"strings"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/georgysavva/scany/v2/pgxscan"

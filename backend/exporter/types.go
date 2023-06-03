@@ -1,7 +1,7 @@
 package exporter
 
 import (
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"github.com/rs/xid"
 )
 

@@ -3,7 +3,7 @@ package member
 import (
 	"github.com/go-chi/chi/v5"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 )
 
 type Server struct {

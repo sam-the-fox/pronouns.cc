@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/common"
-	"codeberg.org/u1f320/pronouns.cc/backend/icons"
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
+	"codeberg.org/pronounscc/pronouns.cc/backend/icons"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/bwmarrin/discordgo"

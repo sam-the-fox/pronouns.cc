@@ -1,4 +1,4 @@
-module codeberg.org/u1f320/pronouns.cc
+module codeberg.org/pronounscc/pronouns.cc
 
 go 1.18
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/prometheus/client_golang/prometheus"

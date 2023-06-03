@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgconn"

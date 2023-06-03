@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server/auth"
 	"github.com/go-chi/render"
 )
 

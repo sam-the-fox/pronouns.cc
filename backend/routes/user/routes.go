@@ -3,7 +3,7 @@ package user
 import (
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
 )
 

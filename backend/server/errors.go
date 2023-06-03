@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"github.com/go-chi/render"
 )
 

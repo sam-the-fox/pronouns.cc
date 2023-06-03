@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
-	"codeberg.org/u1f320/pronouns.cc/backend/server/rate"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server/auth"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server/rate"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -23,7 +23,7 @@ var (
 )
 
 // Repository is the URL of the git repository
-const Repository = "https://codeberg.org/u1f320/pronouns.cc"
+const Repository = "https://codeberg.org/pronounscc/pronouns.cc"
 
 type Server struct {
 	Router *chi.Mux
