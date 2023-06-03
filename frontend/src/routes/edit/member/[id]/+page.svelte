@@ -31,7 +31,7 @@
   import { DateTime } from "luxon";
   import { encode } from "base64-arraybuffer";
   import prettyBytes from "pretty-bytes";
-  import { env } from "$env/dynamic/public";
+  import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../../EditableField.svelte";
@@ -392,7 +392,7 @@
   };
 
   const copyShortURL = async () => {
-    const url = `${env.PUBLIC_SHORT_BASE}/${data.member.sid}`;
+    const url = `${PUBLIC_SHORT_BASE}/${data.member.sid}`;
     await navigator.clipboard.writeText(url);
     addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
   };
@@ -779,7 +779,7 @@
           </strong>
         </p>
       </div>
-      {#if env.PUBLIC_SHORT_BASE}
+      {#if PUBLIC_SHORT_BASE}
         <div class="col-md">
           <p>
             Current short ID: <code>{data.member.sid}</code>

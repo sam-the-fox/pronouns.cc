@@ -29,8 +29,7 @@
     type FieldEntry,
     type Pronoun,
   } from "$lib/api/entities";
-  import { PUBLIC_BASE_URL } from "$env/static/public";
-  import { env } from "$env/dynamic/public";
+  import { PUBLIC_BASE_URL, PUBLIC_SHORT_BASE } from "$env/static/public";
   import { apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { goto } from "$app/navigation";
@@ -120,7 +119,7 @@
   };
 
   const copyShortURL = async () => {
-    const url = `${env.PUBLIC_SHORT_BASE}/${data.sid}`;
+    const url = `${PUBLIC_SHORT_BASE}/${data.sid}`;
     await navigator.clipboard.writeText(url);
     addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
   };
@@ -239,7 +238,7 @@
           <Button color="secondary" outline on:click={copyURL}>
             <Icon name="clipboard" /> Copy link
           </Button>
-          {#if env.PUBLIC_SHORT_BASE}
+          {#if PUBLIC_SHORT_BASE}
             <IconButton
               outline
               icon="link-45deg"

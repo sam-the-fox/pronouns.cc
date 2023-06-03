@@ -30,7 +30,7 @@
   import { encode } from "base64-arraybuffer";
   import { DateTime } from "luxon";
   import { apiFetchClient } from "$lib/api/fetch";
-  import { env } from "$env/dynamic/public";
+  import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../EditableField.svelte";
   import EditableName from "../EditableName.svelte";
@@ -398,7 +398,7 @@
   };
 
   const copyShortURL = async () => {
-    const url = `${env.PUBLIC_SHORT_BASE}/${data.user.sid}`;
+    const url = `${PUBLIC_SHORT_BASE}/${data.user.sid}`;
     await navigator.clipboard.writeText(url);
     addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
   };
@@ -745,7 +745,7 @@
             will be used.
           </p>
         </FormGroup>
-        {#if env.PUBLIC_SHORT_BASE}
+        {#if PUBLIC_SHORT_BASE}
           <hr />
           <p>
             Current short ID: <code>{data.user.sid}</code>
