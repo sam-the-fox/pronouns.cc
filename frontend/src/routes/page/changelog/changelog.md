@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3 - June 3rd 2023
+
+- Added a link shortener at **prns.cc**! There is now an additional button on all user and member pages to copy a shorter link.
+  The IDs used here can be rerolled on the edit profile page.
+- Fixed the member list breaking if you have too many private members.
+
 ## 0.5.0 - May 29th 2023
 
 - **Added pride flags!**
