@@ -66,6 +66,13 @@
       </ListGroup>
       <br />
       <ListGroup>
+        <ListGroupItem
+          tag="a"
+          active={$page.url.pathname === "/settings/auth"}
+          href="/settings/auth"
+        >
+          Authentication
+        </ListGroupItem>
         {#if data.invitesEnabled}
           <ListGroupItem
             tag="a"
