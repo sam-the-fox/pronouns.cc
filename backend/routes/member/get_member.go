@@ -14,6 +14,7 @@ import (
 
 type GetMemberResponse struct {
 	ID          xid.ID   `json:"id"`
+	SID         string   `json:"sid"`
 	Name        string   `json:"name"`
 	DisplayName *string  `json:"display_name"`
 	Bio         *string  `json:"bio"`
@@ -33,6 +34,7 @@ type GetMemberResponse struct {
 func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.MemberFlag, isOwnMember bool) GetMemberResponse {
 	r := GetMemberResponse{
 		ID:          m.ID,
+		SID:         m.SID,
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
 		Bio:         m.Bio,

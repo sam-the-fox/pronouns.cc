@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/common"
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
@@ -313,6 +314,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,
+		LastSIDReroll:     u.LastSIDReroll,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
 		Tumblr:            u.Tumblr,
@@ -360,5 +362,33 @@ func validateSlicePtr[T validator](typ string, slice *[]T, custom db.CustomPrefe
 		}
 	}
 
+	return nil
+}
+
+func (s *Server) rerollUserSID(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting existing user")
+	}
+
+	if time.Now().Add(-time.Hour).Before(u.LastSIDReroll) {
+		return server.APIError{Code: server.ErrRerollingTooQuickly}
+	}
+
+	newID, err := s.DB.RerollUserSID(ctx, u.ID)
+	if err != nil {
+		return errors.Wrap(err, "updating user SID")
+	}
+
+	u.SID = newID
+	render.JSON(w, r, dbUserToResponse(u, nil, nil, nil))
 	return nil
 }

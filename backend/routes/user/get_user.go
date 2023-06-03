@@ -14,6 +14,7 @@ import (
 
 type GetUserResponse struct {
 	ID                xid.ID               `json:"id"`
+	SID               string               `json:"sid"`
 	Username          string               `json:"name"`
 	DisplayName       *string              `json:"display_name"`
 	Bio               *string              `json:"bio"`
@@ -33,9 +34,10 @@ type GetMeResponse struct {
 
 	CreatedAt time.Time `json:"created_at"`
 
-	MaxInvites  int  `json:"max_invites"`
-	IsAdmin     bool `json:"is_admin"`
-	ListPrivate bool `json:"list_private"`
+	MaxInvites    int       `json:"max_invites"`
+	IsAdmin       bool      `json:"is_admin"`
+	ListPrivate   bool      `json:"list_private"`
+	LastSIDReroll time.Time `json:"last_sid_reroll"`
 
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
@@ -53,6 +55,7 @@ type GetMeResponse struct {
 
 type PartialMember struct {
 	ID          xid.ID            `json:"id"`
+	SID         string            `json:"sid"`
 	Name        string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
 	Bio         *string           `json:"bio"`
@@ -65,6 +68,7 @@ type PartialMember struct {
 func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags []db.UserFlag) GetUserResponse {
 	resp := GetUserResponse{
 		ID:                u.ID,
+		SID:               u.SID,
 		Username:          u.Username,
 		DisplayName:       u.DisplayName,
 		Bio:               u.Bio,
@@ -82,6 +86,7 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags [
 	for i := range members {
 		resp.Members[i] = PartialMember{
 			ID:          members[i].ID,
+			SID:         members[i].SID,
 			Name:        members[i].Name,
 			DisplayName: members[i].DisplayName,
 			Bio:         members[i].Bio,
@@ -188,6 +193,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,
+		LastSIDReroll:     u.LastSIDReroll,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
 		Tumblr:            u.Tumblr,

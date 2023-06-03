@@ -6,6 +6,7 @@ export const MAX_DESCRIPTION_LENGTH = 1000;
 
 export interface User {
   id: string;
+  sid: string;
   name: string;
   display_name: string | null;
   bio: string | null;
@@ -53,6 +54,7 @@ export interface MeUser extends User {
   fediverse_username: string | null;
   fediverse_instance: string | null;
   list_private: boolean;
+  last_sid_reroll: string;
 }
 
 export interface Field {
@@ -73,6 +75,7 @@ export interface Pronoun {
 
 export interface PartialMember {
   id: string;
+  sid: string;
   name: string;
   display_name: string | null;
   bio: string | null;

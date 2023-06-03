@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"codeberg.org/u1f320/pronouns.cc/backend/common"
 	"codeberg.org/u1f320/pronouns.cc/backend/db"
@@ -317,5 +318,51 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 
 	// echo the updated member back on success
 	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, true))
+	return nil
+}
+
+func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
+	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
+	if err != nil {
+		return server.APIError{Code: server.ErrMemberNotFound}
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
+	}
+
+	m, err := s.DB.Member(ctx, id)
+	if err != nil {
+		if err == db.ErrMemberNotFound {
+			return server.APIError{Code: server.ErrMemberNotFound}
+		}
+
+		return errors.Wrap(err, "getting member")
+	}
+
+	if m.UserID != claims.UserID {
+		return server.APIError{Code: server.ErrNotOwnMember}
+	}
+
+	if time.Now().Add(-time.Hour).Before(u.LastSIDReroll) {
+		return server.APIError{Code: server.ErrRerollingTooQuickly}
+	}
+
+	newID, err := s.DB.RerollMemberSID(ctx, u.ID, m.ID)
+	if err != nil {
+		return errors.Wrap(err, "updating member SID")
+	}
+
+	m.SID = newID
+	render.JSON(w, r, dbMemberToMember(u, m, nil, nil, true))
 	return nil
 }

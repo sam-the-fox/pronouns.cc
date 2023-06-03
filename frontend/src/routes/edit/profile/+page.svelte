@@ -28,7 +28,9 @@
     TabPane,
   } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
+  import { DateTime } from "luxon";
   import { apiFetchClient } from "$lib/api/fetch";
+  import { env } from "$env/dynamic/public";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../EditableField.svelte";
   import EditableName from "../EditableName.svelte";
@@ -379,6 +381,28 @@
     }
   };
 
+  const now = DateTime.now().toLocal();
+  let canRerollSid: boolean;
+  $: canRerollSid =
+    now.diff(DateTime.fromISO(data.user.last_sid_reroll).toLocal(), "hours").hours >= 1;
+
+  const rerollSid = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/users/@me/reroll");
+      addToast({ header: "Success", body: "Rerolled short ID!" });
+      error = null;
+      data.user.sid = resp.sid;
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const copyShortURL = async () => {
+    const url = `${env.PUBLIC_SHORT_BASE}/${data.user.sid}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
+  };
+
   interface SnapshotData {
     bio: string;
     display_name: string;
@@ -721,6 +745,29 @@
             will be used.
           </p>
         </FormGroup>
+        {#if env.PUBLIC_SHORT_BASE}
+          <hr />
+          <p>
+            Current short ID: <code>{data.user.sid}</code>
+            <ButtonGroup class="mb-1">
+              <Button color="secondary" disabled={!canRerollSid} on:click={() => rerollSid()}
+                >Reroll short ID</Button
+              >
+              <IconButton
+                icon="link-45deg"
+                tooltip="Copy short link"
+                color="secondary"
+                click={copyShortURL}
+              />
+            </ButtonGroup>
+            <br />
+            <span class="text-muted">
+              <Icon name="info-circle-fill" aria-hidden />
+              This ID is used in <code>prns.cc</code> links. You can reroll one short ID every hour (shared
+              between your main profile and all members) by pressing the button above.
+            </span>
+          </p>
+        {/if}
       </div>
       <div class="col-md">
         <div class="form-check">

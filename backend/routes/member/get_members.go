@@ -12,6 +12,7 @@ import (
 
 type memberListResponse struct {
 	ID          xid.ID            `json:"id"`
+	SID         string            `json:"sid"`
 	Name        string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
 	Bio         *string           `json:"bio"`
@@ -27,6 +28,7 @@ func membersToMemberList(ms []db.Member, isSelf bool) []memberListResponse {
 	for i := range ms {
 		resps[i] = memberListResponse{
 			ID:          ms[i].ID,
+			SID:         ms[i].SID,
 			Name:        ms[i].Name,
 			DisplayName: ms[i].DisplayName,
 			Bio:         ms[i].Bio,

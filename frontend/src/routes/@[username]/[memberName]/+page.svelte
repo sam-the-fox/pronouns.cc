@@ -13,6 +13,7 @@
     type Pronoun,
   } from "$lib/api/entities";
   import { PUBLIC_BASE_URL } from "$env/static/public";
+  import { env } from "$env/dynamic/public";
   import { userStore } from "$lib/store";
   import { renderMarkdown } from "$lib/utils";
   import ReportButton from "../ReportButton.svelte";
@@ -21,6 +22,7 @@
   import defaultPreferences from "$lib/api/default_preferences";
   import { addToast } from "$lib/toast";
   import ProfileFlag from "../ProfileFlag.svelte";
+  import IconButton from "$lib/components/IconButton.svelte";
 
   export let data: PageData;
 
@@ -50,6 +52,12 @@
     const url = `${PUBLIC_BASE_URL}/@${data.user.name}/${data.name}`;
     await navigator.clipboard.writeText(url);
     addToast({ body: "Copied the link to your clipboard!", duration: 2000 });
+  };
+
+  const copyShortURL = async () => {
+    const url = `${env.PUBLIC_SHORT_BASE}/${data.sid}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
   };
 </script>
 
@@ -153,6 +161,15 @@
           <Button color="secondary" outline on:click={copyURL}>
             <Icon name="clipboard" /> Copy link
           </Button>
+          {#if env.PUBLIC_SHORT_BASE}
+            <IconButton
+              outline
+              icon="link-45deg"
+              tooltip="Copy short link"
+              color="secondary"
+              click={copyShortURL}
+            />
+          {/if}
           {#if $userStore && $userStore.id !== data.user.id}
             <ReportButton subject="member" reportUrl="/members/{data.id}/reports" />
           {/if}

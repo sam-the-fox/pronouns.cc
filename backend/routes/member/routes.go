@@ -29,5 +29,8 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.With(server.MustAuth).Post("/", server.WrapHandler(s.createMember))
 		r.With(server.MustAuth).Patch("/{memberRef}", server.WrapHandler(s.patchMember))
 		r.With(server.MustAuth).Delete("/{memberRef}", server.WrapHandler(s.deleteMember))
+
+		// reroll member SID
+		r.With(server.MustAuth).Get("/{memberRef}/reroll", server.WrapHandler(s.rerollMemberSID))
 	})
 }

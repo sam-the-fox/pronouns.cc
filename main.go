@@ -6,6 +6,7 @@ import (
 
 	"codeberg.org/u1f320/pronouns.cc/backend"
 	"codeberg.org/u1f320/pronouns.cc/backend/exporter"
+	"codeberg.org/u1f320/pronouns.cc/backend/prns"
 	"codeberg.org/u1f320/pronouns.cc/backend/server"
 	"codeberg.org/u1f320/pronouns.cc/scripts/cleandb"
 	"codeberg.org/u1f320/pronouns.cc/scripts/genid"
@@ -22,6 +23,7 @@ var app = &cli.App{
 	Commands: []*cli.Command{
 		backend.Command,
 		exporter.Command,
+		prns.Command,
 		{
 			Name:    "database",
 			Aliases: []string{"db"},

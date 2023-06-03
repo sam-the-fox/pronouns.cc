@@ -11,6 +11,7 @@ import (
 	"codeberg.org/u1f320/pronouns.cc/backend/common"
 	"codeberg.org/u1f320/pronouns.cc/backend/icons"
 	"emperror.dev/errors"
+	"github.com/Masterminds/squirrel"
 	"github.com/bwmarrin/discordgo"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -20,6 +21,7 @@ import (
 
 type User struct {
 	ID          xid.ID
+	SID         string `db:"sid"`
 	Username    string
 	DisplayName *string
 	Bio         *string
@@ -46,9 +48,10 @@ type User struct {
 	Google         *string
 	GoogleUsername *string
 
-	MaxInvites  int
-	IsAdmin     bool
-	ListPrivate bool
+	MaxInvites    int
+	IsAdmin       bool
+	ListPrivate   bool
+	LastSIDReroll time.Time `db:"last_sid_reroll"`
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool
@@ -161,7 +164,7 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 		return u, err
 	}
 
-	sql, args, err := sq.Insert("users").Columns("id", "username").Values(xid.New(), username).Suffix("RETURNING *").ToSql()
+	sql, args, err := sq.Insert("users").Columns("id", "username", "sid").Values(xid.New(), username, squirrel.Expr("find_free_user_sid()")).Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
@@ -468,6 +471,25 @@ func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
 	return u, nil
 }
 
+// UserBySID gets a user by their short ID.
+func (db *DB) UserBySID(ctx context.Context, sid string) (u User, err error) {
+	sql, args, err := sq.Select("*").From("users").Where("sid = ?", sid).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "getting user from db")
+	}
+
+	return u, nil
+}
+
 // UsernameTaken checks if the given username is already taken.
 func (db *DB) UsernameTaken(ctx context.Context, username string) (valid, taken bool, err error) {
 	if err := UsernameValid(username); err != nil {
@@ -594,6 +616,23 @@ func (db *DB) DeleteUser(ctx context.Context, tx pgx.Tx, id xid.ID, selfDelete b
 		return errors.Wrap(err, "executing query")
 	}
 	return nil
+}
+
+func (db *DB) RerollUserSID(ctx context.Context, id xid.ID) (newID string, err error) {
+	sql, args, err := sq.Update("users").
+		Set("sid", squirrel.Expr("find_free_user_sid()")).
+		Set("last_sid_reroll", time.Now()).
+		Where("id = ?", id).
+		Suffix("RETURNING sid").ToSql()
+	if err != nil {
+		return "", errors.Wrap(err, "building sql")
+	}
+
+	err = db.QueryRow(ctx, sql, args...).Scan(&newID)
+	if err != nil {
+		return "", errors.Wrap(err, "executing query")
+	}
+	return newID, nil
 }
 
 func (db *DB) UndoDeleteUser(ctx context.Context, id xid.ID) error {

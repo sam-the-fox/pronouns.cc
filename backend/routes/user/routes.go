@@ -34,6 +34,8 @@ func Mount(srv *server.Server, r chi.Router) {
 			r.Post("/@me/flags", server.WrapHandler(s.postUserFlag))
 			r.Patch("/@me/flags/{flagID}", server.WrapHandler(s.patchUserFlag))
 			r.Delete("/@me/flags/{flagID}", server.WrapHandler(s.deleteUserFlag))
+
+			r.Get("/@me/reroll", server.WrapHandler(s.rerollUserSID))
 		})
 	})
 }

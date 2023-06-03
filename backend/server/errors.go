@@ -100,9 +100,10 @@ const (
 	ErrInvalidCaptcha      = 1017 // invalid or missing captcha response
 
 	// User-related error codes
-	ErrUserNotFound      = 2001
-	ErrMemberListPrivate = 2002
-	ErrFlagLimitReached  = 2003
+	ErrUserNotFound        = 2001
+	ErrMemberListPrivate   = 2002
+	ErrFlagLimitReached    = 2003
+	ErrRerollingTooQuickly = 2004
 
 	// Member-related error codes
 	ErrMemberNotFound     = 3001
@@ -145,9 +146,10 @@ var errCodeMessages = map[int]string{
 	ErrLastProvider:        "This is your account's only authentication provider",
 	ErrInvalidCaptcha:      "Invalid or missing captcha response",
 
-	ErrUserNotFound:      "User not found",
-	ErrMemberListPrivate: "This user's member list is private",
-	ErrFlagLimitReached:  "Maximum number of pride flags reached",
+	ErrUserNotFound:        "User not found",
+	ErrMemberListPrivate:   "This user's member list is private",
+	ErrFlagLimitReached:    "Maximum number of pride flags reached",
+	ErrRerollingTooQuickly: "You can only reroll one short ID per hour.",
 
 	ErrMemberNotFound:     "Member not found",
 	ErrMemberLimitReached: "Member limit reached",
@@ -187,9 +189,10 @@ var errCodeStatuses = map[int]int{
 	ErrLastProvider:        http.StatusBadRequest,
 	ErrInvalidCaptcha:      http.StatusBadRequest,
 
-	ErrUserNotFound:      http.StatusNotFound,
-	ErrMemberListPrivate: http.StatusForbidden,
-	ErrFlagLimitReached:  http.StatusBadRequest,
+	ErrUserNotFound:        http.StatusNotFound,
+	ErrMemberListPrivate:   http.StatusForbidden,
+	ErrFlagLimitReached:    http.StatusBadRequest,
+	ErrRerollingTooQuickly: http.StatusForbidden,
 
 	ErrMemberNotFound:     http.StatusNotFound,
 	ErrMemberLimitReached: http.StatusBadRequest,
