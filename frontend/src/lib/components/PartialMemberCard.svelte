@@ -6,10 +6,13 @@
     type User,
     type CustomPreferences,
   } from "$lib/api/entities";
+    import { Icon } from "sveltestrap";
   import FallbackImage from "./FallbackImage.svelte";
 
   export let user: User;
-  export let member: PartialMember;
+  export let member: PartialMember & {
+    unlisted?: boolean
+  };
 
   let pronouns: string | undefined;
 
@@ -46,6 +49,9 @@
   <p class="m-2">
     <a class="text-reset fs-5 text-break" href="/@{user.name}/{member.name}">
       {member.display_name ?? member.name}
+      {#if member.unlisted === true}
+        <Icon name="lock"/>
+      {/if}
     </a>
     {#if pronouns}
       <br />
