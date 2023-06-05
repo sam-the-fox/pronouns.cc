@@ -4,6 +4,7 @@
 
   import {
     Alert,
+    Badge,
     Button,
     ButtonGroup,
     Icon,
@@ -42,6 +43,7 @@
   import { addToast } from "$lib/toast";
   import ProfileFlag from "./ProfileFlag.svelte";
   import IconButton from "$lib/components/IconButton.svelte";
+  import Badges from "./badges/Badges.svelte";
 
   export let data: PageData;
 
@@ -160,11 +162,11 @@
       <div class="col-md">
         {#if data.display_name}
           <div>
-            <h2>{data.display_name}</h2>
+            <h2>{data.display_name} <Badges userBadges={data.badges} /></h2>
             <p class="fs-5 text-body-secondary">@{data.name}</p>
           </div>
         {:else}
-          <h2>@{data.name}</h2>
+          <h2>@{data.name} <Badges userBadges={data.badges} /></h2>
         {/if}
         {#if profileEmpty && $userStore?.id === data.id}
           <hr />

@@ -113,6 +113,12 @@ func (u User) NumProviders() (numProviders int) {
 	return numProviders
 }
 
+type Badge int32
+
+const (
+	BadgeAdmin Badge = 1 << 0
+)
+
 // usernames must match this regex
 var usernameRegex = regexp.MustCompile(`^[\w-.]{2,40}$`)
 

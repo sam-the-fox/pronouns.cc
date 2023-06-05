@@ -13,6 +13,7 @@ export interface User {
   avatar: string | null;
   links: string[];
   member_title: string | null;
+  badges: number;
 
   names: FieldEntry[];
   pronouns: Pronoun[];
