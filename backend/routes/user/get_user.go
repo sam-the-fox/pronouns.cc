@@ -27,6 +27,7 @@ type GetUserResponse struct {
 	Fields            []db.Field           `json:"fields"`
 	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
 	Flags             []db.UserFlag        `json:"flags"`
+	Badges            db.Badge             `json:"badges"`
 }
 
 type GetMeResponse struct {
@@ -80,6 +81,10 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags [
 		Fields:            db.NotNull(fields),
 		CustomPreferences: u.CustomPreferences,
 		Flags:             flags,
+	}
+
+	if u.IsAdmin {
+		resp.Badges |= db.BadgeAdmin
 	}
 
 	resp.Members = make([]PartialMember, len(members))
