@@ -48,7 +48,7 @@ func (f FediverseApp) ClientConfig() *oauth2.Config {
 }
 
 func (f FediverseApp) MastodonCompatible() bool {
-	return f.InstanceType == "mastodon" || f.InstanceType == "pleroma" || f.InstanceType == "akkoma" || f.InstanceType == "pixelfed"
+	return f.InstanceType == "mastodon" || f.InstanceType == "pleroma" || f.InstanceType == "akkoma" || f.InstanceType == "pixelfed" || f.InstanceType == "gotosocial"
 }
 
 func (f FediverseApp) Misskey() bool {

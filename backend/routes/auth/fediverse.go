@@ -67,7 +67,7 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 	switch softwareName {
 	case "misskey", "foundkey", "calckey":
 		return s.noAppMisskeyURL(ctx, w, r, softwareName, instance)
-	case "mastodon", "pleroma", "akkoma", "pixelfed":
+	case "mastodon", "pleroma", "akkoma", "pixelfed", "gotosocial":
 	case "glitchcafe":
 		// plural.cafe (potentially other instances too?) runs Mastodon but changes the software name
 		// changing it back to mastodon here for consistency
