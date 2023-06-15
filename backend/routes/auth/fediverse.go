@@ -68,8 +68,11 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 	case "misskey", "foundkey", "calckey":
 		return s.noAppMisskeyURL(ctx, w, r, softwareName, instance)
 	case "mastodon", "pleroma", "akkoma", "pixelfed":
+	case "glitchcafe":
+		// plural.cafe (potentially other instances too?) runs Mastodon but changes the software name
+		// changing it back to mastodon here for consistency
+		softwareName = "mastodon"
 	default:
-		// sorry, misskey :( TODO: support misskey
 		return server.APIError{Code: server.ErrUnsupportedInstance}
 	}
 
