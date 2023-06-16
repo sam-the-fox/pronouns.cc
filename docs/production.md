@@ -22,7 +22,7 @@ one in the repository root (for the backend) and one in the frontend directory.
 
 ### Backend keys
 
-- `HMAC_KEY`: the key used to sign tokens. This should be a base64 string, you can generate one with `scripts/genkey`.
+- `HMAC_KEY`: the key used to sign tokens. This should be a base64 string, you can generate one with `go run -v . generate key` (or `./pronouns generate key` after building).
 - `DATABASE_URL`: the URL for the PostgreSQL database.
 - `REDIS`: the URL for the Redis database.
 - `PORT` (int): the port the backend will listen on.
