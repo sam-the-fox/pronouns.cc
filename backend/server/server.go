@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/go-chi/render"
+	chiprometheus "github.com/toshi0607/chi-prometheus"
 )
 
 // Revision is the git commit, filled at build time
@@ -58,6 +59,12 @@ func New() (*Server, error) {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
+
+	// enable request latency tracking
+	os.Setenv(chiprometheus.EnvChiPrometheusLatencyBuckets, "10,25,50,100,300,500,1000,5000")
+	prom := chiprometheus.New("pronouns.cc")
+	s.Router.Use(prom.Handler)
+	prom.MustRegisterDefault()
 
 	// enable authentication for all routes (but don't require it)
 	s.Router.Use(s.maybeAuth)
