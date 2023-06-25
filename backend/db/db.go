@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sync"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
@@ -41,6 +42,10 @@ type DB struct {
 	baseURL     *url.URL
 
 	TotalRequests prometheus.Counter
+
+	activeUsersDay, activeUsersWeek, activeUsersMonth int64
+	usersTotal, membersTotal                          int64
+	countMu                                           sync.RWMutex
 }
 
 func New() (*DB, error) {

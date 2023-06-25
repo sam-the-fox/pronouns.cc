@@ -4,9 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
-	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
@@ -39,30 +37,7 @@ type MetaUsers struct {
 func (s *Server) meta(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	numUsers, err := s.DB.TotalUserCount(ctx)
-	if err != nil {
-		return errors.Wrap(err, "querying user count")
-	}
-
-	activeMonth, err := s.DB.ActiveUsers(ctx, db.ActiveMonth)
-	if err != nil {
-		return errors.Wrap(err, "querying user count")
-	}
-
-	activeWeek, err := s.DB.ActiveUsers(ctx, db.ActiveWeek)
-	if err != nil {
-		return errors.Wrap(err, "querying user count")
-	}
-
-	activeDay, err := s.DB.ActiveUsers(ctx, db.ActiveDay)
-	if err != nil {
-		return errors.Wrap(err, "querying user count")
-	}
-
-	numMembers, err := s.DB.TotalMemberCount(ctx)
-	if err != nil {
-		return errors.Wrap(err, "querying user count")
-	}
+	numUsers, numMembers, activeDay, activeWeek, activeMonth := s.DB.Counts(ctx)
 
 	render.JSON(w, r, MetaResponse{
 		GitRepository: server.Repository,

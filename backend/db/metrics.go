@@ -21,6 +21,11 @@ func (db *DB) initMetrics() (err error) {
 		if err != nil {
 			log.Errorf("getting user count for metrics: %v", err)
 		}
+
+		db.countMu.Lock()
+		db.usersTotal = count
+		db.countMu.Unlock()
+
 		return float64(count)
 	}))
 	if err != nil {
@@ -35,6 +40,11 @@ func (db *DB) initMetrics() (err error) {
 		if err != nil {
 			log.Errorf("getting member count for metrics: %v", err)
 		}
+
+		db.countMu.Lock()
+		db.membersTotal = count
+		db.countMu.Unlock()
+
 		return float64(count)
 	}))
 	if err != nil {
@@ -49,6 +59,11 @@ func (db *DB) initMetrics() (err error) {
 		if err != nil {
 			log.Errorf("getting active user count for metrics: %v", err)
 		}
+
+		db.countMu.Lock()
+		db.activeUsersMonth = count
+		db.countMu.Unlock()
+
 		return float64(count)
 	}))
 	if err != nil {
@@ -63,6 +78,11 @@ func (db *DB) initMetrics() (err error) {
 		if err != nil {
 			log.Errorf("getting active user count for metrics: %v", err)
 		}
+
+		db.countMu.Lock()
+		db.activeUsersWeek = count
+		db.countMu.Unlock()
+
 		return float64(count)
 	}))
 	if err != nil {
@@ -77,6 +97,11 @@ func (db *DB) initMetrics() (err error) {
 		if err != nil {
 			log.Errorf("getting active user count for metrics: %v", err)
 		}
+
+		db.countMu.Lock()
+		db.activeUsersDay = count
+		db.countMu.Unlock()
+
 		return float64(count)
 	}))
 	if err != nil {
@@ -105,6 +130,22 @@ func (db *DB) initMetrics() (err error) {
 	})
 
 	return nil
+}
+
+func (db *DB) Counts(ctx context.Context) (numUsers, numMembers, usersDay, usersWeek, usersMonth int64) {
+	db.countMu.Lock()
+	if numUsers != 0 {
+		defer db.countMu.Unlock()
+		return db.usersTotal, db.membersTotal, db.activeUsersDay, db.activeUsersWeek, db.activeUsersMonth
+	}
+	db.countMu.Unlock()
+
+	numUsers, _ = db.TotalUserCount(ctx)
+	numMembers, _ = db.TotalMemberCount(ctx)
+	usersDay, _ = db.ActiveUsers(ctx, ActiveDay)
+	usersWeek, _ = db.ActiveUsers(ctx, ActiveWeek)
+	usersMonth, _ = db.ActiveUsers(ctx, ActiveMonth)
+	return numUsers, numMembers, usersDay, usersWeek, usersMonth
 }
 
 func (db *DB) TotalUserCount(ctx context.Context) (numUsers int64, err error) {
