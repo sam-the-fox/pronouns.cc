@@ -134,7 +134,7 @@ func (db *DB) initMetrics() (err error) {
 
 func (db *DB) Counts(ctx context.Context) (numUsers, numMembers, usersDay, usersWeek, usersMonth int64) {
 	db.countMu.Lock()
-	if numUsers != 0 {
+	if db.usersTotal != 0 {
 		defer db.countMu.Unlock()
 		return db.usersTotal, db.membersTotal, db.activeUsersDay, db.activeUsersWeek, db.activeUsersMonth
 	}
