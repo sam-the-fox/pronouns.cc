@@ -45,6 +45,9 @@
       <a class="text-reset" href="/page/terms" target="_blank" rel="noopener noreferrer"
         >terms of service</a
       >.
+      <br />
+      Note that we <strong>cannot</strong> take action on any reports that cannot be proven with just
+      the reported profile and any external pages linked on it.
     </p>
   </ModalBody>
   <ModalFooter>
