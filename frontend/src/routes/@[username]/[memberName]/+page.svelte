@@ -29,7 +29,7 @@
   $: bio = renderMarkdown(data.bio);
 
   let mergedPreferences: CustomPreferences;
-  $: mergedPreferences = Object.assign(defaultPreferences, data.user.custom_preferences);
+  $: mergedPreferences = Object.assign({}, defaultPreferences, data.user.custom_preferences);
 
   let favNames: FieldEntry[];
   $: favNames = data.names.filter(

@@ -96,7 +96,7 @@
   };
 
   let mergedPreferences: CustomPreferences;
-  $: mergedPreferences = Object.assign(defaultPreferences, data.custom_preferences);
+  $: mergedPreferences = Object.assign({}, defaultPreferences, data.custom_preferences);
 
   let favNames: FieldEntry[];
   $: favNames = data.names.filter(

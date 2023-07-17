@@ -25,7 +25,7 @@
   const toggleDisplay = () => (displayOpen = !displayOpen);
 
   let mergedPreferences: CustomPreferences;
-  $: mergedPreferences = Object.assign(defaultPreferences, preferences);
+  $: mergedPreferences = Object.assign({}, defaultPreferences, preferences);
 
   let currentPreference: CustomPreference;
   $: currentPreference =
