@@ -9,7 +9,7 @@
   export let status: string;
 
   let mergedPreferences: CustomPreferences;
-  $: mergedPreferences = Object.assign(defaultPreferences, preferences);
+  $: mergedPreferences = Object.assign({}, defaultPreferences, preferences);
 
   let currentPreference: CustomPreference;
   $: currentPreference =
