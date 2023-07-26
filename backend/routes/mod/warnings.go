@@ -44,7 +44,7 @@ func (s *Server) ackWarning(w http.ResponseWriter, r *http.Request) (err error) 
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
-	if !claims.APIToken {
+	if claims.APIToken {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This endpoint cannot be used by API tokens"}
 	}
 
