@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { WordStatus } from "$lib/api/entities";
+  import defaultPreferences from "$lib/api/default_preferences";
+  import type { CustomPreference, CustomPreferences } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
   import {
     ButtonDropdown,
@@ -11,46 +12,23 @@
   } from "sveltestrap";
 
   export let value: string;
-  export let status: WordStatus;
+  export let status: string;
+  export let preferences: CustomPreferences;
   export let moveUp: () => void;
   export let moveDown: () => void;
   export let remove: () => void;
 
   let buttonElement: HTMLElement;
 
-  const iconFor = (wordStatus: WordStatus) => {
-    switch (wordStatus) {
-      case WordStatus.Favourite:
-        return "heart-fill";
-      case WordStatus.Okay:
-        return "hand-thumbs-up";
-      case WordStatus.Jokingly:
-        return "emoji-laughing";
-      case WordStatus.FriendsOnly:
-        return "people";
-      case WordStatus.Avoid:
-        return "hand-thumbs-down";
-      default:
-        return "hand-thumbs-up";
-    }
-  };
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign({}, defaultPreferences, preferences);
 
-  const textFor = (wordStatus: WordStatus) => {
-    switch (wordStatus) {
-      case WordStatus.Favourite:
-        return "Favourite";
-      case WordStatus.Okay:
-        return "Okay";
-      case WordStatus.Jokingly:
-        return "Jokingly";
-      case WordStatus.FriendsOnly:
-        return "Friends only";
-      case WordStatus.Avoid:
-        return "Avoid";
-      default:
-        return "Okay";
-    }
-  };
+  let currentPreference: CustomPreference;
+  $: currentPreference =
+    status in mergedPreferences ? mergedPreferences[status] : defaultPreferences.missing;
+
+  let preferenceIds: string[];
+  $: preferenceIds = Object.keys(mergedPreferences).filter((s) => s !== "missing");
 </script>
 
 <div class="input-group m-1">
@@ -58,30 +36,17 @@
   <IconButton icon="chevron-down" color="secondary" tooltip="Move name down" click={moveDown} />
   <input type="text" class="form-control" bind:value />
   <ButtonDropdown>
-    <Tooltip target={buttonElement} placement="top">{textFor(status)}</Tooltip>
+    <Tooltip target={buttonElement} placement="top">{currentPreference.tooltip}</Tooltip>
     <DropdownToggle color="secondary" caret bind:inner={buttonElement}>
-      <Icon name={iconFor(status)} />
+      <Icon name={currentPreference.icon} />
     </DropdownToggle>
     <DropdownMenu>
-      <DropdownItem
-        on:click={() => (status = WordStatus.Favourite)}
-        active={status === WordStatus.Favourite}>Favourite</DropdownItem
-      >
-      <DropdownItem on:click={() => (status = WordStatus.Okay)} active={status === WordStatus.Okay}
-        >Okay</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (status = WordStatus.Jokingly)}
-        active={status === WordStatus.Jokingly}>Jokingly</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (status = WordStatus.FriendsOnly)}
-        active={status === WordStatus.FriendsOnly}>Friends only</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (status = WordStatus.Avoid)}
-        active={status === WordStatus.Avoid}>Avoid</DropdownItem
-      >
+      {#each preferenceIds as id}
+        <DropdownItem on:click={() => (status = id)} active={status === id}>
+          <Icon name={mergedPreferences[id].icon} aria-hidden />
+          {mergedPreferences[id].tooltip}
+        </DropdownItem>
+      {/each}
     </DropdownMenu>
   </ButtonDropdown>
   <IconButton color="danger" icon="trash3" tooltip="Remove name" click={remove} />

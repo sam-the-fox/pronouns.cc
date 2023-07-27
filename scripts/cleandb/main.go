@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	dbpkg "codeberg.org/u1f320/pronouns.cc/backend/db"
+	dbpkg "codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/joho/godotenv"
 	"github.com/rs/xid"

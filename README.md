@@ -25,17 +25,19 @@ Requirements:
 - PostgreSQL (any currently supported version should work)
 - Redis 6.0 or later
 - Node.js (latest version)
-- MinIO **if using avatars or data exports** (_not_ required otherwise)
+- MinIO **if using avatars, flags, or data exports** (_not_ required otherwise)
 
 ### Setup
 
-1. Create a PostgreSQL user and database (the user should own the database)  
+1. Create a PostgreSQL user and database (the user should own the database).  
    For example: `create user pronouns with password 'password'; create database pronouns with owner pronouns;`
-2. Create a `.env` file in the repository root containing at least `HMAC_KEY`, `DATABASE_URL`, `REDIS`, `PORT`, and `MINIO_ENDPOINT` keys.
+2. Copy `.env.example` in the repository root to a new file named `.env` and fill out the required options.
 3. Run `go run -v . database migrate` to initialize the database, then optionally `go run -v . database seed` to insert a test user.
 4. Run `go run -v . web` to run the backend.
-5. Create `frontend/.env` with the following content: `PUBLIC_BASE_URL=http://localhost:5173`
+5. Copy `frontend/.env.example` into `frontend/.env` and tweak as necessary.
 6. cd into the `frontend` directory and run `pnpm dev` to run the frontend.
+
+See [`docs/production.md`](/docs/production.md#configuration) for more information about keys in the backend and frontend `.env` files.
 
 ## License
 

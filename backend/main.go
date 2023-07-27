@@ -7,9 +7,10 @@ import (
 	"os"
 	"os/signal"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/go-chi/render"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli/v2"
@@ -22,6 +23,12 @@ var Command = &cli.Command{
 }
 
 func run(c *cli.Context) error {
+	// set vips log level to WARN, else it will spam logs on info level
+	vips.LoggingSettings(nil, vips.LogLevelWarning)
+
+	vips.Startup(nil)
+	defer vips.Shutdown()
+
 	port := ":" + os.Getenv("PORT")
 
 	s, err := server.New()

@@ -15,7 +15,7 @@
   <p>An internal error occurred. Please try again later.</p>
   <p>
     If this error keeps happening, please <a
-      href="https://codeberg.org/u1f320/pronouns.cc/issues"
+      href="https://codeberg.org/pronounscc/pronouns.cc/issues"
       target="_blank"
       rel="noreferrer">file a bug report</a
     > with an explanation of what you did to cause the error.

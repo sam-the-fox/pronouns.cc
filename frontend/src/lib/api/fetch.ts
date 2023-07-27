@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { APIError } from "./entities";
+import { ErrorCode, type APIError } from "./entities";
 import { PUBLIC_BASE_URL } from "$env/static/public";
+import { addToast } from "$lib/toast";
+import { userStore } from "$lib/store";
 
 export async function apiFetch<T>(
   path: string,
@@ -26,8 +28,24 @@ export async function apiFetch<T>(
   return data as T;
 }
 
-export const apiFetchClient = async <T>(path: string, method = "GET", body: any = null) =>
-  apiFetch<T>(path, { method, body, token: localStorage.getItem("pronouns-token") || undefined });
+export const apiFetchClient = async <T>(path: string, method = "GET", body: any = null) => {
+  try {
+    const data = await apiFetch<T>(path, {
+      method,
+      body,
+      token: localStorage.getItem("pronouns-token") || undefined,
+    });
+    return data;
+  } catch (e) {
+    if ((e as APIError).code === ErrorCode.InvalidToken) {
+      addToast({ header: "Token expired", body: "Your token has expired, please log in again." });
+      userStore.set(null);
+      localStorage.removeItem("pronouns-token");
+      localStorage.removeItem("pronouns-user");
+    }
+    throw e;
+  }
+};
 
 /** Fetches the specified path without parsing the response body. */
 export async function fastFetch(
@@ -53,5 +71,20 @@ export async function fastFetch(
 }
 
 /** Fetches the specified path without parsing the response body. */
-export const fastFetchClient = async (path: string, method = "GET", body: any = null) =>
-  fastFetch(path, { method, body, token: localStorage.getItem("pronouns-token") || undefined });
+export const fastFetchClient = async (path: string, method = "GET", body: any = null) => {
+  try {
+    await fastFetch(path, {
+      method,
+      body,
+      token: localStorage.getItem("pronouns-token") || undefined,
+    });
+  } catch (e) {
+    if ((e as APIError).code === ErrorCode.InvalidToken) {
+      addToast({ header: "Token expired", body: "Your token has expired, please log in again." });
+      userStore.set(null);
+      localStorage.removeItem("pronouns-token");
+      localStorage.removeItem("pronouns-user");
+    }
+    throw e;
+  }
+};

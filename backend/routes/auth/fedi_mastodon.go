@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
 	"github.com/mediocregopher/radix/v4"
@@ -27,9 +27,10 @@ type fediCallbackResponse struct {
 	Token string        `json:"token,omitempty"`
 	User  *userResponse `json:"user,omitempty"`
 
-	Fediverse     string `json:"fediverse,omitempty"` // username, for UI purposes
-	Ticket        string `json:"ticket,omitempty"`
-	RequireInvite bool   `json:"require_invite"` // require an invite for signing up
+	Fediverse      string `json:"fediverse,omitempty"` // username, for UI purposes
+	Ticket         string `json:"ticket,omitempty"`
+	RequireInvite  bool   `json:"require_invite"` // require an invite for signing up
+	RequireCaptcha bool   `json:"require_captcha"`
 
 	IsDeleted    bool       `json:"is_deleted"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -169,10 +170,11 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 	}
 
 	render.JSON(w, r, fediCallbackResponse{
-		HasAccount:    false,
-		Fediverse:     mu.Username,
-		Ticket:        ticket,
-		RequireInvite: s.RequireInvite,
+		HasAccount:     false,
+		Fediverse:      mu.Username,
+		Ticket:         ticket,
+		RequireInvite:  s.RequireInvite,
+		RequireCaptcha: s.hcaptchaSecret != "",
 	})
 
 	return nil
@@ -218,6 +220,11 @@ func (s *Server) mastodonLink(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("getting mastoAPI user for ticket: %v", err)
 
 		return server.APIError{Code: server.ErrInvalidTicket}
+	}
+
+	if mu.ID == "" {
+		log.Errorf("linking user with id %v: user ID was empty", claims.UserID)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Mastodon user ID is empty"}
 	}
 
 	err = u.UpdateFromFedi(ctx, s.DB, mu.ID, mu.Username, app.ID)
@@ -273,10 +280,11 @@ func (s *Server) mastodonUnlink(w http.ResponseWriter, r *http.Request) error {
 }
 
 type fediSignupRequest struct {
-	Instance   string `json:"instance"`
-	Ticket     string `json:"ticket"`
-	Username   string `json:"username"`
-	InviteCode string `json:"invite_code"`
+	Instance        string `json:"instance"`
+	Ticket          string `json:"ticket"`
+	Username        string `json:"username"`
+	InviteCode      string `json:"invite_code"`
+	CaptchaResponse string `json:"captcha_response"`
 }
 
 func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
@@ -321,6 +329,19 @@ func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrInvalidTicket}
 	}
 
+	// check captcha
+	if s.hcaptchaSecret != "" {
+		ok, err := s.verifyCaptcha(ctx, req.CaptchaResponse)
+		if err != nil {
+			log.Errorf("verifying captcha: %v", err)
+			return server.APIError{Code: server.ErrInternalServerError}
+		}
+
+		if !ok {
+			return server.APIError{Code: server.ErrInvalidCaptcha}
+		}
+	}
+
 	u, err := s.DB.CreateUser(ctx, tx, req.Username)
 	if err != nil {
 		if errors.Cause(err) == db.ErrUsernameTaken {
@@ -328,6 +349,11 @@ func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		return errors.Wrap(err, "creating user")
+	}
+
+	if mu.ID == "" {
+		log.Errorf("creating user with name %q: user ID was empty", req.Username)
+		return server.APIError{Code: server.ErrInternalServerError, Details: "Mastodon user ID is empty"}
 	}
 
 	err = u.UpdateFromFedi(ctx, tx, mu.ID, mu.Username, app.ID)

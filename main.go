@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend"
-	"codeberg.org/u1f320/pronouns.cc/backend/exporter"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
-	"codeberg.org/u1f320/pronouns.cc/scripts/cleandb"
-	"codeberg.org/u1f320/pronouns.cc/scripts/migrate"
-	"codeberg.org/u1f320/pronouns.cc/scripts/seeddb"
+	"codeberg.org/pronounscc/pronouns.cc/backend"
+	"codeberg.org/pronounscc/pronouns.cc/backend/exporter"
+	"codeberg.org/pronounscc/pronouns.cc/backend/prns"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/scripts/cleandb"
+	"codeberg.org/pronounscc/pronouns.cc/scripts/genid"
+	"codeberg.org/pronounscc/pronouns.cc/scripts/genkey"
+	"codeberg.org/pronounscc/pronouns.cc/scripts/migrate"
+	"codeberg.org/pronounscc/pronouns.cc/scripts/seeddb"
 	"github.com/urfave/cli/v2"
 )
 
@@ -20,6 +23,7 @@ var app = &cli.App{
 	Commands: []*cli.Command{
 		backend.Command,
 		exporter.Command,
+		prns.Command,
 		{
 			Name:    "database",
 			Aliases: []string{"db"},
@@ -28,6 +32,15 @@ var app = &cli.App{
 				migrate.Command,
 				seeddb.Command,
 				cleandb.Command,
+			},
+		},
+		{
+			Name:    "generate",
+			Aliases: []string{"gen"},
+			Usage:   "Generate various strings",
+			Subcommands: []*cli.Command{
+				genid.Command,
+				genkey.Command,
 			},
 		},
 	},

@@ -3,26 +3,31 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/common"
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
+	"github.com/rs/xid"
 )
 
 type PatchUserRequest struct {
-	Username    *string            `json:"username"`
-	DisplayName *string            `json:"display_name"`
-	Bio         *string            `json:"bio"`
-	MemberTitle *string            `json:"member_title"`
-	Links       *[]string          `json:"links"`
-	Names       *[]db.FieldEntry   `json:"names"`
-	Pronouns    *[]db.PronounEntry `json:"pronouns"`
-	Fields      *[]db.Field        `json:"fields"`
-	Avatar      *string            `json:"avatar"`
-	ListPrivate *bool              `json:"list_private"`
+	Username          *string               `json:"name"`
+	DisplayName       *string               `json:"display_name"`
+	Bio               *string               `json:"bio"`
+	MemberTitle       *string               `json:"member_title"`
+	Links             *[]string             `json:"links"`
+	Names             *[]db.FieldEntry      `json:"names"`
+	Pronouns          *[]db.PronounEntry    `json:"pronouns"`
+	Fields            *[]db.Field           `json:"fields"`
+	Avatar            *string               `json:"avatar"`
+	ListPrivate       *bool                 `json:"list_private"`
+	CustomPreferences *db.CustomPreferences `json:"custom_preferences"`
+	Flags             *[]xid.ID             `json:"flags"`
 }
 
 // patchUser parses a PatchUserRequest and updates the user with the given ID.
@@ -57,7 +62,9 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		req.Fields == nil &&
 		req.Names == nil &&
 		req.Pronouns == nil &&
-		req.Avatar == nil {
+		req.Avatar == nil &&
+		req.CustomPreferences == nil &&
+		req.Flags == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -103,15 +110,46 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := validateSlicePtr("name", req.Names); err != nil {
+	// validate flag length
+	if req.Flags != nil {
+		if len(*req.Flags) > db.MaxPrideFlags {
+			return server.APIError{
+				Code:    server.ErrBadRequest,
+				Details: fmt.Sprintf("Too many flags (max %d, current %d)", len(*req.Flags), db.MaxPrideFlags),
+			}
+		}
+	}
+
+	// validate custom preferences
+	if req.CustomPreferences != nil {
+		if count := len(*req.CustomPreferences); count > db.MaxFields {
+			return server.APIError{Code: server.ErrBadRequest, Details: fmt.Sprintf("Too many custom preferences (max %d, current %d)", db.MaxFields, count)}
+		}
+
+		for k, v := range *req.CustomPreferences {
+			_, err := uuid.Parse(k)
+			if err != nil {
+				return server.APIError{Code: server.ErrBadRequest, Details: "One or more custom preference IDs is not a UUID."}
+			}
+			if s := v.Validate(); s != "" {
+				return server.APIError{Code: server.ErrBadRequest, Details: s}
+			}
+		}
+	}
+	customPreferences := u.CustomPreferences
+	if req.CustomPreferences != nil {
+		customPreferences = *req.CustomPreferences
+	}
+
+	if err := validateSlicePtr("name", req.Names, customPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
+	if err := validateSlicePtr("pronoun", req.Pronouns, customPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("field", req.Fields); err != nil {
+	if err := validateSlicePtr("field", req.Fields, customPreferences); err != nil {
 		return *err
 	}
 
@@ -186,7 +224,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash)
+	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash, req.CustomPreferences)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err
@@ -228,6 +266,26 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// update flags
+	if req.Flags != nil {
+		err = s.DB.SetUserFlags(ctx, tx, claims.UserID, *req.Flags)
+		if err != nil {
+			if err == db.ErrInvalidFlagID {
+				return server.APIError{Code: server.ErrBadRequest, Details: "One or more flag IDs are unknown"}
+			}
+
+			log.Errorf("updating flags for user %v: %v", claims.UserID, err)
+			return err
+		}
+	}
+
+	// update last active time
+	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
+	if err != nil {
+		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
+		return err
+	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		log.Errorf("committing transaction: %v", err)
@@ -243,14 +301,26 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// get flags to return (we need to return full flag objects, not the array of IDs in the request body)
+	flags, err := s.DB.UserFlags(ctx, u.ID)
+	if err != nil {
+		log.Errorf("getting user flags: %v", err)
+		return err
+	}
+
 	// echo the updated user back on success
 	render.JSON(w, r, GetMeResponse{
-		GetUserResponse:   dbUserToResponse(u, fields, nil),
+		GetUserResponse:   dbUserToResponse(u, fields, nil, flags),
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,
+		LastSIDReroll:     u.LastSIDReroll,
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
+		Tumblr:            u.Tumblr,
+		TumblrUsername:    u.TumblrUsername,
+		Google:            u.Google,
+		GoogleUsername:    u.GoogleUsername,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,
 		FediverseInstance: fediInstance,
@@ -259,12 +329,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 }
 
 type validator interface {
-	Validate() string
+	Validate(custom db.CustomPreferences) string
 }
 
 // validateSlicePtr validates a slice of validators.
 // If the slice is nil, a nil error is returned (assuming that the field is not required)
-func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
+func validateSlicePtr[T validator](typ string, slice *[]T, custom db.CustomPreferences) *server.APIError {
 	if slice == nil {
 		return nil
 	}
@@ -284,7 +354,7 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 
 	// validate all fields
 	for i, pronouns := range *slice {
-		if s := pronouns.Validate(); s != "" {
+		if s := pronouns.Validate(custom); s != "" {
 			return &server.APIError{
 				Code:    server.ErrBadRequest,
 				Details: fmt.Sprintf("%s %d: %s", typ, i+1, s),
@@ -292,5 +362,33 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 		}
 	}
 
+	return nil
+}
+
+func (s *Server) rerollUserSID(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting existing user")
+	}
+
+	if time.Now().Add(-time.Hour).Before(u.LastSIDReroll) {
+		return server.APIError{Code: server.ErrRerollingTooQuickly}
+	}
+
+	newID, err := s.DB.RerollUserSID(ctx, u.ID)
+	if err != nil {
+		return errors.Wrap(err, "updating user SID")
+	}
+
+	u.SID = newID
+	render.JSON(w, r, dbUserToResponse(u, nil, nil, nil))
 	return nil
 }

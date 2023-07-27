@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { APIError } from "$lib/api/entities";
-  import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
+  import { apiFetchClient } from "$lib/api/fetch";
   import { DateTime } from "luxon";
   import {
     Button,
@@ -46,10 +46,11 @@
 </script>
 
 <h1>
-  Tokens ({data.tokens.length})
+  API tokens ({data.tokens.length})
   <ButtonGroup>
     <Button color="success" on:click={() => createToken(false)}>New API token</Button>
     <Button color="success" on:click={() => createToken(true)}>New read-only API token</Button>
+    <Button color="secondary" href="/api" target="_blank">API docs</Button>
   </ButtonGroup>
 </h1>
 

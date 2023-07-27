@@ -3,9 +3,10 @@ package mod
 import (
 	"net/http"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct {
@@ -22,6 +23,8 @@ func Mount(srv *server.Server, r chi.Router) {
 
 		r.Patch("/reports/{id}", server.WrapHandler(s.resolveReport))
 	})
+
+	r.With(MustAdmin).Handle("/metrics", promhttp.Handler())
 
 	r.With(server.MustAuth).Post("/users/{id}/reports", server.WrapHandler(s.createUserReport))
 	r.With(server.MustAuth).Post("/members/{id}/reports", server.WrapHandler(s.createMemberReport))

@@ -13,8 +13,8 @@ import (
 	"os/signal"
 	"sync"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/xid"

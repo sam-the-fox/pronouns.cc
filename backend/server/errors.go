@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"github.com/go-chi/render"
 )
 
@@ -97,10 +97,13 @@ const (
 	ErrAlreadyLinked       = 1014 // user already has linked account of the same type
 	ErrNotLinked           = 1015 // user already doesn't have a linked account
 	ErrLastProvider        = 1016 // unlinking provider would leave account with no authentication method
+	ErrInvalidCaptcha      = 1017 // invalid or missing captcha response
 
 	// User-related error codes
-	ErrUserNotFound      = 2001
-	ErrMemberListPrivate = 2002
+	ErrUserNotFound        = 2001
+	ErrMemberListPrivate   = 2002
+	ErrFlagLimitReached    = 2003
+	ErrRerollingTooQuickly = 2004
 
 	// Member-related error codes
 	ErrMemberNotFound     = 3001
@@ -141,9 +144,12 @@ var errCodeMessages = map[int]string{
 	ErrAlreadyLinked:       "Your account is already linked to an account of this type",
 	ErrNotLinked:           "Your account is already not linked to an account of this type",
 	ErrLastProvider:        "This is your account's only authentication provider",
+	ErrInvalidCaptcha:      "Invalid or missing captcha response",
 
-	ErrUserNotFound:      "User not found",
-	ErrMemberListPrivate: "This user's member list is private.",
+	ErrUserNotFound:        "User not found",
+	ErrMemberListPrivate:   "This user's member list is private",
+	ErrFlagLimitReached:    "Maximum number of pride flags reached",
+	ErrRerollingTooQuickly: "You can only reroll one short ID per hour.",
 
 	ErrMemberNotFound:     "Member not found",
 	ErrMemberLimitReached: "Member limit reached",
@@ -181,9 +187,12 @@ var errCodeStatuses = map[int]int{
 	ErrAlreadyLinked:       http.StatusBadRequest,
 	ErrNotLinked:           http.StatusBadRequest,
 	ErrLastProvider:        http.StatusBadRequest,
+	ErrInvalidCaptcha:      http.StatusBadRequest,
 
-	ErrUserNotFound:      http.StatusNotFound,
-	ErrMemberListPrivate: http.StatusForbidden,
+	ErrUserNotFound:        http.StatusNotFound,
+	ErrMemberListPrivate:   http.StatusForbidden,
+	ErrFlagLimitReached:    http.StatusBadRequest,
+	ErrRerollingTooQuickly: http.StatusForbidden,
 
 	ErrMemberNotFound:     http.StatusNotFound,
 	ErrMemberLimitReached: http.StatusBadRequest,

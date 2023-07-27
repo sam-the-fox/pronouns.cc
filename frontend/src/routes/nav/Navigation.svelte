@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { decodeJwt } from "jose";
@@ -16,7 +17,7 @@
   } from "sveltestrap";
 
   import Logo from "./Logo.svelte";
-  import { userStore, themeStore } from "$lib/store";
+  import { userStore, themeStore, CURRENT_CHANGELOG } from "$lib/store";
   import {
     ErrorCode,
     type APIError,
@@ -31,16 +32,19 @@
 
   let theme: string;
   let currentUser: MeUser | null;
-  let showMenu: boolean = false;
+  let showMenu = false;
 
   let isAdmin = false;
   let numReports = 0;
   let numWarnings = 0;
+  let changelogRead = "99.99.99";
 
   $: currentUser = $userStore;
   $: theme = $themeStore;
 
   onMount(() => {
+    changelogRead = localStorage.getItem("changelog-read") || "0.0.0";
+
     const localUser = localStorage.getItem("pronouns-user");
     userStore.set(localUser ? JSON.parse(localUser) : null);
 
@@ -118,7 +122,9 @@
   <NavbarBrand href="/" aria-label="pronouns.cc landing page">
     <Logo />
     {#if commit === "[unknown]"}
-      <Badge color="danger">DEV</Badge>
+      <strong id="beta-text" class="text-danger">dev</strong>
+    {:else}
+      <span id="beta-text">beta</span>
     {/if}
   </NavbarBrand>
   <NavbarToggler on:click={toggleMenu} aria-label="Toggle menu" />
@@ -126,10 +132,15 @@
     <Nav class="ms-auto" navbar>
       {#if currentUser}
         <NavItem>
-          <NavLink href="/@{currentUser.name}">@{currentUser.name}</NavLink>
+          <NavLink
+            href="/@{currentUser.name}"
+            active={$page.url.pathname === `/@${currentUser.name}`}
+          >
+            @{currentUser.name}
+          </NavLink>
         </NavItem>
         <NavItem>
-          <NavLink href="/settings">
+          <NavLink href="/settings" active={$page.url.pathname.startsWith("/settings")}>
             Settings
             {#if numWarnings}
               <Badge color="danger">{numWarnings}</Badge>
@@ -138,7 +149,7 @@
         </NavItem>
         {#if isAdmin}
           <NavItem>
-            <NavLink href="/reports">
+            <NavLink href="/reports" active={$page.url.pathname.startsWith("/reports")}>
               Reports
               {#if numReports !== 0}
                 <Badge color="danger">{numReports}</Badge>
@@ -146,9 +157,16 @@
             </NavLink>
           </NavItem>
         {/if}
+        {#if changelogRead < CURRENT_CHANGELOG}
+          <NavItem>
+            <NavLink href="/page/changelog" active={$page.url.pathname === "/page/changelog"}>
+              Changelog <Badge color="secondary">v{CURRENT_CHANGELOG}</Badge>
+            </NavLink>
+          </NavItem>
+        {/if}
       {:else}
         <NavItem>
-          <NavLink href="/auth/login">Log in</NavLink>
+          <NavLink href="/auth/login" active={$page.url.pathname === "/auth/login"}>Log in</NavLink>
         </NavItem>
       {/if}
       <NavItem>
@@ -163,3 +181,14 @@
     </Nav>
   </Collapse>
 </Navbar>
+
+<style>
+  /* These exact values make it look almost identical to the SVG version, which is what we want */
+  #beta-text {
+    font-size: 0.7em;
+    position: relative;
+    font-style: italic;
+    bottom: 12px;
+    right: 3px;
+  }
+</style>

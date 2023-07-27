@@ -3,12 +3,12 @@
   import {
     MAX_DESCRIPTION_LENGTH,
     memberAvatars,
-    WordStatus,
     type APIError,
     type Field,
     type FieldEntry,
     type Member,
     type Pronoun,
+    type PrideFlag,
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import {
@@ -28,18 +28,22 @@
     CardHeader,
     Alert,
   } from "sveltestrap";
+  import { DateTime } from "luxon";
   import { encode } from "base64-arraybuffer";
+  import prettyBytes from "pretty-bytes";
+  import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../../EditableField.svelte";
   import EditableName from "../../EditableName.svelte";
   import EditablePronouns from "../../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
-  import type { PageData } from "./$types";
+  import type { PageData, Snapshot } from "./$types";
   import { addToast, delToast } from "$lib/toast";
   import { memberNameRegex } from "$lib/api/regex";
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "../../MarkdownHelp.svelte";
+  import FlagButton from "../../FlagButton.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -59,6 +63,7 @@
   let names: FieldEntry[] = window.structuredClone(data.member.names);
   let pronouns: Pronoun[] = window.structuredClone(data.member.pronouns);
   let fields: Field[] = window.structuredClone(data.member.fields);
+  let flags: PrideFlag[] = window.structuredClone(data.member.flags);
   let unlisted: boolean = data.member.unlisted || false;
 
   let memberNameValid = true;
@@ -71,6 +76,18 @@
   let newPronouns = "";
   let newLink = "";
 
+  let flagSearch = "";
+  let filteredFlags: PrideFlag[];
+  $: filteredFlags = filterFlags(flagSearch, data.flags);
+
+  const filterFlags = (search: string, flags: PrideFlag[]) => {
+    return (
+      search
+        ? flags.filter((flag) => flag.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+        : flags
+    ).slice(0, 25);
+  };
+
   let modified = false;
 
   $: modified = isModified(
@@ -82,6 +99,7 @@
     names,
     pronouns,
     fields,
+    flags,
     avatar,
     unlisted,
   );
@@ -96,6 +114,7 @@
     names: FieldEntry[],
     pronouns: Pronoun[],
     fields: Field[],
+    flags: PrideFlag[],
     avatar: string | null,
     unlisted: boolean,
   ) => {
@@ -104,6 +123,7 @@
     if (display_name !== member.display_name) return true;
     if (!linksEqual(links, member.links)) return true;
     if (!fieldsEqual(fields, member.fields)) return true;
+    if (!flagsEqual(flags, member.flags)) return true;
     if (!namesEqual(names, member.names)) return true;
     if (!pronounsEqual(pronouns, member.pronouns)) return true;
     if (avatar !== null) return true;
@@ -147,9 +167,22 @@
     return arr1.every((_, i) => arr1[i] === arr2[i]);
   };
 
+  const flagsEqual = (arr1: PrideFlag[], arr2: PrideFlag[]) => {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((_, i) => arr1[i].id === arr2[i].id);
+  };
+
   const getAvatar = async (list: FileList | null) => {
     if (!list || list.length === 0) return null;
-    if (list[0].size > MAX_AVATAR_BYTES) return null;
+    if (list[0].size > MAX_AVATAR_BYTES) {
+      addToast({
+        header: "Avatar too large",
+        body: `This avatar is too large, please resize it (maximum is ${prettyBytes(
+          MAX_AVATAR_BYTES,
+        )}, the file you tried to upload is ${prettyBytes(list[0].size)})`,
+      });
+      return null;
+    }
 
     const buffer = await list[0].arrayBuffer();
     const base64 = encode(buffer);
@@ -192,10 +225,41 @@
     fields[newIndex] = temp;
   };
 
+  const moveLink = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == links.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = links[index];
+    links[index] = links[newIndex];
+    links[newIndex] = temp;
+  };
+
+  const moveFlag = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == flags.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = flags[index];
+    flags[index] = flags[newIndex];
+    flags[newIndex] = temp;
+  };
+
+  const addFlag = (flag: PrideFlag) => {
+    flags = [...flags, flag];
+  };
+
+  const removeFlag = (index: number) => {
+    flags.splice(index, 1);
+    flags = [...flags];
+  };
+
   const addName = (event: Event) => {
     event.preventDefault();
 
-    names = [...names, { value: newName, status: WordStatus.Okay }];
+    names = [...names, { value: newName, status: "okay" }];
     newName = "";
   };
 
@@ -209,14 +273,11 @@
         {
           pronouns: fullSet.pronouns.join("/"),
           display_text: fullSet.display || null,
-          status: WordStatus.Okay,
+          status: "okay",
         },
       ];
     } else {
-      pronouns = [
-        ...pronouns,
-        { pronouns: newPronouns, display_text: null, status: WordStatus.Okay },
-      ];
+      pronouns = [...pronouns, { pronouns: newPronouns, display_text: null, status: "okay" }];
     }
     newPronouns = "";
   };
@@ -265,6 +326,7 @@
         names,
         pronouns,
         fields,
+        flags: flags.map((flag) => flag.id),
         unlisted,
       });
 
@@ -300,7 +362,7 @@
   $: deleteModalPronoun = updateModalPronoun(pronouns);
 
   const updateModalPronoun = (pronouns: Pronoun[]) => {
-    const filtered = pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+    const filtered = pronouns.filter((entry) => entry.status === "favourite");
     if (filtered.length < 1) return "the member's";
 
     const split = filtered[0].pronouns.split("/");
@@ -312,6 +374,78 @@
   const toggleDeleteOpen = () => (deleteOpen = !deleteOpen);
   let deleteName = "";
   let deleteError: APIError | null = null;
+
+  const now = DateTime.now().toLocal();
+  let canRerollSid: boolean;
+  $: canRerollSid =
+    now.diff(DateTime.fromISO(data.user.last_sid_reroll).toLocal(), "hours").hours >= 1;
+
+  const rerollSid = async () => {
+    try {
+      const resp = await apiFetchClient<Member>(`/members/${data.member.id}/reroll`);
+      addToast({ header: "Success", body: "Rerolled short ID!" });
+      error = null;
+      data.member.sid = resp.sid;
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const copyShortURL = async () => {
+    const url = `${PUBLIC_SHORT_BASE}/${data.member.sid}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
+  };
+
+  interface SnapshotData {
+    bio: string;
+    name: string;
+    display_name: string;
+    links: string[];
+    names: FieldEntry[];
+    pronouns: Pronoun[];
+    fields: Field[];
+    flags: PrideFlag[];
+    unlisted: boolean;
+
+    avatar: string | null;
+    newName: string;
+    newPronouns: string;
+    newLink: string;
+  }
+
+  export const snapshot: Snapshot<SnapshotData> = {
+    capture: () => ({
+      bio,
+      name,
+      display_name,
+      links,
+      names,
+      pronouns,
+      fields,
+      flags,
+      unlisted,
+      avatar,
+      newName,
+      newPronouns,
+      newLink,
+    }),
+    restore: (value) => {
+      bio = value.bio;
+      name = value.name;
+      display_name = value.display_name;
+      links = value.links;
+      names = value.names;
+      pronouns = value.pronouns;
+      fields = value.fields;
+      flags = value.flags;
+      unlisted = value.unlisted;
+      avatar = value.avatar;
+      newName = value.newName;
+      newPronouns = value.newPronouns;
+      newLink = value.newLink;
+    },
+  };
 </script>
 
 <svelte:head>
@@ -430,6 +564,7 @@
         <EditableName
           bind:value={names[index].value}
           bind:status={names[index].status}
+          preferences={data.user.custom_preferences}
           moveUp={() => moveName(index, true)}
           moveDown={() => moveName(index, false)}
           remove={() => removeName(index)}
@@ -469,6 +604,7 @@
         {#each pronouns as _, index}
           <EditablePronouns
             bind:pronoun={pronouns[index]}
+            preferences={data.user.custom_preferences}
             moveUp={() => movePronoun(index, true)}
             moveDown={() => movePronoun(index, false)}
             remove={() => removePronoun(index)}
@@ -510,6 +646,7 @@
         {#each fields as _, index}
           <EditableField
             bind:field={fields[index]}
+            preferences={data.user.custom_preferences}
             deleteField={() => removeField(index)}
             moveField={(up) => moveField(index, up)}
           />
@@ -522,10 +659,88 @@
       </Button>
     </div>
   </TabPane>
+  <TabPane tabId="flags" tab="Flags">
+    <div class="mt-3">
+      {#each flags as _, index}
+        <ButtonGroup class="m-1">
+          <IconButton
+            icon="chevron-left"
+            color="secondary"
+            tooltip="Move flag to the left"
+            click={() => moveFlag(index, true)}
+          />
+          <IconButton
+            icon="chevron-right"
+            color="secondary"
+            tooltip="Move flag to the right"
+            click={() => moveFlag(index, false)}
+          />
+          <FlagButton
+            flag={flags[index]}
+            tooltip="Remove this flag from your profile"
+            on:click={() => removeFlag(index)}
+          />
+        </ButtonGroup>
+      {/each}
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col-md">
+        <Input
+          placeholder="Filter flags"
+          bind:value={flagSearch}
+          disabled={data.flags.length === 0}
+        />
+        <div class="p-2">
+          {#each filteredFlags as flag (flag.id)}
+            <FlagButton
+              {flag}
+              tooltip="Add this flag to your profile"
+              on:click={() => addFlag(flag)}
+            />
+          {:else}
+            {#if data.flags.length === 0}
+              You haven't uploaded any flags yet.
+            {:else}
+              There are no flags matching your search <strong>{flagSearch}</strong>.
+            {/if}
+          {/each}
+        </div>
+      </div>
+      <div class="col-md">
+        <Alert color="secondary" fade={false}>
+          {#if data.flags.length === 0}
+            <p><strong>Why can't I see any flags?</strong></p>
+            <p>
+              There are thousands of pride flags, and it would be impossible to bundle all of them
+              by default. Many labels also have multiple different flags that are favoured by
+              different people. Because of this, there are no flags available by default--instead,
+              you can upload flags in your <a href="/settings/flags">settings</a>. Your main profile
+              and your member profiles can all have different flags.
+            </p>
+          {:else}
+            To upload and delete flags, go to your <a href="/settings/flags">settings</a>.
+          {/if}
+        </Alert>
+      </div>
+    </div>
+  </TabPane>
   <TabPane tabId="links" tab="Links">
     <div class="mt-3">
       {#each links as _, index}
         <div class="input-group m-1">
+          <IconButton
+            icon="chevron-up"
+            color="secondary"
+            tooltip="Move link up"
+            click={() => moveLink(index, true)}
+          />
+          <IconButton
+            icon="chevron-down"
+            color="secondary"
+            tooltip="Move link down"
+            click={() => moveLink(index, false)}
+          />
           <input type="text" class="form-control" bind:value={links[index]} />
           <IconButton
             color="danger"
@@ -549,6 +764,13 @@
           <label class="form-check-label" for="unlisted">Hide from member list</label>
         </div>
         <p class="text-muted mt-1">
+          {#if data.user.list_private}
+            <Icon name="exclamation-triangle-fill" aria-hidden />
+            Your member list is currently hidden, so <strong>this setting has no effect</strong>. If
+            you want to make your member list visible again,
+            <a href="/edit/profile">edit your user profile</a>.
+            <br />
+          {/if}
           <Icon name="info-circle-fill" aria-hidden />
           This <em>only</em> hides this member from your member list.
           <strong>
@@ -557,6 +779,30 @@
           </strong>
         </p>
       </div>
+      {#if PUBLIC_SHORT_BASE}
+        <div class="col-md">
+          <p>
+            Current short ID: <code>{data.member.sid}</code>
+            <ButtonGroup class="mb-1">
+              <Button color="secondary" disabled={!canRerollSid} on:click={() => rerollSid()}
+                >Reroll short ID</Button
+              >
+              <IconButton
+                icon="link-45deg"
+                tooltip="Copy short link"
+                color="secondary"
+                click={copyShortURL}
+              />
+            </ButtonGroup>
+            <br />
+            <span class="text-muted">
+              <Icon name="info-circle-fill" aria-hidden />
+              This ID is used in <code>prns.cc</code> links. You can reroll one short ID every hour (shared
+              between your main profile and all members) by pressing the button above.
+            </span>
+          </p>
+        </div>
+      {/if}
     </div>
   </TabPane>
 </TabContent>

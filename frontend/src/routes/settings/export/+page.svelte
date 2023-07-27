@@ -2,7 +2,7 @@
   import type { PageData } from "./$types";
   import { DateTime, Duration } from "luxon";
   import { Alert, Button } from "sveltestrap";
-  import { PUBLIC_BASE_URL } from "$env/static/public";
+  import { PUBLIC_MEDIA_URL } from "$env/static/public";
   import { fastFetchClient } from "$lib/api/fetch";
   import type { APIError } from "$lib/api/entities";
   import { addToast } from "$lib/toast";
@@ -69,7 +69,7 @@
         Download your export file below:
       </p>
       <p>
-        <Button color="primary" href="{PUBLIC_BASE_URL}/media{data.exportData.path}" target="_blank"
+        <Button color="primary" href="{PUBLIC_MEDIA_URL}/{data.exportData.path}" target="_blank"
           >Download data export</Button
         >
       </p>

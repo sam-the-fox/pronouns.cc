@@ -1,7 +1,7 @@
 package exporter
 
 import (
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"github.com/rs/xid"
 )
 
@@ -24,6 +24,12 @@ type userExport struct {
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
 
+	Tumblr         *string `json:"tumblr"`
+	TumblrUsername *string `json:"tumblr_username"`
+
+	Google         *string `json:"google"`
+	GoogleUsername *string `json:"google_username"`
+
 	MaxInvites int `json:"max_invites"`
 
 	Warnings []db.Warning `json:"warnings"`
@@ -41,6 +47,10 @@ func dbUserToExport(u db.User, fields []db.Field, warnings []db.Warning) userExp
 		Fields:            db.NotNull(fields),
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
+		Tumblr:            u.Tumblr,
+		TumblrUsername:    u.TumblrUsername,
+		Google:            u.Google,
+		GoogleUsername:    u.GoogleUsername,
 		MaxInvites:        u.MaxInvites,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,

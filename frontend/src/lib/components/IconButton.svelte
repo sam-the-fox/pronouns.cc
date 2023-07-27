@@ -4,10 +4,12 @@
   export let icon: string;
   export let color: "primary" | "secondary" | "success" | "danger";
   export let tooltip: string;
-  export let active: boolean = false;
-  export let disabled: boolean = false;
+  export let active = false;
+  export let disabled = false;
   export let type: string | undefined = undefined;
   export let id: string | undefined = undefined;
+  export let outline: boolean | undefined = undefined;
+  export let border = true;
 
   export let click: ((e: MouseEvent) => void) | undefined = undefined;
   export let href: string | undefined = undefined;
@@ -23,6 +25,8 @@
   {active}
   {disabled}
   {href}
+  {outline}
+  class={border ? undefined : "border-0"}
   aria-label={tooltip}
   on:click={click}
   bind:inner={button}

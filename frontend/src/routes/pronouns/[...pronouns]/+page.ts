@@ -6,7 +6,7 @@ import pronounsRaw from "$lib/pronouns.json";
 const pronouns = pronounsRaw as PronounsJson;
 
 export const load = (async ({ params }) => {
-  const [param, displayText] = params.pronouns.split(",");
+  const [param, displayText] = decodeURIComponent(params.pronouns).split(",");
 
   const arr = param.split("/");
   if (arr.length === 0 || params.pronouns === "") {

@@ -2,25 +2,43 @@
   import FieldCard from "$lib/components/FieldCard.svelte";
 
   import type { PageData } from "./$types";
-  import StatusIcon from "$lib/components/StatusIcon.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
-  import { Alert, Button, Icon } from "sveltestrap";
-  import { memberAvatars, pronounDisplay, WordStatus } from "$lib/api/entities";
-  import { PUBLIC_BASE_URL } from "$env/static/public";
+  import { Alert, Button, Icon, InputGroup } from "sveltestrap";
+  import {
+    memberAvatars,
+    pronounDisplay,
+    type CustomPreferences,
+    type FieldEntry,
+    type Pronoun,
+  } from "$lib/api/entities";
+  import { PUBLIC_BASE_URL, PUBLIC_SHORT_BASE } from "$env/static/public";
   import { userStore } from "$lib/store";
   import { renderMarkdown } from "$lib/utils";
   import ReportButton from "../ReportButton.svelte";
   import ProfileLink from "../ProfileLink.svelte";
   import StatusLine from "$lib/components/StatusLine.svelte";
+  import defaultPreferences from "$lib/api/default_preferences";
+  import { addToast } from "$lib/toast";
+  import ProfileFlag from "../ProfileFlag.svelte";
+  import IconButton from "$lib/components/IconButton.svelte";
 
   export let data: PageData;
 
   let bio: string | null;
   $: bio = renderMarkdown(data.bio);
 
-  const favNames = data.names.filter((entry) => entry.status === WordStatus.Favourite);
-  const favPronouns = data.pronouns.filter((entry) => entry.status === WordStatus.Favourite);
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign({}, defaultPreferences, data.user.custom_preferences);
+
+  let favNames: FieldEntry[];
+  $: favNames = data.names.filter(
+    (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
+  );
+  let favPronouns: Pronoun[];
+  $: favPronouns = data.pronouns.filter(
+    (entry) => (mergedPreferences[entry.status] || { favourite: false }).favourite,
+  );
 
   let profileEmpty = false;
   $: profileEmpty =
@@ -28,6 +46,18 @@
     data.pronouns.length === 0 &&
     data.fields.length === 0 &&
     (!data.bio || data.bio.length === 0);
+
+  const copyURL = async () => {
+    const url = `${PUBLIC_BASE_URL}/@${data.user.name}/${data.name}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the link to your clipboard!", duration: 2000 });
+  };
+
+  const copyShortURL = async () => {
+    const url = `${PUBLIC_SHORT_BASE}/${data.sid}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
+  };
 </script>
 
 <div class="container">
@@ -47,6 +77,13 @@
     <div class="row">
       <div class="col-md-4 text-center">
         <FallbackImage width={200} urls={memberAvatars(data)} alt="Avatar for @{data.name}" />
+        {#if data.flags && data.bio}
+          <div class="d-flex flex-wrap m-4">
+            {#each data.flags as flag}
+              <ProfileFlag {flag} />
+            {/each}
+          </div>
+        {/if}
       </div>
       <div class="col-md">
         <h2>{data.display_name ?? data.name}</h2>
@@ -75,13 +112,24 @@
         </div>
       {/if}
     </div>
+    {#if data.flags && !data.bio}
+      <div class="d-flex flex-wrap m-4">
+        {#each data.flags as flag}
+          <ProfileFlag {flag} />
+        {/each}
+      </div>
+    {/if}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
       {#if data.names.length > 0}
         <div class="col-md">
           <h3>Names</h3>
           <ul class="list-unstyled fs-5">
             {#each data.names as name}
-              <li><StatusLine status={name.status}>{name.value}</StatusLine></li>
+              <li>
+                <StatusLine preferences={data.user.custom_preferences} status={name.status}
+                  >{name.value}</StatusLine
+                >
+              </li>
             {/each}
           </ul>
         </div>
@@ -91,22 +139,43 @@
           <h3>Pronouns</h3>
           <ul class="list-unstyled fs-5">
             {#each data.pronouns as pronouns}
-              <li><StatusLine status={pronouns.status}><PronounLink {pronouns} /></StatusLine></li>
+              <li>
+                <StatusLine preferences={data.user.custom_preferences} status={pronouns.status}
+                  ><PronounLink {pronouns} /></StatusLine
+                >
+              </li>
             {/each}
           </ul>
         </div>
       {/if}
       {#each data.fields as field}
         <div class="col">
-          <FieldCard {field} />
+          <FieldCard preferences={data.user.custom_preferences} {field} />
         </div>
       {/each}
     </div>
-    {#if $userStore && $userStore.id !== data.user.id}
-      <div class="row">
-        <ReportButton subject="member" reportUrl="/members/{data.id}/reports" />
+    <div class="row">
+      <div class="col-md-6">
+        <InputGroup>
+          <Button color="secondary" outline on:click={copyURL}>
+            <Icon name="clipboard" /> Copy link
+          </Button>
+          {#if PUBLIC_SHORT_BASE}
+            <IconButton
+              outline
+              icon="link-45deg"
+              tooltip="Copy short link"
+              color="secondary"
+              click={copyShortURL}
+            />
+          {/if}
+          {#if $userStore && $userStore.id !== data.user.id}
+            <ReportButton subject="member" reportUrl="/members/{data.id}/reports" />
+          {/if}
+        </InputGroup>
       </div>
-    {/if}
+      <div class="col-md-6" />
+    </div>
   </div>
 </div>
 

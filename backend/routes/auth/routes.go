@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -18,6 +18,9 @@ type Server struct {
 
 	RequireInvite bool
 	BaseURL       string
+
+	hcaptchaSitekey string
+	hcaptchaSecret  string
 }
 
 type userResponse struct {
@@ -33,6 +36,12 @@ type userResponse struct {
 
 	Discord         *string `json:"discord"`
 	DiscordUsername *string `json:"discord_username"`
+
+	Tumblr         *string `json:"tumblr"`
+	TumblrUsername *string `json:"tumblr_username"`
+
+	Google         *string `json:"google"`
+	GoogleUsername *string `json:"google_username"`
 
 	Fediverse         *string `json:"fediverse"`
 	FediverseUsername *string `json:"fediverse_username"`
@@ -52,6 +61,10 @@ func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 		Fields:            db.NotNull(fields),
 		Discord:           u.Discord,
 		DiscordUsername:   u.DiscordUsername,
+		Tumblr:            u.Tumblr,
+		TumblrUsername:    u.TumblrUsername,
+		Google:            u.Google,
+		GoogleUsername:    u.GoogleUsername,
 		Fediverse:         u.Fediverse,
 		FediverseUsername: u.FediverseUsername,
 		FediverseInstance: u.FediverseInstance,
@@ -60,9 +73,11 @@ func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 
 func Mount(srv *server.Server, r chi.Router) {
 	s := &Server{
-		Server:        srv,
-		RequireInvite: os.Getenv("REQUIRE_INVITE") == "true",
-		BaseURL:       os.Getenv("BASE_URL"),
+		Server:          srv,
+		RequireInvite:   os.Getenv("REQUIRE_INVITE") == "true",
+		BaseURL:         os.Getenv("BASE_URL"),
+		hcaptchaSitekey: os.Getenv("HCAPTCHA_SITEKEY"),
+		hcaptchaSecret:  os.Getenv("HCAPTCHA_SECRET"),
 	}
 
 	r.Route("/auth", func(r chi.Router) {
@@ -82,6 +97,20 @@ func Mount(srv *server.Server, r chi.Router) {
 			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.discordLink))
 			// removes discord link from existing account
 			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.discordUnlink))
+		})
+
+		r.Route("/tumblr", func(r chi.Router) {
+			r.Post("/callback", server.WrapHandler(s.tumblrCallback))
+			r.Post("/signup", server.WrapHandler(s.tumblrSignup))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.tumblrLink))
+			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.tumblrUnlink))
+		})
+
+		r.Route("/google", func(r chi.Router) {
+			r.Post("/callback", server.WrapHandler(s.googleCallback))
+			r.Post("/signup", server.WrapHandler(s.googleSignup))
+			r.With(server.MustAuth).Post("/add-provider", server.WrapHandler(s.googleLink))
+			r.With(server.MustAuth).Post("/remove-provider", server.WrapHandler(s.googleUnlink))
 		})
 
 		r.Route("/mastodon", func(r chi.Router) {
@@ -120,7 +149,9 @@ type oauthURLsRequest struct {
 }
 
 type oauthURLsResponse struct {
-	Discord string `json:"discord"`
+	Discord string `json:"discord,omitempty"`
+	Tumblr  string `json:"tumblr,omitempty"`
+	Google  string `json:"google,omitempty"`
 }
 
 func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
@@ -136,14 +167,25 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "setting CSRF state")
 	}
+	var resp oauthURLsResponse
 
-	// copy Discord config and set redirect url
-	discordCfg := discordOAuthConfig
-	discordCfg.RedirectURL = req.CallbackDomain + "/auth/login/discord"
+	if discordOAuthConfig.ClientID != "" {
+		discordCfg := discordOAuthConfig
+		discordCfg.RedirectURL = req.CallbackDomain + "/auth/login/discord"
+		resp.Discord = discordCfg.AuthCodeURL(state) + "&prompt=none"
+	}
+	if tumblrOAuthConfig.ClientID != "" {
+		tumblrCfg := tumblrOAuthConfig
+		tumblrCfg.RedirectURL = req.CallbackDomain + "/auth/login/tumblr"
+		resp.Tumblr = tumblrCfg.AuthCodeURL(state)
+	}
+	if googleOAuthConfig.ClientID != "" {
+		googleCfg := googleOAuthConfig
+		googleCfg.RedirectURL = req.CallbackDomain + "/auth/login/google"
+		resp.Google = googleCfg.AuthCodeURL(state)
+	}
 
-	render.JSON(w, r, oauthURLsResponse{
-		Discord: discordCfg.AuthCodeURL(state) + "&prompt=none",
-	})
+	render.JSON(w, r, resp)
 	return nil
 }
 

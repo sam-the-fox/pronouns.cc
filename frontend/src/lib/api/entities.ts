@@ -1,31 +1,61 @@
-import { PUBLIC_BASE_URL } from "$env/static/public";
+import { PUBLIC_BASE_URL, PUBLIC_MEDIA_URL } from "$env/static/public";
 
 export const MAX_MEMBERS = 500;
+export const MAX_FIELDS = 25;
 export const MAX_DESCRIPTION_LENGTH = 1000;
 
 export interface User {
   id: string;
+  sid: string;
   name: string;
   display_name: string | null;
   bio: string | null;
   avatar: string | null;
   links: string[];
   member_title: string | null;
+  badges: number;
 
   names: FieldEntry[];
   pronouns: Pronoun[];
   members: PartialMember[];
   fields: Field[];
+  flags: PrideFlag[];
+  custom_preferences: CustomPreferences;
+}
+
+export interface CustomPreferences {
+  [key: string]: CustomPreference;
+}
+
+export interface CustomPreference {
+  icon: string;
+  tooltip: string;
+  size: PreferenceSize;
+  muted: boolean;
+  favourite: boolean;
+}
+
+export enum PreferenceSize {
+  Large = "large",
+  Normal = "normal",
+  Small = "small",
 }
 
 export interface MeUser extends User {
+  created_at: string;
   max_invites: number;
+  is_admin: boolean;
   discord: string | null;
   discord_username: string | null;
+  tumblr: string | null;
+  tumblr_username: string | null;
+  google: string | null;
+  google_username: string | null;
   fediverse: string | null;
   fediverse_username: string | null;
   fediverse_instance: string | null;
   list_private: boolean;
+  last_sid_reroll: string;
 }
 
 export interface Field {
@@ -35,26 +65,18 @@ export interface Field {
 
 export interface FieldEntry {
   value: string;
-  status: WordStatus;
+  status: string;
 }
 
 export interface Pronoun {
   pronouns: string;
   display_text: string | null;
-  status: WordStatus;
-}
-
-export enum WordStatus {
-  Unknown = "",
-  Favourite = "favourite",
-  Okay = "okay",
-  Jokingly = "jokingly",
-  FriendsOnly = "friends_only",
-  Avoid = "avoid",
+  status: string;
 }
 
 export interface PartialMember {
   id: string;
+  sid: string;
   name: string;
   display_name: string | null;
   bio: string | null;
@@ -66,6 +88,7 @@ export interface PartialMember {
 
 export interface Member extends PartialMember {
   fields: Field[];
+  flags: PrideFlag[];
 
   user: MemberPartialUser;
   unlisted?: boolean;
@@ -76,6 +99,14 @@ export interface MemberPartialUser {
   name: string;
   display_name: string | null;
   avatar: string | null;
+  custom_preferences: CustomPreferences;
+}
+
+export interface PrideFlag {
+  id: string;
+  hash: string;
+  name: string;
+  description: string | null;
 }
 
 export interface Invite {
@@ -135,6 +166,7 @@ export enum ErrorCode {
   AlreadyLinked = 1014,
   NotLinked = 1015,
   LastProvider = 1016,
+  InvalidCaptcha = 1017,
 
   UserNotFound = 2001,
 
@@ -159,8 +191,8 @@ export const userAvatars = (user: User | MeUser | MemberPartialUser) => {
   if (!user.avatar) return defaultAvatars;
 
   return [
-    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.webp`,
-    `${PUBLIC_BASE_URL}/media/users/${user.id}/${user.avatar}.jpg`,
+    `${PUBLIC_MEDIA_URL}/users/${user.id}/${user.avatar}.webp`,
+    `${PUBLIC_MEDIA_URL}/users/${user.id}/${user.avatar}.jpg`,
   ];
 };
 
@@ -168,10 +200,12 @@ export const memberAvatars = (member: Member | PartialMember) => {
   if (!member.avatar) return defaultAvatars;
 
   return [
-    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.webp`,
-    `${PUBLIC_BASE_URL}/media/members/${member.id}/${member.avatar}.jpg`,
+    `${PUBLIC_MEDIA_URL}/members/${member.id}/${member.avatar}.webp`,
+    `${PUBLIC_MEDIA_URL}/members/${member.id}/${member.avatar}.jpg`,
   ];
 };
+
+export const flagURL = ({ hash }: PrideFlag) => `${PUBLIC_MEDIA_URL}/flags/${hash}.webp`;
 
 export const defaultAvatars = [
   `${PUBLIC_BASE_URL}/default/512.webp`,

@@ -8,13 +8,22 @@ export interface SignupResponse {
 export interface MetaResponse {
   git_repository: string;
   git_commit: string;
-  users: number;
+  users: MetaUsers;
   members: number;
   require_invite: boolean;
 }
 
+export interface MetaUsers {
+  total: number;
+  active_month: number;
+  active_week: number;
+  active_day: number;
+}
+
 export interface UrlsResponse {
-  discord: string;
+  discord?: string;
+  tumblr?: string;
+  google?: string;
 }
 
 export interface ExportResponse {

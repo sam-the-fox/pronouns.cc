@@ -6,13 +6,15 @@ import (
 	"strconv"
 	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/server/auth"
-	"codeberg.org/u1f320/pronouns.cc/backend/server/rate"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server/auth"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server/rate"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
 	"github.com/go-chi/render"
+	chiprometheus "github.com/toshi0607/chi-prometheus"
 )
 
 // Revision is the git commit, filled at build time
@@ -22,7 +24,7 @@ var (
 )
 
 // Repository is the URL of the git repository
-const Repository = "https://codeberg.org/u1f320/pronouns.cc"
+const Repository = "https://codeberg.org/pronounscc/pronouns.cc"
 
 type Server struct {
 	Router *chi.Mux
@@ -48,6 +50,22 @@ func New() (*Server, error) {
 		s.Router.Use(middleware.Logger)
 	}
 	s.Router.Use(middleware.Recoverer)
+	// add CORS
+	s.Router.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// Allow all methods normally used by the API
+		AllowedMethods:   []string{"HEAD", "GET", "POST", "PATCH", "DELETE"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           300,
+	}))
+
+	// enable request latency tracking
+	os.Setenv(chiprometheus.EnvChiPrometheusLatencyBuckets, "10,25,50,100,300,500,1000,5000")
+	prom := chiprometheus.New("pronouns.cc")
+	s.Router.Use(prom.Handler)
+	prom.MustRegisterDefault()
+
 	// enable authentication for all routes (but don't require it)
 	s.Router.Use(s.maybeAuth)
 
@@ -97,11 +115,16 @@ func New() (*Server, error) {
 	rateLimiter.Scope("*", "/auth/invites", 10)
 	rateLimiter.Scope("POST", "/auth/discord/*", 10)
 
-	// rate limit handling
-	// - 120 req/minute (2/s)
-	// - keyed by Authorization header if valid token is provided, otherwise by IP
-	// - returns rate limit reset info in error
 	s.Router.Use(rateLimiter.Handler())
+
+	// increment the total requests counter whenever a request is made
+	s.Router.Use(func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			s.DB.TotalRequests.Inc()
+			next.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(fn)
+	})
 
 	// return an API error for not found + method not allowed
 	s.Router.NotFound(func(w http.ResponseWriter, r *http.Request) {

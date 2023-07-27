@@ -1,5 +1,9 @@
 <script lang="ts">
   import "bootstrap/dist/css/bootstrap.min.css";
+  import "@fontsource/firago/400.css";
+  import "@fontsource/firago/400-italic.css";
+  import "@fontsource/firago/700.css";
+  import "@fontsource/firago/700-italic.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
   import "./main.css";
 
@@ -8,6 +12,7 @@
   import { version } from "$app/environment";
   import { toastStore } from "$lib/toast";
   import Toast from "$lib/components/Toast.svelte";
+  import { Icon } from "sveltestrap";
 
   export let data: LayoutData;
 
@@ -22,6 +27,7 @@
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#aa8ed6" />
   <meta property="og:site_name" content="pronouns.cc" />
+  <script defer data-domain="pronouns.cc" src="https://plausible.pronouns.cc/js/script.js"></script>
 </svelte:head>
 
 <div class="d-flex flex-column min-vh-100">
@@ -39,16 +45,28 @@
 
   <footer class="container">
     <hr />
-    <p>
-      pronouns.cc <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{commit}">{version}</a>
-      {#if versionMismatch}
-        (backend: <a href="https://codeberg.org/u1f320/pronouns.cc/commit/{data.git_commit}"
-          >{data.git_commit}</a
-        >)
-      {/if} &middot;
-      <a href="/page/about">About & contact</a> &middot;
-      <a href="/page/terms">Terms of service</a> &middot;
-      <a href="/page/privacy">Privacy policy</a>
-    </p>
+    <div class="d-flex flex-column flex-md-row">
+      <p>
+        pronouns.cc <a href="https://codeberg.org/pronounscc/pronouns.cc/commit/{commit}"
+          >{version}</a
+        >
+        {#if versionMismatch}
+          (backend: <a href="https://codeberg.org/pronounscc/pronouns.cc/commit/{data.git_commit}"
+            >{data.git_commit}</a
+          >)
+        {/if} &middot;
+        <a href="https://status.pronouns.cc/" target="_blank">Status</a> &middot;
+        <a href="/page/about">About & contact</a> &middot;
+        <a href="/page/changelog">Changelog</a> &middot;
+        <Icon name="cash" aria-hidden />
+        <a href="https://liberapay.com/u1f320/" target="_blank">Donate</a>
+        &middot;
+        <a href="/page/terms">Terms of service</a> &middot;
+        <a href="/page/privacy">Privacy policy</a>
+      </p>
+      <p class="ms-auto">
+        Users: <strong>{data.users.total}</strong> &middot; Members: <strong>{data.members}</strong>
+      </p>
+    </div>
   </footer>
 </div>

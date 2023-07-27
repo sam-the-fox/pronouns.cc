@@ -3,8 +3,10 @@ package db
 import (
 	"context"
 	"regexp"
+	"time"
 
 	"emperror.dev/errors"
+	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -19,6 +21,7 @@ const (
 type Member struct {
 	ID          xid.ID
 	UserID      xid.ID
+	SID         string `db:"sid"`
 	Name        string
 	DisplayName *string
 	Bio         *string
@@ -35,9 +38,14 @@ const (
 )
 
 // member names must match this regex
-var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"'$%&()+<=>^|~`,]{1,100}$")
+var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"\\{\\}'$%&()+<=>^|~`,]{1,100}$")
 
 func MemberNameValid(name string) bool {
+	// These two names will break routing, but periods should still be allowed in names otherwise.
+	if name == "." || name == ".." {
+		return false
+	}
+
 	return memberNameRegex.MatchString(name)
 }
 
@@ -66,6 +74,25 @@ func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (
 		return m, errors.Wrap(err, "executing query")
 	}
 	return m, nil
+}
+
+// MemberBySID gets a user by their short ID.
+func (db *DB) MemberBySID(ctx context.Context, sid string) (u Member, err error) {
+	sql, args, err := sq.Select("*").From("members").Where("sid = ?", sid).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrMemberNotFound
+		}
+
+		return u, errors.Wrap(err, "getting members from db")
+	}
+
+	return u, nil
 }
 
 // UserMembers returns all of a user's members, sorted by name.
@@ -99,8 +126,8 @@ func (db *DB) CreateMember(
 	name string, displayName *string, bio string, links []string,
 ) (m Member, err error) {
 	sql, args, err := sq.Insert("members").
-		Columns("user_id", "id", "name", "display_name", "bio", "links").
-		Values(userID, xid.New(), name, displayName, bio, links).
+		Columns("user_id", "id", "sid", "name", "display_name", "bio", "links").
+		Values(userID, xid.New(), squirrel.Expr("find_free_member_sid()"), name, displayName, bio, links).
 		Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
@@ -111,7 +138,7 @@ func (db *DB) CreateMember(
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
 			// unique constraint violation
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return m, ErrMemberNameInUse
 			}
 		}
@@ -218,7 +245,7 @@ func (db *DB) UpdateMember(
 	if err != nil {
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return m, ErrMemberNameInUse
 			}
 		}
@@ -226,4 +253,44 @@ func (db *DB) UpdateMember(
 		return m, errors.Wrap(err, "executing sql")
 	}
 	return m, nil
+}
+
+func (db *DB) RerollMemberSID(ctx context.Context, userID, memberID xid.ID) (newID string, err error) {
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "beginning transaction")
+	}
+	defer tx.Rollback(ctx)
+
+	sql, args, err := sq.Update("members").
+		Set("sid", squirrel.Expr("find_free_member_sid()")).
+		Where("id = ?", memberID).
+		Suffix("RETURNING sid").ToSql()
+	if err != nil {
+		return "", errors.Wrap(err, "building sql")
+	}
+
+	err = tx.QueryRow(ctx, sql, args...).Scan(&newID)
+	if err != nil {
+		return "", errors.Wrap(err, "executing query")
+	}
+
+	sql, args, err = sq.Update("users").
+		Set("last_sid_reroll", time.Now()).
+		Where("id = ?", userID).ToSql()
+	if err != nil {
+		return "", errors.Wrap(err, "building sql")
+	}
+
+	_, err = tx.Exec(ctx, sql, args...)
+	if err != nil {
+		return "", errors.Wrap(err, "executing query")
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "committing transaction")
+	}
+
+	return newID, nil
 }

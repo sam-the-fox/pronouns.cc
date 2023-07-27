@@ -3,7 +3,7 @@ package user
 import (
 	"os"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -29,6 +29,13 @@ func Mount(srv *server.Server, r chi.Router) {
 
 			r.Get("/@me/export/start", server.WrapHandler(s.startExport))
 			r.Get("/@me/export", server.WrapHandler(s.getExport))
+
+			r.Get("/@me/flags", server.WrapHandler(s.getUserFlags))
+			r.Post("/@me/flags", server.WrapHandler(s.postUserFlag))
+			r.Patch("/@me/flags/{flagID}", server.WrapHandler(s.patchUserFlag))
+			r.Delete("/@me/flags/{flagID}", server.WrapHandler(s.deleteUserFlag))
+
+			r.Get("/@me/reroll", server.WrapHandler(s.rerollUserSID))
 		})
 	})
 }

@@ -59,7 +59,13 @@ func (db *DB) Reports(ctx context.Context, closed bool, before int) (rs []Report
 }
 
 func (db *DB) ReportsByUser(ctx context.Context, userID xid.ID, before int) (rs []Report, err error) {
-	builder := sq.Select("*").From("reports").Where("user_id = ?", userID).Limit(ReportPageSize).OrderBy("id DESC")
+	builder := sq.Select("*",
+		"(SELECT username FROM users WHERE id = reports.user_id) AS user_name",
+		"(SELECT name FROM members WHERE id = reports.member_id) AS member_name").
+		From("reports").
+		Where("user_id = ?", userID).
+		Limit(ReportPageSize).
+		OrderBy("id DESC")
 	if before != 0 {
 		builder = builder.Where("id < ?", before)
 	}
@@ -79,7 +85,13 @@ func (db *DB) ReportsByUser(ctx context.Context, userID xid.ID, before int) (rs 
 }
 
 func (db *DB) ReportsByReporter(ctx context.Context, reporterID xid.ID, before int) (rs []Report, err error) {
-	builder := sq.Select("*").From("reports").Where("reporter_id = ?", reporterID).Limit(ReportPageSize).OrderBy("id DESC")
+	builder := sq.Select("*",
+		"(SELECT username FROM users WHERE id = reports.user_id) AS user_name",
+		"(SELECT name FROM members WHERE id = reports.member_id) AS member_name").
+		From("reports").
+		Where("reporter_id = ?", reporterID).
+		Limit(ReportPageSize).
+		OrderBy("id DESC")
 	if before != 0 {
 		builder = builder.Where("id < ?", before)
 	}

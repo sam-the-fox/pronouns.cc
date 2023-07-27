@@ -20,7 +20,7 @@ type DataExport struct {
 }
 
 func (de DataExport) Path() string {
-	return "/exports/" + de.UserID.String() + "/" + de.Filename + ".zip"
+	return "exports/" + de.UserID.String() + "/" + de.Filename + ".zip"
 }
 
 const ErrNoExport = errors.Sentinel("no data export exists")
@@ -67,7 +67,8 @@ func (db *DB) CreateExport(ctx context.Context, userID xid.ID, filename string, 
 	}
 
 	_, err = db.minio.PutObject(ctx, db.minioBucket, de.Path(), file, int64(file.Len()), minio.PutObjectOptions{
-		ContentType: "application/zip",
+		ContentType:    "application/zip",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return de, errors.Wrap(err, "writing export file")

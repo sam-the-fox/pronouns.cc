@@ -3,7 +3,7 @@ package member
 import (
 	"github.com/go-chi/chi/v5"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 )
 
 type Server struct {
@@ -19,6 +19,7 @@ func Mount(srv *server.Server, r chi.Router) {
 
 	// user-scoped member lookup (including custom urls)
 	r.Get("/users/{userRef}/members/{memberRef}", server.WrapHandler(s.getUserMember))
+	r.With(server.MustAuth).Get("/users/@me/members/{memberRef}", server.WrapHandler(s.getMeMember))
 
 	r.Route("/members", func(r chi.Router) {
 		// any member by ID
@@ -28,5 +29,8 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.With(server.MustAuth).Post("/", server.WrapHandler(s.createMember))
 		r.With(server.MustAuth).Patch("/{memberRef}", server.WrapHandler(s.patchMember))
 		r.With(server.MustAuth).Delete("/{memberRef}", server.WrapHandler(s.deleteMember))
+
+		// reroll member SID
+		r.With(server.MustAuth).Get("/{memberRef}/reroll", server.WrapHandler(s.rerollMemberSID))
 	})
 }

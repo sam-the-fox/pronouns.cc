@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/common"
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -25,6 +26,7 @@ type PatchMemberRequest struct {
 	Fields      *[]db.Field        `json:"fields"`
 	Avatar      *string            `json:"avatar"`
 	Unlisted    *bool              `json:"unlisted"`
+	Flags       *[]xid.ID          `json:"flags"`
 }
 
 func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
@@ -39,6 +41,11 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
 	if err != nil {
 		return server.APIError{Code: server.ErrMemberNotFound}
+	}
+
+	u, err := s.DB.User(ctx, claims.UserID)
+	if err != nil {
+		return errors.Wrap(err, "getting user")
 	}
 
 	m, err := s.DB.Member(ctx, id)
@@ -69,7 +76,8 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		req.Fields == nil &&
 		req.Names == nil &&
 		req.Pronouns == nil &&
-		req.Avatar == nil {
+		req.Avatar == nil &&
+		req.Flags == nil {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: "Data must not be empty",
@@ -104,7 +112,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		if !db.MemberNameValid(*req.Name) {
 			return server.APIError{
 				Code:    server.ErrBadRequest,
-				Details: "Member name cannot contain any of the following: @, \\, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
+				Details: "Member name cannot contain any of the following: @, \\, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, , and cannot be one or two periods.",
 			}
 		}
 	}
@@ -148,15 +156,25 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	if err := validateSlicePtr("name", req.Names); err != nil {
+	// validate flag length
+	if req.Flags != nil {
+		if len(*req.Flags) > db.MaxPrideFlags {
+			return server.APIError{
+				Code:    server.ErrBadRequest,
+				Details: fmt.Sprintf("Too many flags (max %d, current %d)", len(*req.Flags), db.MaxPrideFlags),
+			}
+		}
+	}
+
+	if err := validateSlicePtr("name", req.Names, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("pronoun", req.Pronouns); err != nil {
+	if err := validateSlicePtr("pronoun", req.Pronouns, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("field", req.Fields); err != nil {
+	if err := validateSlicePtr("field", req.Fields, u.CustomPreferences); err != nil {
 		return *err
 	}
 
@@ -265,10 +283,56 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	// update flags
+	if req.Flags != nil {
+		err = s.DB.SetMemberFlags(ctx, tx, m.ID, *req.Flags)
+		if err != nil {
+			if err == db.ErrInvalidFlagID {
+				return server.APIError{Code: server.ErrBadRequest, Details: "One or more flag IDs are unknown"}
+			}
+
+			log.Errorf("updating flags for member %v: %v", m.ID, err)
+			return err
+		}
+	}
+
+	// update last active time
+	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
+	if err != nil {
+		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
+		return err
+	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		log.Errorf("committing transaction: %v", err)
 		return err
+	}
+
+	// get flags to return (we need to return full flag objects, not the array of IDs in the request body)
+	flags, err := s.DB.MemberFlags(ctx, m.ID)
+	if err != nil {
+		log.Errorf("getting user flags: %v", err)
+		return err
+	}
+
+	// echo the updated member back on success
+	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, true))
+	return nil
+}
+
+func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	claims, _ := server.ClaimsFromContext(ctx)
+
+	if !claims.TokenWrite {
+		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
+	}
+
+	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
+	if err != nil {
+		return server.APIError{Code: server.ErrMemberNotFound}
 	}
 
 	u, err := s.DB.User(ctx, claims.UserID)
@@ -276,7 +340,29 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		return errors.Wrap(err, "getting user")
 	}
 
-	// echo the updated member back on success
-	render.JSON(w, r, dbMemberToMember(u, m, fields, true))
+	m, err := s.DB.Member(ctx, id)
+	if err != nil {
+		if err == db.ErrMemberNotFound {
+			return server.APIError{Code: server.ErrMemberNotFound}
+		}
+
+		return errors.Wrap(err, "getting member")
+	}
+
+	if m.UserID != claims.UserID {
+		return server.APIError{Code: server.ErrNotOwnMember}
+	}
+
+	if time.Now().Add(-time.Hour).Before(u.LastSIDReroll) {
+		return server.APIError{Code: server.ErrRerollingTooQuickly}
+	}
+
+	newID, err := s.DB.RerollMemberSID(ctx, u.ID, m.ID)
+	if err != nil {
+		return errors.Wrap(err, "updating member SID")
+	}
+
+	m.SID = newID
+	render.JSON(w, r, dbMemberToMember(u, m, nil, nil, true))
 	return nil
 }

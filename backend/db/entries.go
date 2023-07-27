@@ -7,15 +7,6 @@ import (
 
 type WordStatus string
 
-const (
-	StatusUnknown     WordStatus = ""
-	StatusFavourite   WordStatus = "favourite"
-	StatusOkay        WordStatus = "okay"
-	StatusJokingly    WordStatus = "jokingly"
-	StatusFriendsOnly WordStatus = "friends_only"
-	StatusAvoid       WordStatus = "avoid"
-)
-
 func (w *WordStatus) UnmarshalJSON(src []byte) error {
 	if string(src) == "null" {
 		return nil
@@ -40,13 +31,13 @@ func (w *WordStatus) UnmarshalJSON(src []byte) error {
 	return nil
 }
 
-func (w WordStatus) Valid(extra ...WordStatus) bool {
-	if w == StatusFavourite || w == StatusOkay || w == StatusJokingly || w == StatusFriendsOnly || w == StatusAvoid {
+func (w WordStatus) Valid(extra CustomPreferences) bool {
+	if w == "favourite" || w == "okay" || w == "jokingly" || w == "friends_only" || w == "avoid" {
 		return true
 	}
 
-	for i := range extra {
-		if w == extra[i] {
+	for k := range extra {
+		if string(w) == k {
 			return true
 		}
 	}
@@ -58,7 +49,7 @@ type FieldEntry struct {
 	Status WordStatus `json:"status"`
 }
 
-func (fe FieldEntry) Validate() string {
+func (fe FieldEntry) Validate(custom CustomPreferences) string {
 	if fe.Value == "" {
 		return "value cannot be empty"
 	}
@@ -67,7 +58,7 @@ func (fe FieldEntry) Validate() string {
 		return fmt.Sprintf("name must be %d characters or less, is %d", FieldEntryMaxLength, len([]rune(fe.Value)))
 	}
 
-	if !fe.Status.Valid() {
+	if !fe.Status.Valid(custom) {
 		return "status is invalid"
 	}
 
@@ -80,7 +71,7 @@ type PronounEntry struct {
 	Status      WordStatus `json:"status"`
 }
 
-func (p PronounEntry) Validate() string {
+func (p PronounEntry) Validate(custom CustomPreferences) string {
 	if p.Pronouns == "" {
 		return "pronouns cannot be empty"
 	}
@@ -95,7 +86,7 @@ func (p PronounEntry) Validate() string {
 		return fmt.Sprintf("pronouns must be %d characters or less, is %d", FieldEntryMaxLength, len([]rune(p.Pronouns)))
 	}
 
-	if !p.Status.Valid() {
+	if !p.Status.Valid(custom) {
 		return "status is invalid"
 	}
 

@@ -6,23 +6,20 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"image"
 	_ "image/gif"
-	"image/jpeg"
 	_ "image/png"
 	"io"
 	"strings"
 
 	"emperror.dev/errors"
-	"github.com/disintegration/imaging"
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/xid"
-
-	"github.com/chai2010/webp"
 )
 
 const ErrInvalidDataURI = errors.Sentinel("invalid data URI")
 const ErrInvalidContentType = errors.Sentinel("invalid avatar content type")
+const ErrFileTooLarge = errors.Sentinel("file to be converted exceeds maximum size")
 
 // ConvertAvatar parses an avatar from a data URI, converts it to WebP and JPEG, and returns the results.
 func (db *DB) ConvertAvatar(data string) (
@@ -30,6 +27,8 @@ func (db *DB) ConvertAvatar(data string) (
 	jpgOut *bytes.Buffer,
 	err error,
 ) {
+	defer vips.ShutdownThread()
+
 	data = strings.TrimSpace(data)
 	if !strings.Contains(data, ",") || !strings.Contains(data, ":") || !strings.Contains(data, ";") {
 		return nil, nil, ErrInvalidDataURI
@@ -41,28 +40,31 @@ func (db *DB) ConvertAvatar(data string) (
 		return nil, nil, errors.Wrap(err, "invalid base64 data")
 	}
 
-	img, _, err := image.Decode(bytes.NewReader(rawData))
+	image, err := vips.LoadImageFromBuffer(rawData, nil)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "decodign image")
+		return nil, nil, errors.Wrap(err, "decoding image")
 	}
 
-	resized := imaging.Fill(img, 512, 512, imaging.Center, imaging.Linear)
-
-	webpOut = new(bytes.Buffer)
-	err = webp.Encode(webpOut, resized, &webp.Options{
-		Quality: 90,
-	})
+	err = image.ThumbnailWithSize(512, 512, vips.InterestingCentre, vips.SizeBoth)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "encoding WebP image")
+		return nil, nil, errors.Wrap(err, "resizing image")
 	}
 
-	jpgOut = new(bytes.Buffer)
-	err = jpeg.Encode(jpgOut, resized, &jpeg.Options{
-		Quality: 80,
-	})
+	webpExport := vips.NewWebpExportParams()
+	webpExport.Quality = 90
+	webpB, _, err := image.ExportWebp(webpExport)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "encoding JPEG image")
+		return nil, nil, errors.Wrap(err, "exporting webp image")
 	}
+	webpOut = bytes.NewBuffer(webpB)
+
+	jpegExport := vips.NewJpegExportParams()
+	jpegExport.Quality = 80
+	jpegB, _, err := image.ExportJpeg(jpegExport)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "exporting jpeg image")
+	}
+	jpgOut = bytes.NewBuffer(jpegB)
 
 	return webpOut, jpgOut, nil
 }
@@ -79,15 +81,17 @@ func (db *DB) WriteUserAvatar(ctx context.Context,
 	}
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
-		ContentType: "image/webp",
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
+		ContentType:    "image/webp",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
-		ContentType: "image/jpeg",
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
+		ContentType:    "image/jpeg",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading jpeg avatar")
@@ -108,15 +112,17 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 	}
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
-		ContentType: "image/webp",
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
+		ContentType:    "image/webp",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
-		ContentType: "image/jpeg",
+	_, err = db.minio.PutObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
+		ContentType:    "image/jpeg",
+		SendContentMd5: true,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "uploading jpeg avatar")
@@ -126,12 +132,12 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 }
 
 func (db *DB) DeleteUserAvatar(ctx context.Context, userID xid.ID, hash string) error {
-	err := db.minio.RemoveObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
+	err := db.minio.RemoveObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting webp avatar")
 	}
 
-	err = db.minio.RemoveObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
+	err = db.minio.RemoveObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting jpeg avatar")
 	}
@@ -140,12 +146,12 @@ func (db *DB) DeleteUserAvatar(ctx context.Context, userID xid.ID, hash string) 
 }
 
 func (db *DB) DeleteMemberAvatar(ctx context.Context, memberID xid.ID, hash string) error {
-	err := db.minio.RemoveObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
+	err := db.minio.RemoveObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting webp avatar")
 	}
 
-	err = db.minio.RemoveObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
+	err = db.minio.RemoveObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting jpeg avatar")
 	}
@@ -154,7 +160,7 @@ func (db *DB) DeleteMemberAvatar(ctx context.Context, memberID xid.ID, hash stri
 }
 
 func (db *DB) UserAvatar(ctx context.Context, userID xid.ID, hash string) (io.ReadCloser, error) {
-	obj, err := db.minio.GetObject(ctx, db.minioBucket, "/users/"+userID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	obj, err := db.minio.GetObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting object")
 	}
@@ -162,7 +168,7 @@ func (db *DB) UserAvatar(ctx context.Context, userID xid.ID, hash string) (io.Re
 }
 
 func (db *DB) MemberAvatar(ctx context.Context, memberID xid.ID, hash string) (io.ReadCloser, error) {
-	obj, err := db.minio.GetObject(ctx, db.minioBucket, "/members/"+memberID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	obj, err := db.minio.GetObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting object")
 	}

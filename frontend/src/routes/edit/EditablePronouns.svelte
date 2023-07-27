@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { WordStatus, type Pronoun, pronounDisplay } from "$lib/api/entities";
+  import defaultPreferences from "$lib/api/default_preferences";
+  import type { Pronoun, CustomPreference, CustomPreferences } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
   import {
-    Button,
     ButtonDropdown,
     Collapse,
     DropdownItem,
@@ -15,6 +15,7 @@
   } from "sveltestrap";
 
   export let pronoun: Pronoun;
+  export let preferences: CustomPreferences;
   export let moveUp: () => void;
   export let moveDown: () => void;
   export let remove: () => void;
@@ -23,39 +24,17 @@
   let displayOpen = false;
   const toggleDisplay = () => (displayOpen = !displayOpen);
 
-  const iconFor = (wordStatus: WordStatus) => {
-    switch (wordStatus) {
-      case WordStatus.Favourite:
-        return "heart-fill";
-      case WordStatus.Okay:
-        return "hand-thumbs-up";
-      case WordStatus.Jokingly:
-        return "emoji-laughing";
-      case WordStatus.FriendsOnly:
-        return "people";
-      case WordStatus.Avoid:
-        return "hand-thumbs-down";
-      default:
-        return "hand-thumbs-up";
-    }
-  };
+  let mergedPreferences: CustomPreferences;
+  $: mergedPreferences = Object.assign({}, defaultPreferences, preferences);
 
-  const textFor = (wordStatus: WordStatus) => {
-    switch (wordStatus) {
-      case WordStatus.Favourite:
-        return "Favourite";
-      case WordStatus.Okay:
-        return "Okay";
-      case WordStatus.Jokingly:
-        return "Jokingly";
-      case WordStatus.FriendsOnly:
-        return "Friends only";
-      case WordStatus.Avoid:
-        return "Avoid";
-      default:
-        return "Okay";
-    }
-  };
+  let currentPreference: CustomPreference;
+  $: currentPreference =
+    pronoun.status in mergedPreferences
+      ? mergedPreferences[pronoun.status]
+      : defaultPreferences.missing;
+
+  let preferenceIds: string[];
+  $: preferenceIds = Object.keys(mergedPreferences).filter((s) => s !== "missing");
 </script>
 
 <div class="input-group m-1">
@@ -75,31 +54,17 @@
     click={toggleDisplay}
   />
   <ButtonDropdown>
-    <Tooltip target={buttonElement} placement="top">{textFor(pronoun.status)}</Tooltip>
+    <Tooltip target={buttonElement} placement="top">{currentPreference.tooltip}</Tooltip>
     <DropdownToggle color="secondary" caret bind:inner={buttonElement}>
-      <Icon name={iconFor(pronoun.status)} />
+      <Icon name={currentPreference.icon} />
     </DropdownToggle>
     <DropdownMenu>
-      <DropdownItem
-        on:click={() => (pronoun.status = WordStatus.Favourite)}
-        active={pronoun.status === WordStatus.Favourite}>Favourite</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (pronoun.status = WordStatus.Okay)}
-        active={pronoun.status === WordStatus.Okay}>Okay</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (pronoun.status = WordStatus.Jokingly)}
-        active={pronoun.status === WordStatus.Jokingly}>Jokingly</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (pronoun.status = WordStatus.FriendsOnly)}
-        active={pronoun.status === WordStatus.FriendsOnly}>Friends only</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => (pronoun.status = WordStatus.Avoid)}
-        active={pronoun.status === WordStatus.Avoid}>Avoid</DropdownItem
-      >
+      {#each preferenceIds as id}
+        <DropdownItem on:click={() => (pronoun.status = id)} active={pronoun.status === id}>
+          <Icon name={mergedPreferences[id].icon} aria-hidden />
+          {mergedPreferences[id].tooltip}
+        </DropdownItem>
+      {/each}
     </DropdownMenu>
   </ButtonDropdown>
   <IconButton color="danger" icon="trash3" tooltip="Remove pronouns" click={remove} />

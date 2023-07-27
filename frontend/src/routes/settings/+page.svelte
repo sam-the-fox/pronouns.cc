@@ -1,14 +1,31 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { type MeUser, userAvatars, type APIError, MAX_MEMBERS } from "$lib/api/entities";
+  import {
+    type MeUser,
+    userAvatars,
+    type APIError,
+    MAX_MEMBERS,
+    MAX_FIELDS,
+  } from "$lib/api/entities";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
   import { addToast } from "$lib/toast";
-  import { Button, Icon, Modal, ModalBody, ModalFooter, ModalHeader, Table } from "sveltestrap";
+  import {
+    Alert,
+    Button,
+    Icon,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    Table,
+  } from "sveltestrap";
   import type { PageData } from "./$types";
+  import { onMount } from "svelte";
+  import { DateTime } from "luxon";
 
   export let data: PageData;
 
@@ -19,7 +36,7 @@
 
   const changeUsername = async () => {
     try {
-      const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", { username });
+      const resp = await apiFetchClient<MeUser>("/users/@me", "PATCH", { name: username });
 
       data.user = resp;
       userStore.set(resp);
@@ -73,7 +90,35 @@
       invalidateError = e as APIError;
     }
   };
+
+  const DONATE_ALERT_STORE = "alert-1681976313";
+  let donateAlertOpen = false;
+  const closeDonateAlert = () => {
+    donateAlertOpen = false;
+    localStorage.setItem(DONATE_ALERT_STORE, "dismissed");
+  };
+
+  onMount(() => {
+    if (!localStorage.getItem(DONATE_ALERT_STORE)) {
+      donateAlertOpen = true;
+    }
+  });
 </script>
+
+<Alert color="secondary" fade={false} isOpen={donateAlertOpen} toggle={closeDonateAlert}>
+  If you find pronouns.cc useful and have the means, I would really appreciate a <a
+    href="https://liberapay.com/u1f320/"
+    target="_blank">donation</a
+  >
+  to keep the site running, fast, and ad-free!
+  <br />
+  It's not required and doesn't give you any perks, but running this website takes time and money so
+  it would really help.
+  <span class="text-muted">
+    (If you want to hide this alert, press the <Icon name="x-lg" alt="X" /> in the top right to hide
+    it on this computer or phone)
+  </span>
+</Alert>
 
 <h1>Your profile</h1>
 
@@ -110,8 +155,9 @@
       {/if}
     </div>
     <div class="col-lg-4">
-      <FallbackImage width={200} urls={userAvatars(data.user)} alt="Your avatar" />
-      <p>
+      <p class="text-center">
+        <FallbackImage width={200} urls={userAvatars(data.user)} alt="Your avatar" />
+        <br />
         To change your avatar, go to <a href="/edit/profile">edit profile</a>.
       </p>
     </div>
@@ -151,13 +197,35 @@
             <td><code>{data.user.id}</code></td>
           </tr>
           <tr>
+            <th scope="row">Account created at</th>
+            <td
+              >{DateTime.fromISO(data.user.created_at)
+                .toLocal()
+                .toLocaleString(DateTime.DATETIME_MED)}</td
+            >
+          </tr>
+          <tr>
             <th scope="row">Members</th>
             <td>{data.user.members.length}/{MAX_MEMBERS}</td>
+          </tr>
+          <tr>
+            <th scope="row">Member list hidden?</th>
+            <td>{data.user.list_private ? "Yes" : "No"}</td>
+          </tr>
+          <tr>
+            <th scope="row">Custom preferences</th>
+            <td>{Object.keys(data.user.custom_preferences).length}/{MAX_FIELDS}</td>
           </tr>
           {#if data.invitesEnabled}
             <tr>
               <th scope="row">Invites</th>
               <td>{data.invites.length}/{data.user.max_invites}</td>
+            </tr>
+          {/if}
+          {#if data.user.is_admin}
+            <tr>
+              <th scope="row">Admin?</th>
+              <td>Yes</td>
             </tr>
           {/if}
         </tbody>

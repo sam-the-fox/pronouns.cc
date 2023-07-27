@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/common"
-	"codeberg.org/u1f320/pronouns.cc/backend/db"
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
+	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
 )
@@ -80,7 +80,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	if !db.MemberNameValid(cmr.Name) {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
-			Details: "Member name cannot contain any of the following: @, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), +, <, =, >, ^, |, ~, `, ,",
+			Details: "Member name cannot contain any of the following: @, ?, !, #, /, \\, [, ], \", ', $, %, &, (, ), {, }, +, <, =, >, ^, |, ~, `, , and cannot be one or two periods.",
 		}
 	}
 
@@ -103,15 +103,15 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		}
 	}
 
-	if err := validateSlicePtr("name", &cmr.Names); err != nil {
+	if err := validateSlicePtr("name", &cmr.Names, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("pronoun", &cmr.Pronouns); err != nil {
+	if err := validateSlicePtr("pronoun", &cmr.Pronouns, u.CustomPreferences); err != nil {
 		return *err
 	}
 
-	if err := validateSlicePtr("field", &cmr.Fields); err != nil {
+	if err := validateSlicePtr("field", &cmr.Fields, u.CustomPreferences); err != nil {
 		return *err
 	}
 
@@ -176,22 +176,29 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 		}
 	}
 
+	// update last active time
+	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
+	if err != nil {
+		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
+		return err
+	}
+
 	err = tx.Commit(ctx)
 	if err != nil {
 		return errors.Wrap(err, "committing transaction")
 	}
 
-	render.JSON(w, r, dbMemberToMember(u, m, cmr.Fields, true))
+	render.JSON(w, r, dbMemberToMember(u, m, cmr.Fields, nil, true))
 	return nil
 }
 
 type validator interface {
-	Validate() string
+	Validate(custom db.CustomPreferences) string
 }
 
 // validateSlicePtr validates a slice of validators.
 // If the slice is nil, a nil error is returned (assuming that the field is not required)
-func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
+func validateSlicePtr[T validator](typ string, slice *[]T, custom db.CustomPreferences) *server.APIError {
 	if slice == nil {
 		return nil
 	}
@@ -211,7 +218,7 @@ func validateSlicePtr[T validator](typ string, slice *[]T) *server.APIError {
 
 	// validate all fields
 	for i, pronouns := range *slice {
-		if s := pronouns.Validate(); s != "" {
+		if s := pronouns.Validate(custom); s != "" {
 			return &server.APIError{
 				Code:    server.ErrBadRequest,
 				Details: fmt.Sprintf("%s %d: %s", typ, i+1, s),

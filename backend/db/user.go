@@ -4,10 +4,14 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"regexp"
 	"time"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
+	"codeberg.org/pronounscc/pronouns.cc/backend/icons"
 	"emperror.dev/errors"
+	"github.com/Masterminds/squirrel"
 	"github.com/bwmarrin/discordgo"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -17,10 +21,12 @@ import (
 
 type User struct {
 	ID          xid.ID
+	SID         string `db:"sid"`
 	Username    string
 	DisplayName *string
 	Bio         *string
 	MemberTitle *string
+	LastActive  time.Time
 
 	Avatar *string
 	Links  []string
@@ -36,14 +42,60 @@ type User struct {
 	FediverseAppID    *int64
 	FediverseInstance *string
 
-	MaxInvites  int
-	IsAdmin     bool
-	ListPrivate bool
+	Tumblr         *string
+	TumblrUsername *string
+
+	Google         *string
+	GoogleUsername *string
+
+	MaxInvites    int
+	IsAdmin       bool
+	ListPrivate   bool
+	LastSIDReroll time.Time `db:"last_sid_reroll"`
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool
 	DeleteReason *string
+
+	CustomPreferences CustomPreferences
 }
+
+type CustomPreferences = map[string]CustomPreference
+
+type CustomPreference struct {
+	Icon      string         `json:"icon"`
+	Tooltip   string         `json:"tooltip"`
+	Size      PreferenceSize `json:"size"`
+	Muted     bool           `json:"muted"`
+	Favourite bool           `json:"favourite"`
+}
+
+func (c CustomPreference) Validate() string {
+	if !icons.IsValid(c.Icon) {
+		return fmt.Sprintf("custom preference icon %q is invalid", c.Icon)
+	}
+
+	if c.Tooltip == "" {
+		return "custom preference tooltip is empty"
+	}
+	if common.StringLength(&c.Tooltip) > FieldEntryMaxLength {
+		return fmt.Sprintf("custom preference tooltip is too long, max %d characters, is %d characters", FieldEntryMaxLength, common.StringLength(&c.Tooltip))
+	}
+
+	if c.Size != PreferenceSizeLarge && c.Size != PreferenceSizeNormal && c.Size != PreferenceSizeSmall {
+		return fmt.Sprintf("custom preference size %q is invalid", string(c.Size))
+	}
+
+	return ""
+}
+
+type PreferenceSize string
+
+const (
+	PreferenceSizeLarge  PreferenceSize = "large"
+	PreferenceSizeNormal PreferenceSize = "normal"
+	PreferenceSizeSmall  PreferenceSize = "small"
+)
 
 func (u User) NumProviders() (numProviders int) {
 	if u.Discord != nil {
@@ -52,11 +104,41 @@ func (u User) NumProviders() (numProviders int) {
 	if u.Fediverse != nil {
 		numProviders++
 	}
+	if u.Tumblr != nil {
+		numProviders++
+	}
+	if u.Google != nil {
+		numProviders++
+	}
 	return numProviders
 }
 
+type Badge int32
+
+const (
+	BadgeAdmin Badge = 1 << 0
+)
+
 // usernames must match this regex
 var usernameRegex = regexp.MustCompile(`^[\w-.]{2,40}$`)
+
+func UsernameValid(username string) (err error) {
+	// This name would break routing, but periods should still be allowed in names otherwise.
+	if username == ".." {
+		return ErrInvalidUsername
+	}
+
+	if !usernameRegex.MatchString(username) {
+		if len(username) < 2 {
+			return ErrUsernameTooShort
+		} else if len(username) > 40 {
+			return ErrUsernameTooLong
+		}
+
+		return ErrInvalidUsername
+	}
+	return nil
+}
 
 const (
 	ErrUserNotFound = errors.Sentinel("user not found")
@@ -84,17 +166,11 @@ const (
 func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u User, err error) {
 	// check if the username is valid
 	// if not, return an error depending on what failed
-	if !usernameRegex.MatchString(username) {
-		if len(username) < 2 {
-			return u, ErrUsernameTooShort
-		} else if len(username) > 40 {
-			return u, ErrUsernameTooLong
-		}
-
-		return u, ErrInvalidUsername
+	if err := UsernameValid(username); err != nil {
+		return u, err
 	}
 
-	sql, args, err := sq.Insert("users").Columns("id", "username").Values(xid.New(), username).Suffix("RETURNING *").ToSql()
+	sql, args, err := sq.Insert("users").Columns("id", "username", "sid").Values(xid.New(), username, squirrel.Expr("find_free_user_sid()")).Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
@@ -104,7 +180,7 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
 			// unique constraint violation
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return u, ErrUsernameTaken
 			}
 		}
@@ -240,6 +316,128 @@ func (u *User) UnlinkDiscord(ctx context.Context, ex Execer) error {
 	return nil
 }
 
+// TumblrUser fetches a user by Tumblr user ID.
+func (db *DB) TumblrUser(ctx context.Context, tumblrID string) (u User, err error) {
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("tumblr = ?", tumblrID).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "executing query")
+	}
+	return u, nil
+}
+
+func (u *User) UpdateFromTumblr(ctx context.Context, ex Execer, tumblrID, tumblrUsername string) error {
+	sql, args, err := sq.Update("users").
+		Set("tumblr", tumblrID).
+		Set("tumblr_username", tumblrUsername).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Tumblr = &tumblrID
+	u.TumblrUsername = &tumblrUsername
+
+	return nil
+}
+
+func (u *User) UnlinkTumblr(ctx context.Context, ex Execer) error {
+	sql, args, err := sq.Update("users").
+		Set("tumblr", nil).
+		Set("tumblr_username", nil).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Tumblr = nil
+	u.TumblrUsername = nil
+
+	return nil
+}
+
+// GoogleUser fetches a user by Google user ID.
+func (db *DB) GoogleUser(ctx context.Context, googleID string) (u User, err error) {
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("google = ?", googleID).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "executing query")
+	}
+	return u, nil
+}
+
+func (u *User) UpdateFromGoogle(ctx context.Context, ex Execer, googleID, googleUsername string) error {
+	sql, args, err := sq.Update("users").
+		Set("google", googleID).
+		Set("google_username", googleUsername).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Google = &googleID
+	u.GoogleUsername = &googleUsername
+
+	return nil
+}
+
+func (u *User) UnlinkGoogle(ctx context.Context, ex Execer) error {
+	sql, args, err := sq.Update("users").
+		Set("google", nil).
+		Set("google_username", nil).
+		Where("id = ?", u.ID).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "building sql")
+	}
+
+	_, err = ex.Exec(ctx, sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "executing query")
+	}
+
+	u.Google = nil
+	u.GoogleUsername = nil
+
+	return nil
+}
+
 // User gets a user by ID.
 func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
 	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
@@ -279,9 +477,28 @@ func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
 	return u, nil
 }
 
+// UserBySID gets a user by their short ID.
+func (db *DB) UserBySID(ctx context.Context, sid string) (u User, err error) {
+	sql, args, err := sq.Select("*").From("users").Where("sid = ?", sid).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "getting user from db")
+	}
+
+	return u, nil
+}
+
 // UsernameTaken checks if the given username is already taken.
 func (db *DB) UsernameTaken(ctx context.Context, username string) (valid, taken bool, err error) {
-	if !usernameRegex.MatchString(username) {
+	if err := UsernameValid(username); err != nil {
 		return false, false, nil
 	}
 
@@ -291,8 +508,8 @@ func (db *DB) UsernameTaken(ctx context.Context, username string) (valid, taken 
 
 // UpdateUsername validates the given username, then updates the given user's name to it if valid.
 func (db *DB) UpdateUsername(ctx context.Context, tx pgx.Tx, id xid.ID, newName string) error {
-	if !usernameRegex.MatchString(newName) {
-		return ErrInvalidUsername
+	if err := UsernameValid(newName); err != nil {
+		return err
 	}
 
 	sql, args, err := sq.Update("users").Set("username", newName).Where("id = ?", id).ToSql()
@@ -305,7 +522,7 @@ func (db *DB) UpdateUsername(ctx context.Context, tx pgx.Tx, id xid.ID, newName 
 		pge := &pgconn.PgError{}
 		if errors.As(err, &pge) {
 			// unique constraint violation
-			if pge.Code == "23505" {
+			if pge.Code == uniqueViolation {
 				return ErrUsernameTaken
 			}
 		}
@@ -322,8 +539,9 @@ func (db *DB) UpdateUser(
 	memberTitle *string, listPrivate *bool,
 	links *[]string,
 	avatar *string,
+	customPreferences *CustomPreferences,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && customPreferences == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -365,6 +583,9 @@ func (db *DB) UpdateUser(
 	if listPrivate != nil {
 		builder = builder.Set("list_private", *listPrivate)
 	}
+	if customPreferences != nil {
+		builder = builder.Set("custom_preferences", *customPreferences)
+	}
 
 	if avatar != nil {
 		if *avatar == "" {
@@ -401,6 +622,23 @@ func (db *DB) DeleteUser(ctx context.Context, tx pgx.Tx, id xid.ID, selfDelete b
 		return errors.Wrap(err, "executing query")
 	}
 	return nil
+}
+
+func (db *DB) RerollUserSID(ctx context.Context, id xid.ID) (newID string, err error) {
+	sql, args, err := sq.Update("users").
+		Set("sid", squirrel.Expr("find_free_user_sid()")).
+		Set("last_sid_reroll", time.Now()).
+		Where("id = ?", id).
+		Suffix("RETURNING sid").ToSql()
+	if err != nil {
+		return "", errors.Wrap(err, "building sql")
+	}
+
+	err = db.QueryRow(ctx, sql, args...).Scan(&newID)
+	if err != nil {
+		return "", errors.Wrap(err, "executing query")
+	}
+	return newID, nil
 }
 
 func (db *DB) UndoDeleteUser(ctx context.Context, id xid.ID) error {

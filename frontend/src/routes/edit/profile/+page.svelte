@@ -2,12 +2,14 @@
   import {
     MAX_DESCRIPTION_LENGTH,
     userAvatars,
-    WordStatus,
     type APIError,
     type Field,
     type FieldEntry,
     type MeUser,
     type Pronoun,
+    PreferenceSize,
+    type CustomPreferences,
+    type PrideFlag,
   } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import { userStore } from "$lib/store";
@@ -26,16 +28,21 @@
     TabPane,
   } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
+  import { DateTime } from "luxon";
   import { apiFetchClient } from "$lib/api/fetch";
+  import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import IconButton from "$lib/components/IconButton.svelte";
   import EditableField from "../EditableField.svelte";
   import EditableName from "../EditableName.svelte";
   import EditablePronouns from "../EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast, delToast } from "$lib/toast";
-  import type { PageData } from "./$types";
+  import type { PageData, Snapshot } from "./$types";
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "../MarkdownHelp.svelte";
+  import prettyBytes from "pretty-bytes";
+  import CustomPreference from "./CustomPreference.svelte";
+  import FlagButton from "../FlagButton.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -50,7 +57,9 @@
   let names: FieldEntry[] = window.structuredClone(data.user.names);
   let pronouns: Pronoun[] = window.structuredClone(data.user.pronouns);
   let fields: Field[] = window.structuredClone(data.user.fields);
+  let flags: PrideFlag[] = window.structuredClone(data.user.flags);
   let list_private = data.user.list_private;
+  let custom_preferences = window.structuredClone(data.user.custom_preferences);
 
   let avatar: string | null;
   let avatar_files: FileList | null;
@@ -58,6 +67,21 @@
   let newName = "";
   let newPronouns = "";
   let newLink = "";
+
+  let flagSearch = "";
+  let filteredFlags: PrideFlag[];
+  $: filteredFlags = filterFlags(flagSearch, data.flags);
+
+  const filterFlags = (search: string, flags: PrideFlag[]) => {
+    return (
+      search
+        ? flags.filter((flag) => flag.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+        : flags
+    ).slice(0, 25);
+  };
+
+  let preferenceIds: string[];
+  $: preferenceIds = Object.keys(custom_preferences);
 
   let modified = false;
 
@@ -69,9 +93,11 @@
     names,
     pronouns,
     fields,
+    flags,
     avatar,
     member_title,
     list_private,
+    custom_preferences,
   );
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
@@ -83,17 +109,21 @@
     names: FieldEntry[],
     pronouns: Pronoun[],
     fields: Field[],
+    flags: PrideFlag[],
     avatar: string | null,
     member_title: string,
     list_private: boolean,
+    custom_preferences: CustomPreferences,
   ) => {
     if (bio !== (user.bio || "")) return true;
     if (display_name !== (user.display_name || "")) return true;
     if (member_title !== (user.member_title || "")) return true;
     if (!linksEqual(links, user.links)) return true;
     if (!fieldsEqual(fields, user.fields)) return true;
+    if (!flagsEqual(flags, user.flags)) return true;
     if (!namesEqual(names, user.names)) return true;
     if (!pronounsEqual(pronouns, user.pronouns)) return true;
+    if (!customPreferencesEqual(custom_preferences, user.custom_preferences)) return true;
     if (avatar !== null) return true;
     if (list_private !== user.list_private) return true;
 
@@ -135,9 +165,39 @@
     return arr1.every((_, i) => arr1[i] === arr2[i]);
   };
 
+  const flagsEqual = (arr1: PrideFlag[], arr2: PrideFlag[]) => {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((_, i) => arr1[i].id === arr2[i].id);
+  };
+
+  const customPreferencesEqual = (obj1: CustomPreferences, obj2: CustomPreferences) => {
+    if (Object.keys(obj2).some((key) => !(key in obj1))) return false;
+
+    return Object.keys(obj1)
+      .map((key) => {
+        if (!(key in obj2)) return false;
+        return (
+          obj1[key].icon === obj2[key].icon &&
+          obj1[key].tooltip === obj2[key].tooltip &&
+          obj1[key].favourite === obj2[key].favourite &&
+          obj1[key].muted === obj2[key].muted &&
+          obj1[key].size === obj2[key].size
+        );
+      })
+      .every((entry) => entry);
+  };
+
   const getAvatar = async (list: FileList | null) => {
     if (!list || list.length === 0) return null;
-    if (list[0].size > MAX_AVATAR_BYTES) return null;
+    if (list[0].size > MAX_AVATAR_BYTES) {
+      addToast({
+        header: "Avatar too large",
+        body: `This avatar is too large, please resize it (maximum is ${prettyBytes(
+          MAX_AVATAR_BYTES,
+        )}, the file you tried to upload is ${prettyBytes(list[0].size)})`,
+      });
+      return null;
+    }
 
     const buffer = await list[0].arrayBuffer();
     const base64 = encode(buffer);
@@ -181,10 +241,41 @@
     fields[newIndex] = temp;
   };
 
+  const moveLink = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == links.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = links[index];
+    links[index] = links[newIndex];
+    links[newIndex] = temp;
+  };
+
+  const moveFlag = (index: number, up: boolean) => {
+    if (up && index == 0) return;
+    if (!up && index == flags.length - 1) return;
+
+    const newIndex = up ? index - 1 : index + 1;
+
+    const temp = flags[index];
+    flags[index] = flags[newIndex];
+    flags[newIndex] = temp;
+  };
+
+  const addFlag = (flag: PrideFlag) => {
+    flags = [...flags, flag];
+  };
+
+  const removeFlag = (index: number) => {
+    flags.splice(index, 1);
+    flags = [...flags];
+  };
+
   const addName = (event: Event) => {
     event.preventDefault();
 
-    names = [...names, { value: newName, status: WordStatus.Okay }];
+    names = [...names, { value: newName, status: "okay" }];
     newName = "";
   };
 
@@ -198,14 +289,11 @@
         {
           pronouns: fullSet.pronouns.join("/"),
           display_text: fullSet.display || null,
-          status: WordStatus.Okay,
+          status: "okay",
         },
       ];
     } else {
-      pronouns = [
-        ...pronouns,
-        { pronouns: newPronouns, display_text: null, status: WordStatus.Okay },
-      ];
+      pronouns = [...pronouns, { pronouns: newPronouns, display_text: null, status: "okay" }];
     }
     newPronouns = "";
   };
@@ -215,6 +303,19 @@
 
     links = [...links, newLink];
     newLink = "";
+  };
+
+  const addPreference = () => {
+    const id = crypto.randomUUID();
+
+    custom_preferences[id] = {
+      icon: "question",
+      tooltip: "New preference",
+      size: PreferenceSize.Normal,
+      muted: false,
+      favourite: false,
+    };
+    custom_preferences = custom_preferences;
   };
 
   const removeName = (index: number) => {
@@ -237,6 +338,11 @@
     fields = [...fields];
   };
 
+  const removePreference = (id: string) => {
+    delete custom_preferences[id];
+    custom_preferences = custom_preferences;
+  };
+
   const updateUser = async () => {
     const toastId = addToast({
       header: "Saving changes",
@@ -255,9 +361,12 @@
         fields,
         member_title,
         list_private,
+        custom_preferences,
+        flags: flags.map((flag) => flag.id),
       });
 
       data.user = resp;
+      custom_preferences = resp.custom_preferences;
       userStore.set(resp);
       localStorage.setItem("pronouns-user", JSON.stringify(resp));
 
@@ -270,6 +379,81 @@
     } finally {
       delToast(toastId);
     }
+  };
+
+  const now = DateTime.now().toLocal();
+  let canRerollSid: boolean;
+  $: canRerollSid =
+    now.diff(DateTime.fromISO(data.user.last_sid_reroll).toLocal(), "hours").hours >= 1;
+
+  const rerollSid = async () => {
+    try {
+      const resp = await apiFetchClient<MeUser>("/users/@me/reroll");
+      addToast({ header: "Success", body: "Rerolled short ID!" });
+      error = null;
+      data.user.sid = resp.sid;
+    } catch (e) {
+      error = e as APIError;
+    }
+  };
+
+  const copyShortURL = async () => {
+    const url = `${PUBLIC_SHORT_BASE}/${data.user.sid}`;
+    await navigator.clipboard.writeText(url);
+    addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
+  };
+
+  interface SnapshotData {
+    bio: string;
+    display_name: string;
+    member_title: string;
+    links: string[];
+    names: FieldEntry[];
+    pronouns: Pronoun[];
+    fields: Field[];
+    flags: PrideFlag[];
+    list_private: boolean;
+    custom_preferences: CustomPreferences;
+
+    avatar: string | null;
+    newName: string;
+    newPronouns: string;
+    newLink: string;
+  }
+
+  export const snapshot: Snapshot<SnapshotData> = {
+    capture: () => ({
+      bio,
+      display_name,
+      member_title,
+      links,
+      names,
+      pronouns,
+      fields,
+      flags,
+      list_private,
+      custom_preferences,
+      avatar,
+      newName,
+      newPronouns,
+      newLink,
+    }),
+    restore: (value) => {
+      bio = value.bio;
+      display_name = value.display_name;
+      member_title = value.member_title;
+      links = value.links;
+      names = value.names;
+      pronouns = value.pronouns;
+      fields = value.fields;
+      flags = value.flags;
+      list_private = value.list_private;
+      custom_preferences = value.custom_preferences;
+      avatar = value.avatar;
+      newName = value.newName;
+      newPronouns = value.newPronouns;
+      newLink = value.newLink;
+    },
   };
 </script>
 
@@ -358,6 +542,7 @@
         <EditableName
           bind:value={names[index].value}
           bind:status={names[index].status}
+          preferences={custom_preferences}
           moveUp={() => moveName(index, true)}
           moveDown={() => moveName(index, false)}
           remove={() => removeName(index)}
@@ -397,6 +582,7 @@
         {#each pronouns as _, index}
           <EditablePronouns
             bind:pronoun={pronouns[index]}
+            preferences={custom_preferences}
             moveUp={() => movePronoun(index, true)}
             moveDown={() => movePronoun(index, false)}
             remove={() => removePronoun(index)}
@@ -438,6 +624,7 @@
         {#each fields as _, index}
           <EditableField
             bind:field={fields[index]}
+            preferences={custom_preferences}
             deleteField={() => removeField(index)}
             moveField={(up) => moveField(index, up)}
           />
@@ -450,10 +637,88 @@
       </Button>
     </div>
   </TabPane>
+  <TabPane tabId="flags" tab="Flags">
+    <div class="mt-3">
+      {#each flags as _, index}
+        <ButtonGroup class="m-1">
+          <IconButton
+            icon="chevron-left"
+            color="secondary"
+            tooltip="Move flag to the left"
+            click={() => moveFlag(index, true)}
+          />
+          <IconButton
+            icon="chevron-right"
+            color="secondary"
+            tooltip="Move flag to the right"
+            click={() => moveFlag(index, false)}
+          />
+          <FlagButton
+            flag={flags[index]}
+            tooltip="Remove this flag from your profile"
+            on:click={() => removeFlag(index)}
+          />
+        </ButtonGroup>
+      {/each}
+    </div>
+    <hr />
+    <div class="row">
+      <div class="col-md">
+        <Input
+          placeholder="Filter flags"
+          bind:value={flagSearch}
+          disabled={data.flags.length === 0}
+        />
+        <div class="p-2">
+          {#each filteredFlags as flag (flag.id)}
+            <FlagButton
+              {flag}
+              tooltip="Add this flag to your profile"
+              on:click={() => addFlag(flag)}
+            />
+          {:else}
+            {#if data.flags.length === 0}
+              You haven't uploaded any flags yet.
+            {:else}
+              There are no flags matching your search <strong>{flagSearch}</strong>.
+            {/if}
+          {/each}
+        </div>
+      </div>
+      <div class="col-md">
+        <Alert color="secondary" fade={false}>
+          {#if data.flags.length === 0}
+            <p><strong>Why can't I see any flags?</strong></p>
+            <p>
+              There are thousands of pride flags, and it would be impossible to bundle all of them
+              by default. Many labels also have multiple different flags that are favoured by
+              different people. Because of this, there are no flags available by default--instead,
+              you can upload flags in your <a href="/settings/flags">settings</a>. Your main profile
+              and your member profiles can all have different flags.
+            </p>
+          {:else}
+            To upload and delete flags, go to your <a href="/settings/flags">settings</a>.
+          {/if}
+        </Alert>
+      </div>
+    </div>
+  </TabPane>
   <TabPane tabId="links" tab="Links">
     <div class="mt-3">
       {#each links as _, index}
         <div class="input-group m-1">
+          <IconButton
+            icon="chevron-up"
+            color="secondary"
+            tooltip="Move link up"
+            click={() => moveLink(index, true)}
+          />
+          <IconButton
+            icon="chevron-down"
+            color="secondary"
+            tooltip="Move link down"
+            click={() => moveLink(index, false)}
+          />
           <input type="text" class="form-control" bind:value={links[index]} />
           <IconButton
             color="danger"
@@ -469,7 +734,7 @@
       </form>
     </div>
   </TabPane>
-  <TabPane tabId="other" tab="Other">
+  <TabPane tabId="other" tab="Preferences & other">
     <div class="row mt-3">
       <div class="col-md">
         <FormGroup floating label={'"Members" header text'}>
@@ -480,6 +745,29 @@
             will be used.
           </p>
         </FormGroup>
+        {#if PUBLIC_SHORT_BASE}
+          <hr />
+          <p>
+            Current short ID: <code>{data.user.sid}</code>
+            <ButtonGroup class="mb-1">
+              <Button color="secondary" disabled={!canRerollSid} on:click={() => rerollSid()}
+                >Reroll short ID</Button
+              >
+              <IconButton
+                icon="link-45deg"
+                tooltip="Copy short link"
+                color="secondary"
+                click={copyShortURL}
+              />
+            </ButtonGroup>
+            <br />
+            <span class="text-muted">
+              <Icon name="info-circle-fill" aria-hidden />
+              This ID is used in <code>prns.cc</code> links. You can reroll one short ID every hour (shared
+              between your main profile and all members) by pressing the button above.
+            </span>
+          </p>
+        {/if}
       </div>
       <div class="col-md">
         <div class="form-check">
@@ -500,6 +788,19 @@
           </strong>
         </p>
       </div>
+    </div>
+    <div>
+      <h3>
+        Preferences <Button on:click={addPreference} color="success"
+          ><Icon name="plus" aria-hidden /> Add new</Button
+        >
+      </h3>
+      {#each preferenceIds as id}
+        <CustomPreference
+          bind:preference={custom_preferences[id]}
+          remove={() => removePreference(id)}
+        />
+      {/each}
     </div>
   </TabPane>
 </TabContent>

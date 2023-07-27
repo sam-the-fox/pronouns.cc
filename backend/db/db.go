@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sync"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -14,11 +16,17 @@ import (
 	"github.com/mediocregopher/radix/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var sq = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 const ErrNothingToUpdate = errors.Sentinel("nothing to update")
+
+const (
+	uniqueViolation     = "23505"
+	foreignKeyViolation = "23503"
+)
 
 type Execer interface {
 	Exec(ctx context.Context, sql string, arguments ...interface{}) (commandTag pgconn.CommandTag, err error)
@@ -32,19 +40,28 @@ type DB struct {
 	minio       *minio.Client
 	minioBucket string
 	baseURL     *url.URL
+
+	TotalRequests prometheus.Counter
+
+	activeUsersDay, activeUsersWeek, activeUsersMonth int64
+	usersTotal, membersTotal                          int64
+	countMu                                           sync.RWMutex
 }
 
 func New() (*DB, error) {
+	log.Debug("creating postgres client")
 	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating postgres client")
 	}
 
+	log.Debug("creating redis client")
 	redis, err := (&radix.PoolConfig{}).New(context.Background(), "tcp", os.Getenv("REDIS"))
 	if err != nil {
 		return nil, errors.Wrap(err, "creating redis client")
 	}
 
+	log.Debug("creating minio client")
 	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
 		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY_ID"), os.Getenv("MINIO_ACCESS_KEY_SECRET"), ""),
 		Secure: os.Getenv("MINIO_SSL") == "true",
@@ -65,6 +82,12 @@ func New() (*DB, error) {
 		minio:       minioClient,
 		minioBucket: os.Getenv("MINIO_BUCKET"),
 		baseURL:     baseURL,
+	}
+
+	log.Debug("initializing metrics")
+	err = db.initMetrics()
+	if err != nil {
+		return nil, errors.Wrap(err, "initializing metrics")
 	}
 
 	return db, nil
@@ -115,30 +138,6 @@ func (db *DB) GetJSON(ctx context.Context, key string, v any) error {
 
 	if v == nil {
 		return fmt.Errorf("nil pointer passed into GetJSON")
-	}
-
-	err = json.Unmarshal(b, v)
-	if err != nil {
-		return errors.Wrap(err, "unmarshaling json")
-	}
-	return nil
-}
-
-// GetDelJSON gets the given key as a JSON object and deletes it.
-func (db *DB) GetDelJSON(ctx context.Context, key string, v any) error {
-	var b []byte
-
-	err := db.Redis.Do(ctx, radix.Cmd(&b, "GETDEL", key))
-	if err != nil {
-		return errors.Wrap(err, "reading from Redis")
-	}
-
-	if b == nil {
-		return nil
-	}
-
-	if v == nil {
-		return fmt.Errorf("nil pointer passed into GetDelJSON")
 	}
 
 	err = json.Unmarshal(b, v)

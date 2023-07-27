@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	"codeberg.org/u1f320/pronouns.cc/backend/log"
-	"codeberg.org/u1f320/pronouns.cc/backend/server"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
 )
@@ -23,6 +23,11 @@ func (s *Server) getFediverseURL(w http.ResponseWriter, r *http.Request) error {
 	instance := r.FormValue("instance")
 	if instance == "" {
 		return server.APIError{Code: server.ErrBadRequest, Details: "Instance URL is empty"}
+	}
+
+	// Too many people tried using @username@fediverse.example despite the warning
+	if strings.Contains(instance, "@") {
+		return server.APIError{Code: server.ErrBadRequest, Details: "Instance URL should only be the base URL, without username"}
 	}
 
 	app, err := s.DB.FediverseApp(ctx, instance)
@@ -62,9 +67,12 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 	switch softwareName {
 	case "misskey", "foundkey", "calckey":
 		return s.noAppMisskeyURL(ctx, w, r, softwareName, instance)
-	case "mastodon", "pleroma", "akkoma", "pixelfed":
+	case "mastodon", "pleroma", "akkoma", "pixelfed", "gotosocial":
+	case "glitchcafe":
+		// plural.cafe (potentially other instances too?) runs Mastodon but changes the software name
+		// changing it back to mastodon here for consistency
+		softwareName = "mastodon"
 	default:
-		// sorry, misskey :( TODO: support misskey
 		return server.APIError{Code: server.ErrUnsupportedInstance}
 	}
 
