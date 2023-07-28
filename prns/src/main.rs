@@ -1,9 +1,8 @@
 use pronouns::models::{member::Member, user::User};
-use rocket::{response::Redirect, State};
+use rocket::{response::Redirect, Config, State};
+use simple_logger;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-use std::env;
-use tracing::info;
-use tracing_subscriber;
+use std::{env, path::PathBuf};
 #[macro_use]
 extern crate rocket;
 
@@ -12,8 +11,10 @@ struct AppState {
     base_url: String,
 }
 
-#[get("/<sid>")]
-async fn redirect(state: &State<AppState>, sid: &str) -> Redirect {
+#[get("/<path..>")]
+async fn redirect(state: &State<AppState>, path: PathBuf) -> Redirect {
+    let sid = path.to_str().unwrap_or("");
+
     match sid.len() {
         5 => sqlx::query_as!(
             User,
@@ -23,7 +24,7 @@ async fn redirect(state: &State<AppState>, sid: &str) -> Redirect {
         .fetch_one(&state.pool)
         .await
         .map_or_else(
-            |_| Redirect::temporary(format!("{}", state.base_url)),
+            |_| Redirect::temporary(state.base_url.clone()),
             |u| Redirect::temporary(format!("{}/@{}", state.base_url, u.username)),
         ),
         6 => {
@@ -35,7 +36,7 @@ async fn redirect(state: &State<AppState>, sid: &str) -> Redirect {
             .fetch_one(&state.pool)
             .await
             {
-                Err(_) => return Redirect::temporary(format!("{}", state.base_url)),
+                Err(_) => return Redirect::temporary(state.base_url.clone()),
                 Ok(val) => val,
             };
 
@@ -47,7 +48,7 @@ async fn redirect(state: &State<AppState>, sid: &str) -> Redirect {
             .fetch_one(&state.pool)
             .await
             .map_or_else(
-                |_| Redirect::temporary(format!("{}", state.base_url)),
+                |_| Redirect::temporary(state.base_url.clone()),
                 |u| {
                     Redirect::temporary(format!(
                         "{}/@{}/{}",
@@ -56,13 +57,13 @@ async fn redirect(state: &State<AppState>, sid: &str) -> Redirect {
                 },
             )
         }
-        _ => Redirect::temporary(format!("{}", state.base_url)),
+        _ => Redirect::temporary(state.base_url.clone()),
     }
 }
 
 #[launch]
 async fn rocket() -> _ {
-    tracing_subscriber::fmt::init();
+    simple_logger::SimpleLogger::new().env().init().unwrap();
 
     info!("Loading .env");
 
@@ -72,6 +73,15 @@ async fn rocket() -> _ {
 
     let db_dsn = env::var("DATABASE_URL").expect("DATABASE_URL is not set or invalid!");
     let base_url = env::var("BASE_URL").expect("BASE_URL is not set or invalid!");
+    let port = match env::var("PRNS_PORT") {
+        Ok(val) => val
+            .parse::<u16>()
+            .expect("PRNS_PORT is not a valid integer!"),
+        Err(_) => {
+            error!("PRNS_PORT is not set, falling back to port 8087");
+            8087
+        }
+    };
 
     let pool = PgPoolOptions::new()
         .max_connections(10)
@@ -81,7 +91,13 @@ async fn rocket() -> _ {
 
     info!("Initializing prns.cc server");
 
+    let config = Config {
+        port,
+        ..Config::default()
+    };
+
     rocket::build()
+        .configure(config)
         .manage(AppState { pool, base_url })
         .mount("/", routes![redirect])
 }

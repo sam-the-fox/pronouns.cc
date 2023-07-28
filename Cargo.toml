@@ -1,6 +1,5 @@
 [workspace]
 members = [
     "pronouns",
-    "exporter",
     "prns",
 ]
