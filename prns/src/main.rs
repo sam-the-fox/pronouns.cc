@@ -1,8 +1,10 @@
-use pronouns::models::{member::Member, user::User};
+pub mod models;
+
 use rocket::{response::Redirect, Config, State};
 use simple_logger;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use std::{env, path::PathBuf};
+use crate::models::{User, Member};
 #[macro_use]
 extern crate rocket;
 
