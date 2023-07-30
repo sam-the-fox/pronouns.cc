@@ -52,6 +52,7 @@ type User struct {
 	IsAdmin       bool
 	ListPrivate   bool
 	LastSIDReroll time.Time `db:"last_sid_reroll"`
+	Timezone      *string
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool
@@ -111,6 +112,21 @@ func (u User) NumProviders() (numProviders int) {
 		numProviders++
 	}
 	return numProviders
+}
+
+// UTCOffset returns the user's UTC offset in seconds. If the user does not have a timezone set, `ok` is false.
+func (u User) UTCOffset() (offset int, ok bool) {
+	if u.Timezone == nil {
+		return 0, false
+	}
+
+	loc, err := time.LoadLocation(*u.Timezone)
+	if err != nil {
+		return 0, false
+	}
+
+	_, offset = time.Now().In(loc).Zone()
+	return offset, true
 }
 
 type Badge int32

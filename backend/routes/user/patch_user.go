@@ -311,6 +311,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	// echo the updated user back on success
 	render.JSON(w, r, GetMeResponse{
 		GetUserResponse:   dbUserToResponse(u, fields, nil, flags),
+		CreatedAt:         u.ID.Time(),
+		Timezone:          u.Timezone,
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,

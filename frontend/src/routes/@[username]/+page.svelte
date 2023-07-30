@@ -13,7 +13,9 @@
     Modal,
     ModalBody,
     ModalFooter,
+    Tooltip,
   } from "sveltestrap";
+  import { DateTime, Duration, FixedOffsetZone, Zone } from "luxon";
   import FieldCard from "$lib/components/FieldCard.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
@@ -76,6 +78,24 @@
   let newMemberError: APIError | null = null;
   let memberNameValid = true;
   $: memberNameValid = memberNameRegex.test(newMemberName);
+
+  let currentTime: string | null;
+  let timezone: string | null;
+  $: setTime(data.utc_offset);
+
+  const setTime = (offset: number | null) => {
+    if (!offset) {
+      currentTime = null;
+      timezone = null;
+      return;
+    }
+
+    const now = DateTime.now();
+    const zone = FixedOffsetZone.instance(offset / 60);
+
+    currentTime = now.setZone(zone).toLocaleString(DateTime.TIME_SIMPLE);
+    timezone = zone.formatOffset(now.toUnixInteger(), "narrow");
+  };
 
   const createMember = async () => {
     try {
@@ -167,6 +187,10 @@
           </div>
         {:else}
           <h2>@{data.name} <Badges userBadges={data.badges} /></h2>
+        {/if}
+        {#if data.utc_offset}
+          <Tooltip target="user-clock" placement="top">Current time</Tooltip>
+          <Icon id="user-clock" name="clock" aria-label="This user's current time" /> {currentTime} <span class="text-body-secondary">(UTC{timezone})</span>
         {/if}
         {#if profileEmpty && $userStore?.id === data.id}
           <hr />

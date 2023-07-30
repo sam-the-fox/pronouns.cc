@@ -14,6 +14,7 @@ export interface User {
   links: string[];
   member_title: string | null;
   badges: number;
+  utc_offset: number | null;
 
   names: FieldEntry[];
   pronouns: Pronoun[];
