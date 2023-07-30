@@ -1,5 +1,5 @@
 [package]
-name = "pronouns"
+name = "pronounslib"
 version = "0.1.0"
 edition = "2021"
 

@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pronouns = { path = "../pronouns" }
+pronounslib = { path = "../pronounslib" }
 time = { version = "0.3.23", features = ["formatting", "serde"] }
 sqlx = { version = "0.6.3", features = ["runtime-tokio-rustls", "postgres", "json"]}
 rocket = "0.5.0-rc.3"
