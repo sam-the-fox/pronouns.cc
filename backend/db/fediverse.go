@@ -52,7 +52,7 @@ func (f FediverseApp) MastodonCompatible() bool {
 }
 
 func (f FediverseApp) Misskey() bool {
-	return f.InstanceType == "misskey" || f.InstanceType == "foundkey" || f.InstanceType == "calckey"
+	return f.InstanceType == "misskey" || f.InstanceType == "foundkey" || f.InstanceType == "calckey" || f.InstanceType == "firefish"
 }
 
 const ErrNoInstanceApp = errors.Sentinel("instance doesn't have an app")
