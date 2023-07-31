@@ -3,6 +3,7 @@ import { PUBLIC_BASE_URL, PUBLIC_MEDIA_URL } from "$env/static/public";
 export const MAX_MEMBERS = 500;
 export const MAX_FIELDS = 25;
 export const MAX_DESCRIPTION_LENGTH = 1000;
+export const MAX_FLAGS = 500;
 
 export interface User {
   id: string;

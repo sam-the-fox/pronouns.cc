@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { APIError, PrideFlag } from "$lib/api/entities";
+  import { MAX_FLAGS, type APIError, type PrideFlag } from "$lib/api/entities";
   import { Button, Icon, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "sveltestrap";
   import type { PageData } from "./$types";
   import Flag from "./Flag.svelte";
@@ -99,7 +99,7 @@
   };
 </script>
 
-<h1>Pride flags ({data.flags.length})</h1>
+<h1>Pride flags ({data.flags.length}/{MAX_FLAGS})</h1>
 
 <p>
   You can upload pride flags to use on your profiles here. Flags you upload here will <em>not</em> automatically
