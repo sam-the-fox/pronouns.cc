@@ -57,6 +57,7 @@ export interface MeUser extends User {
   fediverse_instance: string | null;
   list_private: boolean;
   last_sid_reroll: string;
+  timezone: string | null;
 }
 
 export interface Field {

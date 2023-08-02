@@ -555,9 +555,10 @@ func (db *DB) UpdateUser(
 	memberTitle *string, listPrivate *bool,
 	links *[]string,
 	avatar *string,
+	timezone *string,
 	customPreferences *CustomPreferences,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && customPreferences == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && timezone == nil && customPreferences == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -591,6 +592,13 @@ func (db *DB) UpdateUser(
 			builder = builder.Set("member_title", nil)
 		} else {
 			builder = builder.Set("member_title", *memberTitle)
+		}
+	}
+	if timezone != nil {
+		if *timezone == "" {
+			builder = builder.Set("timezone", nil)
+		} else {
+			builder = builder.Set("timezone", *timezone)
 		}
 	}
 	if links != nil {

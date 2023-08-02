@@ -25,6 +25,7 @@ type PatchUserRequest struct {
 	Pronouns          *[]db.PronounEntry    `json:"pronouns"`
 	Fields            *[]db.Field           `json:"fields"`
 	Avatar            *string               `json:"avatar"`
+	Timezone          *string               `json:"timezone"`
 	ListPrivate       *bool                 `json:"list_private"`
 	CustomPreferences *db.CustomPreferences `json:"custom_preferences"`
 	Flags             *[]xid.ID             `json:"flags"`
@@ -88,6 +89,19 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{
 			Code:    server.ErrBadRequest,
 			Details: fmt.Sprintf("Bio too long (max %d, current %d)", db.MaxUserBioLength, common.StringLength(req.Bio)),
+		}
+	}
+
+	// validate timezone
+	if req.Timezone != nil {
+		if *req.Timezone != "" {
+			_, err := time.LoadLocation(*req.Timezone)
+			if err != nil {
+				return server.APIError{
+					Code:    server.ErrBadRequest,
+					Details: fmt.Sprintf("%q is not a valid timezone", *req.Timezone),
+				}
+			}
 		}
 	}
 
@@ -224,7 +238,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash, req.CustomPreferences)
+	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash, req.Timezone, req.CustomPreferences)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
 		return err

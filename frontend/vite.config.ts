@@ -5,6 +5,7 @@ import { plugin as markdown, Mode as MarkdownMode } from "vite-plugin-markdown";
 export default defineConfig({
   plugins: [sveltekit(), markdown({ mode: [MarkdownMode.HTML] })],
   server: {
+    host: "127.0.0.1",
     proxy: {
       "/api": {
         target: "http://localhost:8080",

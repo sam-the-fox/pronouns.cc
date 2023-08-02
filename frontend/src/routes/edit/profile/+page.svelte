@@ -21,14 +21,16 @@
     CardBody,
     CardHeader,
     FormGroup,
+    InputGroup,
     Icon,
     Input,
     Popover,
     TabContent,
     TabPane,
+    InputGroupText,
   } from "sveltestrap";
   import { encode } from "base64-arraybuffer";
-  import { DateTime } from "luxon";
+  import { DateTime, FixedOffsetZone } from "luxon";
   import { apiFetchClient } from "$lib/api/fetch";
   import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import IconButton from "$lib/components/IconButton.svelte";
@@ -60,6 +62,7 @@
   let flags: PrideFlag[] = window.structuredClone(data.user.flags);
   let list_private = data.user.list_private;
   let custom_preferences = window.structuredClone(data.user.custom_preferences);
+  let timezone = data.user.timezone;
 
   let avatar: string | null;
   let avatar_files: FileList | null;
@@ -98,6 +101,7 @@
     member_title,
     list_private,
     custom_preferences,
+    timezone,
   );
   $: getAvatar(avatar_files).then((b64) => (avatar = b64));
 
@@ -114,6 +118,7 @@
     member_title: string,
     list_private: boolean,
     custom_preferences: CustomPreferences,
+    timezone: string | null,
   ) => {
     if (bio !== (user.bio || "")) return true;
     if (display_name !== (user.display_name || "")) return true;
@@ -126,6 +131,7 @@
     if (!customPreferencesEqual(custom_preferences, user.custom_preferences)) return true;
     if (avatar !== null) return true;
     if (list_private !== user.list_private) return true;
+    if (timezone !== user.timezone) return true;
 
     return false;
   };
@@ -206,6 +212,24 @@
     console.log(uri.slice(0, 128));
 
     return uri;
+  };
+
+  let currentTime = "";
+  let displayTimezone = "";
+  $: setTime(timezone);
+
+  const setTime = (timezone: string | null) => {
+    if (!timezone) {
+      currentTime = "";
+      displayTimezone = "";
+      return;
+    }
+
+    const offset = DateTime.now().setZone(timezone).offset;
+    const zone = FixedOffsetZone.instance(offset);
+
+    currentTime = now.setZone(zone).toLocaleString(DateTime.TIME_SIMPLE);
+    displayTimezone = zone.formatOffset(now.toUnixInteger(), "narrow");
   };
 
   const moveName = (index: number, up: boolean) => {
@@ -361,6 +385,7 @@
         fields,
         member_title,
         list_private,
+        timezone: timezone || "",
         custom_preferences,
         flags: flags.map((flag) => flag.id),
       });
@@ -403,6 +428,10 @@
     addToast({ body: "Copied the short link to your clipboard!", duration: 2000 });
   };
 
+  const detectTimezone = () => {
+    timezone = DateTime.local().zoneName;
+  };
+
   interface SnapshotData {
     bio: string;
     display_name: string;
@@ -413,6 +442,7 @@
     fields: Field[];
     flags: PrideFlag[];
     list_private: boolean;
+    timezone: string | null;
     custom_preferences: CustomPreferences;
 
     avatar: string | null;
@@ -432,6 +462,7 @@
       fields,
       flags,
       list_private,
+      timezone,
       custom_preferences,
       avatar,
       newName,
@@ -448,6 +479,7 @@
       fields = value.fields;
       flags = value.flags;
       list_private = value.list_private;
+      timezone = value.timezone;
       custom_preferences = value.custom_preferences;
       avatar = value.avatar;
       newName = value.newName;
@@ -787,6 +819,31 @@
             <code class="text-nowrap">pronouns.cc/@{data.user.name}/[member-name]</code>.
           </strong>
         </p>
+        <hr />
+        <div class="m-1">
+          <p class="mt-1 my-2">
+            You can optionally set your timezone, which will show your current local time on your
+            profile.
+          </p>
+          <InputGroup>
+            <InputGroupText><Icon name="clock" aria-hidden /></InputGroupText>
+            <Input disabled value={timezone !== null ? timezone : "Unset"} />
+            <Button on:click={detectTimezone}>Detect</Button>
+            <Button on:click={() => (timezone = null)}>Reset</Button>
+          </InputGroup>
+          <p class="mt-2">
+            {#if timezone}
+              This will show up on your profile like this:
+              <Icon name="clock" aria-hidden />
+              {currentTime} <span class="text-body-secondary">(UTC{displayTimezone})</span>
+              <br />
+            {/if}
+            <span class="text-muted">
+              Your timezone is never shared directly, only the difference between UTC and your
+              current timezone is.
+            </span>
+          </p>
+        </div>
       </div>
     </div>
     <div>
