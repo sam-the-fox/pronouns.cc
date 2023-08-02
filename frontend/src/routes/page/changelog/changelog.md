@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.8 - August 2nd 2023
+
+- **Added an (optional) local time display to user profiles.**
+- Increased the maximum number of pride flags to 500.
+- Added a badge to the profiles of admin users.
+- Added an indicator icon for unlisted members.
+- Fixed fediverse login for GoToSocial, glitch-cafe, Hometown, and Firefish.
+- Fixed other users' custom preferences showing up on the edit profile page sometimes.
+- Fixed the acknowledge warning button not working.
+
 ## 0.5.3 - June 3rd 2023
 
 - Added a link shortener at **prns.cc**! There is now an additional button on all user and member pages to copy a shorter link.
