@@ -28,12 +28,14 @@ type GetUserResponse struct {
 	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
 	Flags             []db.UserFlag        `json:"flags"`
 	Badges            db.Badge             `json:"badges"`
+	UTCOffset         *int                 `json:"utc_offset"`
 }
 
 type GetMeResponse struct {
 	GetUserResponse
 
 	CreatedAt time.Time `json:"created_at"`
+	Timezone  *string   `json:"timezone"`
 
 	MaxInvites    int       `json:"max_invites"`
 	IsAdmin       bool      `json:"is_admin"`
@@ -85,6 +87,10 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags [
 
 	if u.IsAdmin {
 		resp.Badges |= db.BadgeAdmin
+	}
+
+	if offset, ok := u.UTCOffset(); ok {
+		resp.UTCOffset = &offset
 	}
 
 	resp.Members = make([]PartialMember, len(members))
@@ -195,6 +201,7 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 	render.JSON(w, r, GetMeResponse{
 		GetUserResponse:   dbUserToResponse(u, fields, members, flags),
 		CreatedAt:         u.ID.Time(),
+		Timezone:          u.Timezone,
 		MaxInvites:        u.MaxInvites,
 		IsAdmin:           u.IsAdmin,
 		ListPrivate:       u.ListPrivate,

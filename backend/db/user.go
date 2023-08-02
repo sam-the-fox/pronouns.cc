@@ -52,6 +52,7 @@ type User struct {
 	IsAdmin       bool
 	ListPrivate   bool
 	LastSIDReroll time.Time `db:"last_sid_reroll"`
+	Timezone      *string
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool
@@ -111,6 +112,21 @@ func (u User) NumProviders() (numProviders int) {
 		numProviders++
 	}
 	return numProviders
+}
+
+// UTCOffset returns the user's UTC offset in seconds. If the user does not have a timezone set, `ok` is false.
+func (u User) UTCOffset() (offset int, ok bool) {
+	if u.Timezone == nil {
+		return 0, false
+	}
+
+	loc, err := time.LoadLocation(*u.Timezone)
+	if err != nil {
+		return 0, false
+	}
+
+	_, offset = time.Now().In(loc).Zone()
+	return offset, true
 }
 
 type Badge int32
@@ -539,9 +555,10 @@ func (db *DB) UpdateUser(
 	memberTitle *string, listPrivate *bool,
 	links *[]string,
 	avatar *string,
+	timezone *string,
 	customPreferences *CustomPreferences,
 ) (u User, err error) {
-	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && customPreferences == nil {
+	if displayName == nil && bio == nil && links == nil && avatar == nil && memberTitle == nil && listPrivate == nil && timezone == nil && customPreferences == nil {
 		sql, args, err := sq.Select("*").From("users").Where("id = ?", id).ToSql()
 		if err != nil {
 			return u, errors.Wrap(err, "building sql")
@@ -575,6 +592,13 @@ func (db *DB) UpdateUser(
 			builder = builder.Set("member_title", nil)
 		} else {
 			builder = builder.Set("member_title", *memberTitle)
+		}
+	}
+	if timezone != nil {
+		if *timezone == "" {
+			builder = builder.Set("timezone", nil)
+		} else {
+			builder = builder.Set("timezone", *timezone)
 		}
 	}
 	if links != nil {

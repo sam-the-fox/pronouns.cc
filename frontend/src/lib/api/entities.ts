@@ -15,6 +15,7 @@ export interface User {
   links: string[];
   member_title: string | null;
   badges: number;
+  utc_offset: number | null;
 
   names: FieldEntry[];
   pronouns: Pronoun[];
@@ -57,6 +58,7 @@ export interface MeUser extends User {
   fediverse_instance: string | null;
   list_private: boolean;
   last_sid_reroll: string;
+  timezone: string | null;
 }
 
 export interface Field {
