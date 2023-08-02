@@ -826,9 +826,8 @@
             profile.
           </p>
           <InputGroup>
-            <InputGroupText><Icon name="clock" aria-hidden /></InputGroupText>
+            <Button on:click={detectTimezone}>Detect timezone</Button>
             <Input disabled value={timezone !== null ? timezone : "Unset"} />
-            <Button on:click={detectTimezone}>Detect</Button>
             <Button on:click={() => (timezone = null)}>Reset</Button>
           </InputGroup>
           <p class="mt-2">
