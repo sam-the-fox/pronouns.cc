@@ -1,22 +1,14 @@
 <script lang="ts">
   import { setContext } from "svelte";
   import { writable } from "svelte/store";
-  import { page } from "$app/stores";
   import type { LayoutData } from "./$types";
-  import { Button, ButtonGroup, Icon, Nav, NavItem, NavLink } from "sveltestrap";
-  import type {
-    FieldEntry,
-    Field,
-    MeUser,
-    Pronoun,
-    PrideFlag,
-    CustomPreferences,
-    APIError,
-  } from "$lib/api/entities";
+  import { Button, ButtonGroup, Icon, Nav, NavItem } from "sveltestrap";
+  import type { MeUser, APIError } from "$lib/api/entities";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast, delToast } from "$lib/toast";
   import { apiFetchClient } from "$lib/api/fetch";
   import { userStore } from "$lib/store";
+  import ActiveLink from "$lib/components/ActiveLink.svelte";
 
   export let data: LayoutData;
 
@@ -88,41 +80,13 @@
 {/if}
 
 <Nav tabs>
-  <NavItem>
-    <NavLink href="/edit/profile" active={$page.url.pathname === "/edit/profile"}
-      >Names and avatar</NavLink
-    >
-  </NavItem>
-  <NavItem>
-    <NavLink href="/edit/profile/bio" active={$page.url.pathname === "/edit/profile/bio"}
-      >Bio</NavLink
-    >
-  </NavItem>
-  <NavItem>
-    <NavLink href="/edit/profile/pronouns" active={$page.url.pathname === "/edit/profile/pronouns"}
-      >Pronouns</NavLink
-    >
-  </NavItem>
-  <NavItem>
-    <NavLink href="/edit/profile/fields" active={$page.url.pathname === "/edit/profile/fields"}
-      >Fields</NavLink
-    >
-  </NavItem>
-  <NavItem>
-    <NavLink href="/edit/profile/flags" active={$page.url.pathname === "/edit/profile/flags"}
-      >Flags</NavLink
-    >
-  </NavItem>
-  <NavItem>
-    <NavLink href="/edit/profile/links" active={$page.url.pathname === "/edit/profile/links"}
-      >Links</NavLink
-    >
-  </NavItem>
-  <NavItem>
-    <NavLink href="/edit/profile/other" active={$page.url.pathname === "/edit/profile/other"}
-      >Preferences & other</NavLink
-    >
-  </NavItem>
+  <NavItem><ActiveLink href="/edit/profile">Names and avatar</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/edit/profile/bio">Bio</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/edit/profile/pronouns">Pronouns</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/edit/profile/fields">Fields</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/edit/profile/flags">Flags</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/edit/profile/links">Links</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/edit/profile/other">Preferences & other</ActiveLink></NavItem>
 </Nav>
 
 <div class="mt-3">
