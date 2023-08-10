@@ -6,7 +6,7 @@
   import { FormGroup, Icon, Input } from "sveltestrap";
   import { userAvatars, type MeUser } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
-  import EditableName from "../EditableName.svelte";
+  import EditableName from "$lib/components/edit/EditableName.svelte";
   import { addToast } from "$lib/toast";
   import IconButton from "$lib/components/IconButton.svelte";
 

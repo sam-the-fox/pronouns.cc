@@ -3,7 +3,7 @@
   import type { Writable } from "svelte/store";
   import type { MeUser } from "$lib/api/entities";
   import { Button, Icon, Popover } from "sveltestrap";
-  import EditablePronouns from "../../EditablePronouns.svelte";
+  import EditablePronouns from "$lib/components/edit/EditablePronouns.svelte";
   import IconButton from "$lib/components/IconButton.svelte";
   import type { PageData } from "./$types";
 

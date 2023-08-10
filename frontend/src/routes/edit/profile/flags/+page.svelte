@@ -6,7 +6,7 @@
 
   import type { MeUser, PrideFlag } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
-  import FlagButton from "../../FlagButton.svelte";
+  import FlagButton from "$lib/components/edit/FlagButton.svelte";
 
   export let data: PageData;
 

@@ -4,7 +4,7 @@
   import { Alert, Button, Icon } from "sveltestrap";
 
   import type { MeUser } from "$lib/api/entities";
-  import EditableField from "../../EditableField.svelte";
+  import EditableField from "$lib/components/edit/EditableField.svelte";
 
   const user = getContext<Writable<MeUser>>("user");
 

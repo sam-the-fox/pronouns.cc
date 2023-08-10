@@ -34,16 +34,16 @@
   import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import IconButton from "$lib/components/IconButton.svelte";
-  import EditableField from "../../EditableField.svelte";
-  import EditableName from "../../EditableName.svelte";
-  import EditablePronouns from "../../EditablePronouns.svelte";
+  import EditableField from "$lib/components/edit/EditableField.svelte";
+  import EditableName from "$lib/components/edit/EditableName.svelte";
+  import EditablePronouns from "$lib/components/edit/EditablePronouns.svelte";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import type { PageData, Snapshot } from "./$types";
   import { addToast, delToast } from "$lib/toast";
   import { memberNameRegex } from "$lib/api/regex";
   import { charCount, renderMarkdown } from "$lib/utils";
-  import MarkdownHelp from "../../MarkdownHelp.svelte";
-  import FlagButton from "../../FlagButton.svelte";
+  import MarkdownHelp from "$lib/components/edit/MarkdownHelp.svelte";
+  import FlagButton from "$lib/components/edit/FlagButton.svelte";
 
   const MAX_AVATAR_BYTES = 1_000_000;
 
