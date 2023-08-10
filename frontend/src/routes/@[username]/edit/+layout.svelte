@@ -80,13 +80,13 @@
 {/if}
 
 <Nav tabs>
-  <NavItem><ActiveLink href="/edit/profile">Names and avatar</ActiveLink></NavItem>
-  <NavItem><ActiveLink href="/edit/profile/bio">Bio</ActiveLink></NavItem>
-  <NavItem><ActiveLink href="/edit/profile/pronouns">Pronouns</ActiveLink></NavItem>
-  <NavItem><ActiveLink href="/edit/profile/fields">Fields</ActiveLink></NavItem>
-  <NavItem><ActiveLink href="/edit/profile/flags">Flags</ActiveLink></NavItem>
-  <NavItem><ActiveLink href="/edit/profile/links">Links</ActiveLink></NavItem>
-  <NavItem><ActiveLink href="/edit/profile/other">Preferences & other</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit">Names and avatar</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit/bio">Bio</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit/pronouns">Pronouns</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit/fields">Fields</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit/flags">Flags</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit/links">Links</ActiveLink></NavItem>
+  <NavItem><ActiveLink href="/@{$user.name}/edit/other">Preferences & other</ActiveLink></NavItem>
 </Nav>
 
 <div class="mt-3">
