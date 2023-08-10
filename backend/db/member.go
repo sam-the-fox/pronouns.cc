@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"regexp"
+	"strings"
 	"time"
 
 	"emperror.dev/errors"
@@ -40,10 +41,18 @@ const (
 // member names must match this regex
 var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"\\{\\}'$%&()+<=>^|~`,]{1,100}$")
 
+// List of member names that cannot be used because they would break routing or be inaccessible due to page conflicts.
+var invalidMemberNames = []string{
+	".",
+	"..",
+	"edit",
+}
+
 func MemberNameValid(name string) bool {
-	// These two names will break routing, but periods should still be allowed in names otherwise.
-	if name == "." || name == ".." {
-		return false
+	for i := range invalidMemberNames {
+		if strings.EqualFold(name, invalidMemberNames[i]) {
+			return false
+		}
 	}
 
 	return memberNameRegex.MatchString(name)

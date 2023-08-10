@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/common"
@@ -138,12 +139,22 @@ const (
 // usernames must match this regex
 var usernameRegex = regexp.MustCompile(`^[\w-.]{2,40}$`)
 
-func UsernameValid(username string) (err error) {
-	// This name would break routing, but periods should still be allowed in names otherwise.
-	if username == ".." {
-		return ErrInvalidUsername
-	}
+// List of usernames that cannot be used, because they could create confusion, conflict with other pages, or cause bugs.
+var invalidUsernames = []string{
+	"..",
+	"admin",
+	"administrator",
+	"mod",
+	"moderator",
+	"api",
+	"page",
+	"pronouns",
+	"settings",
+	"pronouns.cc",
+	"pronounscc",
+}
 
+func UsernameValid(username string) (err error) {
 	if !usernameRegex.MatchString(username) {
 		if len(username) < 2 {
 			return ErrUsernameTooShort
@@ -153,6 +164,13 @@ func UsernameValid(username string) (err error) {
 
 		return ErrInvalidUsername
 	}
+
+	for i := range invalidUsernames {
+		if strings.EqualFold(username, invalidUsernames[i]) {
+			return ErrBannedUsername
+		}
+	}
+
 	return nil
 }
 
@@ -163,6 +181,7 @@ const (
 	ErrInvalidUsername  = errors.Sentinel("username contains invalid characters")
 	ErrUsernameTooShort = errors.Sentinel("username is too short")
 	ErrUsernameTooLong  = errors.Sentinel("username is too long")
+	ErrBannedUsername   = errors.Sentinel("username is banned")
 )
 
 const (

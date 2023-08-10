@@ -232,6 +232,8 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 				return server.APIError{Code: server.ErrUsernameTaken}
 			case db.ErrInvalidUsername:
 				return server.APIError{Code: server.ErrInvalidUsername}
+			case db.ErrBannedUsername:
+				return server.APIError{Code: server.ErrInvalidUsername, Details: "That username cannot be used."}
 			default:
 				return errors.Wrap(err, "updating username")
 			}
