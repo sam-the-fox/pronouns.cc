@@ -768,7 +768,7 @@
             <Icon name="exclamation-triangle-fill" aria-hidden />
             Your member list is currently hidden, so <strong>this setting has no effect</strong>. If
             you want to make your member list visible again,
-            <a href="/edit/profile">edit your user profile</a>.
+            <a href="/@{data.user.name}/other">edit your user profile</a>.
             <br />
           {/if}
           <Icon name="info-circle-fill" aria-hidden />

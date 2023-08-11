@@ -20,6 +20,6 @@ export const load = async ({ params }) => {
       flags,
     };
   } catch (e) {
-    throw error((e as APIError).code, (e as APIError).message);
+    throw error((e as APIError).code, e as APIError);
   }
 };

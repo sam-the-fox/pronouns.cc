@@ -196,7 +196,7 @@
           <hr />
           <p>
             <em>
-              Your profile is empty! You can customize it by going to the <a href="/edit/profile"
+              Your profile is empty! You can customize it by going to the <a href="/@{data.name}/edit"
                 >edit profile</a
               > page.</em
             > <span class="text-muted">(only you can see this)</span>
