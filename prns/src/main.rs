@@ -1,8 +1,11 @@
-use pronouns::models::{member::Member, user::User};
+pub mod models;
+
+use crate::models::{Member, User};
 use rocket::{response::Redirect, Config, State};
 use simple_logger;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use std::{env, path::PathBuf};
+use urlencoding::encode;
 #[macro_use]
 extern crate rocket;
 
@@ -25,7 +28,7 @@ async fn redirect(state: &State<AppState>, path: PathBuf) -> Redirect {
         .await
         .map_or_else(
             |_| Redirect::temporary(state.base_url.clone()),
-            |u| Redirect::temporary(format!("{}/@{}", state.base_url, u.username)),
+            |u| Redirect::temporary(format!("{}/@{}", state.base_url, encode(&u.username))),
         ),
         6 => {
             let member = match sqlx::query_as!(
@@ -52,7 +55,7 @@ async fn redirect(state: &State<AppState>, path: PathBuf) -> Redirect {
                 |u| {
                     Redirect::temporary(format!(
                         "{}/@{}/{}",
-                        state.base_url, u.username, member.name
+                        state.base_url, encode(&u.username), encode(&member.name)
                     ))
                 },
             )
