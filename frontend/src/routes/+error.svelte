@@ -1,7 +1,11 @@
 <script lang="ts">
   import { page } from "$app/stores";
-    import { ErrorCode } from "$lib/api/entities";
+  import { ErrorCode } from "$lib/api/entities";
 </script>
+
+<svelte:head>
+  <title>Error - pronouns.cc</title>
+</svelte:head>
 
 <h1>An error occurred ({$page.status})</h1>
 

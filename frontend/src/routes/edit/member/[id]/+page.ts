@@ -1,9 +1,6 @@
-import type { PrideFlag, MeUser, APIError, Member, PronounsJson } from "$lib/api/entities";
+import { ErrorCode, type APIError, type Member, type MeUser } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
-import { error } from "@sveltejs/kit";
-
-import pronounsRaw from "$lib/pronouns.json";
-const pronouns = pronounsRaw as PronounsJson;
+import { error, redirect } from "@sveltejs/kit";
 
 export const ssr = false;
 
@@ -11,15 +8,24 @@ export const load = async ({ params }) => {
   try {
     const user = await apiFetchClient<MeUser>(`/users/@me`);
     const member = await apiFetchClient<Member>(`/members/${params.id}`);
-    const flags = await apiFetchClient<PrideFlag[]>("/users/@me/flags");
 
-    return {
-      user,
-      member,
-      pronouns: pronouns.autocomplete,
-      flags,
-    };
+    if (user.id !== member.user.id) {
+      throw {
+        code: ErrorCode.NotOwnMember,
+        message: "You can only edit your own members.",
+      } as APIError;
+    }
+
+    throw redirect(303, `/@${user.name}/${member.name}/edit`);
   } catch (e) {
-    throw error((e as APIError).code, e as APIError);
+    if (
+      (e as APIError).code === ErrorCode.Forbidden ||
+      (e as APIError).code === ErrorCode.InvalidToken ||
+      (e as APIError).code === ErrorCode.NotOwnMember
+    ) {
+      throw error(403, e as APIError);
+    }
+
+    throw e;
   }
 };

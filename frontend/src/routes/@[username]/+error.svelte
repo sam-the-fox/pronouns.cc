@@ -3,6 +3,10 @@
   import { ErrorCode } from "$lib/api/entities";
 </script>
 
+<svelte:head>
+  <title>Error - pronouns.cc</title>
+</svelte:head>
+
 {#if $page.error?.code === ErrorCode.Forbidden || $page.error?.code === ErrorCode.InvalidToken}
   <h1>Not logged in</h1>
   <p>

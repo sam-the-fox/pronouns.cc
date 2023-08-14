@@ -10,8 +10,13 @@ export const load = async () => {
 
     throw redirect(303, `/@${resp.name}/edit`);
   } catch (e) {
-    if ((e as APIError).code === ErrorCode.Forbidden || (e as APIError).code === ErrorCode.InvalidToken) {
-      throw error(403, e as APIError)
+    if (
+      (e as APIError).code === ErrorCode.Forbidden ||
+      (e as APIError).code === ErrorCode.InvalidToken
+    ) {
+      throw error(403, e as APIError);
     }
+
+    throw e;
   }
 };
