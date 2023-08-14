@@ -42,6 +42,8 @@
   let displayTimezone = "";
   $: setTime($user.timezone);
 
+  const validTimezones = Intl.supportedValuesOf("timeZone");
+
   const detectTimezone = () => {
     $user.timezone = DateTime.local().zoneName;
   };
@@ -147,14 +149,21 @@
       </p>
       <InputGroup>
         <Button on:click={detectTimezone}>Detect timezone</Button>
-        <Input disabled value={$user.timezone !== null ? $user.timezone : "Unset"} />
+        <Input list="timezones" bind:value={$user.timezone} />
+        <datalist id="timezones">
+          {#each validTimezones as timezone}<option value={timezone} />{/each}
+        </datalist>
         <Button on:click={() => ($user.timezone = null)}>Reset</Button>
       </InputGroup>
       <p class="mt-2">
         {#if $user.timezone}
           This will show up on your profile like this:
-          <Icon name="clock" aria-hidden />
-          {currentTime} <span class="text-body-secondary">(UTC{displayTimezone})</span>
+          {#if validTimezones.some((zone) => zone === $user.timezone)}
+            <Icon name="clock" aria-hidden />
+            {currentTime} <span class="text-body-secondary">(UTC{displayTimezone})</span>
+          {:else}
+            <i>not a valid timezone</i>
+          {/if}
           <br />
         {/if}
         <span class="text-muted">
