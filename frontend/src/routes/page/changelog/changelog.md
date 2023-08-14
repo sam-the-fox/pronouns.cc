@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 - August 14th 2023
+
+- **Reworked the profile edit pages and split them into multiple subpages.**
+  - This should improve performance on these pages, as well as make expanding them easier in the future.
+  - The edit pages have been moved to `/@{username}/edit` and `/@{username}/{member}/edit`, respectively—
+    `/edit/profile` and `/edit/member/{id}` now redirect to the new pages.
+- Added the ability to type in a timezone manually, in case the auto detection fails.
+- Fixed prns.cc redirects not working if a member's name contained non-ASCII characters.
+- Made errors more descriptive.
+
 ## 0.5.8 - August 2nd 2023
 
 - **Added an (optional) local time display to user profiles.**
