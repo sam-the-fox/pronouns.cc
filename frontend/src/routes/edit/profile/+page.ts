@@ -1,23 +1,22 @@
-import type { PrideFlag, APIError, MeUser, PronounsJson } from "$lib/api/entities";
+import { ErrorCode, type APIError, type MeUser } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
-import { error } from "@sveltejs/kit";
-
-import pronounsRaw from "$lib/pronouns.json";
-const pronouns = pronounsRaw as PronounsJson;
+import { error, redirect } from "@sveltejs/kit";
 
 export const ssr = false;
 
 export const load = async () => {
   try {
-    const user = await apiFetchClient<MeUser>(`/users/@me`);
-    const flags = await apiFetchClient<PrideFlag[]>("/users/@me/flags");
+    const resp = await apiFetchClient<MeUser>(`/users/@me`);
 
-    return {
-      user,
-      pronouns: pronouns.autocomplete,
-      flags,
-    };
+    throw redirect(303, `/@${resp.name}/edit`);
   } catch (e) {
-    throw error((e as APIError).code, (e as APIError).message);
+    if (
+      (e as APIError).code === ErrorCode.Forbidden ||
+      (e as APIError).code === ErrorCode.InvalidToken
+    ) {
+      throw error(403, e as APIError);
+    }
+
+    throw e;
   }
 };

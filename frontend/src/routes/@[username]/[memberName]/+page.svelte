@@ -65,7 +65,7 @@
     <Alert color="secondary" fade={false}>
       You are currently viewing the <strong>public</strong> profile of {data.display_name ??
         data.name}.
-      <br /><a href="/edit/member/{data.id}">Edit profile</a>
+      <br /><a href="/@{data.user.name}/{data.name}/edit">Edit profile</a>
     </Alert>
   {/if}
   <div class="m-3">
@@ -93,7 +93,7 @@
           <p>
             <em>
               This member's profile is empty! You can customize it by going to the <a
-                href="/edit/member/{data.id}">edit member</a
+                href="/@{data.user.name}/{data.name}/edit">edit member</a
               > page.</em
             > <span class="text-muted">(only you can see this)</span>
           </p>

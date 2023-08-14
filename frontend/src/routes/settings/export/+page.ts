@@ -10,6 +10,6 @@ export const load = async () => {
   } catch (e) {
     if ((e as APIError).code === ErrorCode.NotFound) return { exportData: null };
 
-    throw error((e as APIError).code, (e as APIError).message);
+    throw error(500, e as APIError);
   }
 };

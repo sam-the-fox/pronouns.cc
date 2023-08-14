@@ -164,7 +164,7 @@
   {#if $userStore && $userStore.id === data.id}
     <Alert color="secondary" fade={false}>
       You are currently viewing your <strong>public</strong> profile.
-      <br /><a href="/edit/profile">Edit your profile</a>
+      <br /><a href="/@{data.name}/edit">Edit your profile</a>
     </Alert>
   {/if}
   <div class="grid row-gap-3">
@@ -196,7 +196,7 @@
           <hr />
           <p>
             <em>
-              Your profile is empty! You can customize it by going to the <a href="/edit/profile"
+              Your profile is empty! You can customize it by going to the <a href="/@{data.name}/edit"
                 >edit profile</a
               > page.</em
             > <span class="text-muted">(only you can see this)</span>

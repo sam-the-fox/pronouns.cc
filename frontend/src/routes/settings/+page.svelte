@@ -158,7 +158,7 @@
       <p class="text-center">
         <FallbackImage width={200} urls={userAvatars(data.user)} alt="Your avatar" />
         <br />
-        To change your avatar, go to <a href="/edit/profile">edit profile</a>.
+        To change your avatar, go to <a href="/@{data.user.name}/edit">edit profile</a>.
       </p>
     </div>
   </div>

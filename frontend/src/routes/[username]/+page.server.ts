@@ -11,7 +11,7 @@ export const load = async ({ params }) => {
     throw redirect(303, `/@${resp.name}`);
   } catch (e) {
     if ((e as APIError).code === ErrorCode.UserNotFound) {
-      throw error(404, (e as APIError).message);
+      throw error(404, e as APIError);
     }
 
     throw e;

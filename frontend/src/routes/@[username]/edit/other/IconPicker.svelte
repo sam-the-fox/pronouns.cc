@@ -8,7 +8,7 @@
     Input,
     Tooltip,
   } from "sveltestrap";
-  import icons from "../../../icons";
+  import icons from "../../../../icons";
   import IconButton from "$lib/components/IconButton.svelte";
 
   export let icon = "";
