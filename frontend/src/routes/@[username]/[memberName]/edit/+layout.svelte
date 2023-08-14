@@ -107,7 +107,9 @@
       href="/@{$member.user.name}/{data.member.name}"
       tooltip="Back to member"
     />
-    <Button color="success" on:click={() => updateMember()} disabled={!memberNameValid}>Save changes</Button>
+    <Button color="success" on:click={() => updateMember()} disabled={!memberNameValid}>
+      Save changes
+    </Button>
     <Button color="danger" on:click={toggleDeleteOpen}
       >Delete {data.member.display_name ?? data.member.name}</Button
     >
@@ -119,30 +121,27 @@
 {/if}
 
 <Nav tabs>
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit">Names and avatar</ActiveLink
-    ></NavItem
-  >
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit/bio">Bio</ActiveLink></NavItem
-  >
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit/pronouns">Pronouns</ActiveLink
-    ></NavItem
-  >
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit/fields">Fields</ActiveLink
-    ></NavItem
-  >
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit/flags">Flags</ActiveLink></NavItem
-  >
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit/links">Links</ActiveLink></NavItem
-  >
-  <NavItem
-    ><ActiveLink href="/@{$member.user.name}/{$member.name}/edit/other">Other</ActiveLink></NavItem
-  >
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit">Names and avatar</ActiveLink>
+  </NavItem>
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit/bio">Bio</ActiveLink>
+  </NavItem>
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit/pronouns">Pronouns</ActiveLink>
+  </NavItem>
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit/fields">Fields</ActiveLink>
+  </NavItem>
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit/flags">Flags</ActiveLink>
+  </NavItem>
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit/links">Links</ActiveLink>
+  </NavItem>
+  <NavItem>
+    <ActiveLink href="/@{$member.user.name}/{$member.name}/edit/other">Other</ActiveLink>
+  </NavItem>
 </Nav>
 
 <div class="mt-3">

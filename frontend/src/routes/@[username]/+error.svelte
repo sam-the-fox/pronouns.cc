@@ -10,6 +10,9 @@
       >log in again</a
     >.
   </p>
+{:else if $page.error?.code === ErrorCode.NotOwnMember}
+  <h1>Not your member</h1>
+  <p>You can only edit your own members.</p>
 {:else}
   <h1>An error occurred ({$page.status})</h1>
 
