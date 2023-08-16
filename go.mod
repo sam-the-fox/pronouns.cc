@@ -5,6 +5,7 @@ go 1.18
 require (
 	emperror.dev/errors v0.8.1
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/aarondl/opt v0.0.0-20230313190023-85d93d668fec
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/davidbyttow/govips/v2 v2.13.0
 	github.com/georgysavva/scany/v2 v2.0.0
@@ -32,6 +33,7 @@ require (
 require (
 	cloud.google.com/go/compute v1.19.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	github.com/aarondl/json v0.0.0-20221020222930-8b0db17ef1bf // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

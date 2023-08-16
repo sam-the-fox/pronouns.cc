@@ -54,6 +54,7 @@ type User struct {
 	ListPrivate   bool
 	LastSIDReroll time.Time `db:"last_sid_reroll"`
 	Timezone      *string
+	Settings      UserSettings
 
 	DeletedAt    *time.Time
 	SelfDelete   *bool
