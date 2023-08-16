@@ -1,6 +1,6 @@
--- +migrate Up
-
 -- 2022-05-02: initial schema
+
+-- +migrate Up
 
 create table users (
     id           text primary key,
@@ -89,3 +89,16 @@ create table invites (
     created timestamp not null default (current_timestamp at time zone 'utc'),
     used    boolean not null default false
 );
+
+-- +migrate Down
+
+drop table invites;
+drop table member_fields;
+drop table member_pronouns;
+drop table member_names;
+drop index members_user_name_idx;
+drop table members;
+drop table user_fields;
+drop table user_pronouns;
+drop table user_names;
+drop table users;

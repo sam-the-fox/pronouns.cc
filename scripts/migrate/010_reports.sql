@@ -1,6 +1,6 @@
--- +migrate Up
-
 -- 2023-03-19: Add moderation-related tables
+
+-- +migrate Up
 
 alter table users add column is_admin boolean not null default false;
 
@@ -25,3 +25,9 @@ create table warnings (
     created_at timestamptz not null default now(),
     read_at    timestamptz
 );
+
+-- +migrate Down
+
+drop table warnings;
+drop table reports;
+alter table users drop column is_admin;

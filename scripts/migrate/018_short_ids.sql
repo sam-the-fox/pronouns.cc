@@ -1,6 +1,6 @@
--- +migrate Up
-
 -- 2023-06-03: Add short IDs for the prns.cc domain.
+
+-- +migrate Up
 
 -- add the columns
 alter table users add column sid text unique check(length(sid)=5);
@@ -48,3 +48,13 @@ update members set sid = find_free_member_sid();
 -- finally, make the values non-nullable
 alter table users alter column sid set not null;
 alter table members alter column sid set not null;
+
+-- +migrate Down
+
+drop function find_free_member_sid;
+drop function find_free_user_sid;
+drop function generate_sid;
+
+alter table users drop column sid;
+alter table users drop column last_sid_reroll;
+alter table members drop column sid;

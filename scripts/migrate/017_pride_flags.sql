@@ -1,7 +1,7 @@
--- +migrate Up
-
 -- 2023-05-09: Add pride flags
 -- Hashes are a separate table so we can deduplicate flags.
+
+-- +migrate Up
 
 create table pride_flags (
     id          text primary key,
@@ -22,3 +22,9 @@ create table member_flags (
     member_id   text not null references members (id) on delete cascade,
     flag_id     text not null references pride_flags (id) on delete cascade
 );
+
+-- +migrate Down
+
+drop table member_flags;
+drop table user_flags;
+drop table pride_flags;

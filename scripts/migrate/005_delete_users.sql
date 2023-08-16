@@ -1,6 +1,6 @@
--- +migrate Up
-
 -- 2023-03-07: add delete functionality
+
+-- +migrate Up
 
 -- if not null, the user is soft deleted
 alter table users add column deleted_at timestamptz;
@@ -8,3 +8,9 @@ alter table users add column deleted_at timestamptz;
 alter table users add column self_delete boolean;
 -- delete reason if the user was deleted by a moderator
 alter table users add column delete_reason text;
+
+-- +migrate Down
+
+alter table users drop column deleted_at;
+alter table users drop column self_delete;
+alter table users drop column delete_reason;

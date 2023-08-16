@@ -1,6 +1,7 @@
+-- 2022-12-23: Add database-backed tokens
+
 -- +migrate Up
 
--- 2022-12-23: Add database-backed tokens
 create table tokens (
     user_id     text not null references users (id) on delete cascade,
     token_id    text primary key,
@@ -13,3 +14,9 @@ create table tokens (
 -- This does not change anything code-wise, but it's recommended over plain timestamp because plain timestamp does not handle timezones correctly
 alter table invites alter column created type timestamptz;
 alter table invites alter column created set default now();
+
+-- +migrate Down
+
+drop table tokens;
+alter table invites alter column created type timestamp;
+alter table invites alter column created set default (current_timestamp at time zone 'utc');

@@ -1,6 +1,6 @@
--- +migrate Up
-
 -- 2023-03-15: Add data export
+
+-- +migrate Up
 
 create table data_exports (
     id         serial primary key,
@@ -8,3 +8,7 @@ create table data_exports (
     filename   text not null,
     created_at timestamptz not null default now()
 );
+
+-- +migrate Down
+
+drop table data_exports;
