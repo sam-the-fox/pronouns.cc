@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -22,6 +23,7 @@ const (
 type Member struct {
 	ID          xid.ID
 	UserID      xid.ID
+	SnowflakeID common.MemberID
 	SID         string `db:"sid"`
 	Name        string
 	DisplayName *string
@@ -135,8 +137,8 @@ func (db *DB) CreateMember(
 	name string, displayName *string, bio string, links []string,
 ) (m Member, err error) {
 	sql, args, err := sq.Insert("members").
-		Columns("user_id", "id", "sid", "name", "display_name", "bio", "links").
-		Values(userID, xid.New(), squirrel.Expr("find_free_member_sid()"), name, displayName, bio, links).
+		Columns("user_id", "snowflake_id", "id", "sid", "name", "display_name", "bio", "links").
+		Values(userID, common.GenerateID(), xid.New(), squirrel.Expr("find_free_member_sid()"), name, displayName, bio, links).
 		Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")

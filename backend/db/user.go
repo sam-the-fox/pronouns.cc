@@ -22,6 +22,7 @@ import (
 
 type User struct {
 	ID          xid.ID
+	SnowflakeID common.UserID
 	SID         string `db:"sid"`
 	Username    string
 	DisplayName *string
@@ -206,7 +207,7 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 		return u, err
 	}
 
-	sql, args, err := sq.Insert("users").Columns("id", "username", "sid").Values(xid.New(), username, squirrel.Expr("find_free_user_sid()")).Suffix("RETURNING *").ToSql()
+	sql, args, err := sq.Insert("users").Columns("id", "snowflake_id", "username", "sid").Values(xid.New(), common.GenerateID(), username, squirrel.Expr("find_free_user_sid()")).Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}

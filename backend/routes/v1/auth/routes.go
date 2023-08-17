@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
@@ -25,6 +26,7 @@ type Server struct {
 
 type userResponse struct {
 	ID          xid.ID            `json:"id"`
+	SnowflakeID common.UserID     `json:"id_new"`
 	Username    string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
 	Bio         *string           `json:"bio"`
@@ -51,6 +53,7 @@ type userResponse struct {
 func dbUserToUserResponse(u db.User, fields []db.Field) *userResponse {
 	return &userResponse{
 		ID:                u.ID,
+		SnowflakeID:       u.SnowflakeID,
 		Username:          u.Username,
 		DisplayName:       u.DisplayName,
 		Bio:               u.Bio,

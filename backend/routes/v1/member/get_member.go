@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
@@ -13,13 +14,14 @@ import (
 )
 
 type GetMemberResponse struct {
-	ID          xid.ID   `json:"id"`
-	SID         string   `json:"sid"`
-	Name        string   `json:"name"`
-	DisplayName *string  `json:"display_name"`
-	Bio         *string  `json:"bio"`
-	Avatar      *string  `json:"avatar"`
-	Links       []string `json:"links"`
+	ID          xid.ID          `json:"id"`
+	SnowflakeID common.MemberID `json:"id_new"`
+	SID         string          `json:"sid"`
+	Name        string          `json:"name"`
+	DisplayName *string         `json:"display_name"`
+	Bio         *string         `json:"bio"`
+	Avatar      *string         `json:"avatar"`
+	Links       []string        `json:"links"`
 
 	Names    []db.FieldEntry   `json:"names"`
 	Pronouns []db.PronounEntry `json:"pronouns"`
@@ -34,6 +36,7 @@ type GetMemberResponse struct {
 func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.MemberFlag, isOwnMember bool) GetMemberResponse {
 	r := GetMemberResponse{
 		ID:          m.ID,
+		SnowflakeID: m.SnowflakeID,
 		SID:         m.SID,
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
@@ -48,6 +51,7 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.Memb
 
 		User: PartialUser{
 			ID:                u.ID,
+			SnowflakeID:       u.SnowflakeID,
 			Username:          u.Username,
 			DisplayName:       u.DisplayName,
 			Avatar:            u.Avatar,
@@ -64,6 +68,7 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.Memb
 
 type PartialUser struct {
 	ID                xid.ID               `json:"id"`
+	SnowflakeID       common.UserID        `json:"id_new"`
 	Username          string               `json:"name"`
 	DisplayName       *string              `json:"display_name"`
 	Avatar            *string              `json:"avatar"`
