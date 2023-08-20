@@ -495,6 +495,26 @@ func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
 	return u, nil
 }
 
+// UserBySnowflake gets a user by their snowflake ID.
+func (db *DB) UserBySnowflake(ctx context.Context, id common.UserID) (u User, err error) {
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("snowflake_id = ?", id).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "getting user from db")
+	}
+
+	return u, nil
+}
+
 // Username gets a user by username.
 func (db *DB) Username(ctx context.Context, name string) (u User, err error) {
 	sql, args, err := sq.Select("*").From("users").Where("username = ?", name).ToSql()

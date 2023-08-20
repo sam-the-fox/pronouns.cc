@@ -191,12 +191,22 @@ func (s *Server) getMeMember(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Server) parseUser(ctx context.Context, userRef string) (u db.User, err error) {
-	if id, err := xid.FromString(userRef); err != nil {
+	// check xid first
+	if id, err := xid.FromString(userRef); err == nil {
 		u, err := s.DB.User(ctx, id)
 		if err == nil {
 			return u, nil
 		}
 	}
 
+	// if not an xid, check by snowflake
+	if id, err := common.ParseSnowflake(userRef); err == nil {
+		u, err := s.DB.UserBySnowflake(ctx, common.UserID(id))
+		if err == nil {
+			return u, nil
+		}
+	}
+
+	// else, use username
 	return s.DB.Username(ctx, userRef)
 }

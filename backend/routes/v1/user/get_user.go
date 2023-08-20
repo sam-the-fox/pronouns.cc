@@ -130,6 +130,15 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) (err error) {
 	}
 
 	if u.ID.IsNil() {
+		if id, err := common.ParseSnowflake(userRef); err == nil {
+			u, err = s.DB.UserBySnowflake(ctx, common.UserID(id))
+			if err != nil {
+				log.Errorf("getting user by snowflake: %v", err)
+			}
+		}
+	}
+
+	if u.ID.IsNil() {
 		u, err = s.DB.Username(ctx, userRef)
 		if err == db.ErrUserNotFound {
 			return server.APIError{

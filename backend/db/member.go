@@ -73,9 +73,22 @@ func (db *DB) Member(ctx context.Context, id xid.ID) (m Member, err error) {
 	return m, nil
 }
 
+func (db *DB) MemberBySnowflake(ctx context.Context, id common.MemberID) (m Member, err error) {
+	sql, args, err := sq.Select("*").From("members").Where("snowflake_id = ?", id).ToSql()
+	if err != nil {
+		return m, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &m, sql, args...)
+	if err != nil {
+		return m, errors.Wrap(err, "executing query")
+	}
+	return m, nil
+}
+
 // UserMember returns a member scoped by user.
 func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (m Member, err error) {
-	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).Where("(id = ? or name = ?)", memberRef, memberRef).ToSql()
+	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).Where("(id = ? or name = ? or snowflake_id = ?)", memberRef, memberRef, memberRef).ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
 	}
