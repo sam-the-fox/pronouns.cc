@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
-  import { Alert, Button, Icon } from "sveltestrap";
+  import { Button, Icon } from "sveltestrap";
 
   import type { Member } from "$lib/api/entities";
   import EditableField from "$lib/components/edit/EditableField.svelte";
@@ -27,10 +27,10 @@
 </script>
 
 {#if $member.fields.length === 0}
-  <Alert class="mt-3" color="secondary" fade={false}>
+  <div class="my-2">
     Fields are extra categories you can add separate from names and pronouns.<br />
     For example, you could use them for gender terms, honorifics, or compliments.
-  </Alert>
+  </div>
 {/if}
 <div class="grid gap-3">
   <div class="row row-cols-1 row-cols-md-2">
