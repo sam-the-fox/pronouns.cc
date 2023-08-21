@@ -4,13 +4,20 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "pronouns.cc documentation",
   description: "pronouns.cc documentation",
+  markdown: {
+    anchor: { level: [2, 3] },
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    siteTitle: "pronouns.cc",
+    logo: "/logo.svg",
     nav: [
       { text: "Home", link: "/" },
       { text: "Back to pronouns.cc", link: "https://pronouns.cc/" },
     ],
-
+    outline: {
+      level: [2, 3],
+    },
     sidebar: [
       {
         text: "API",
@@ -22,7 +29,10 @@ export default defineConfig({
       },
       {
         text: "Endpoints",
-        items: [{ text: "Users", link: "/api/endpoints/users" }],
+        items: [
+          { text: "Object reference", link: "/api/endpoints/" },
+          { text: "Users", link: "/api/endpoints/users" },
+        ],
       },
     ],
   },

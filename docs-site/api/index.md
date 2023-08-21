@@ -27,9 +27,28 @@ However, the following types of changes are **not** considered breaking:
 
 ## Authentication
 
-Tokens can be created [here](https://pronouns.cc/settings/tokens).  
+Tokens can be created [here](https://pronouns.cc/settings/tokens).
 Not all endpoints require authentication. For those that do, a token must be provided in the `Authorization` header.
 The token _may_ be prefixed with `Bearer `, but this is not required.
+
+::: info
+You are allowed to use site tokens (those stored in your browser's local storage) to access endpoints not available to API tokens,
+however, these endpoints are not available to API tokens *for a reason*:
+site tokens can take destructive actions such as deleting your account.
+Additionally, endpoints that are not available to API tokens may have breaking changes without a major version bump.
+:::
+
+## Request bodies
+
+::: info
+The current API version doesn't distinguish between omitted and `null` keys yet.
+However, the next version of the API will use `null` to unset keys, so clients should not rely on this behaviour.
+:::
+
+Request bodies should be in JSON format.
+For PATCH requests, **all keys are optional**. Omitted keys will not be updated,
+and keys set to the zero value of their respective types (for strings: `""`, for numbers: `0`, for arrays: `[]`, etc.)
+will be unset.
 
 ## Documentation formatting
 
