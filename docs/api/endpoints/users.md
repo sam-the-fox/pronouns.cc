@@ -86,8 +86,8 @@ Returns the updated [user](./users#user-object) object on success.
 | bio                | string               | the user's new bio. Must be between 1 and 1000 characters                                                     |
 | member_title       | string               | the user's new member title. Must be between 1 and 150 characters                                             |
 | links              | string[]             | the user's new profile links. Maximum 25 links, and links must be between 1 and 256 characters                |
-| names              | field_entry[]        | the users's new preferred names                                                                               |
-| pronouns           | pronoun_entry[]      | the users's new preferred pronouns                                                                            |
+| names              | field_entry[]        | the user's new preferred names                                                                                |
+| pronouns           | pronoun_entry[]      | the user's new preferred pronouns                                                                             |
 | fields             | field[]              | the user's new profile fields                                                                                 |
 | flags              | string[]             | the user's new flags. This must be an array of [pride flag](./#pride-flag) IDs.                               |
 | avatar             | string               | the user's new avatar. This must be a PNG, JPEG, or WebP image, encoded in base64 data URI format             |
