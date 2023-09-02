@@ -1,6 +1,6 @@
 # Running pronouns.cc in production
 
-The configuration files in this directory are the same files used to run pronouns.cc in production.  
+The configuration files in this directory are the same files used to run pronouns.cc in production.
 You might have to change paths and ports, but they should work fine as-is.
 
 ## Building pronouns.cc
