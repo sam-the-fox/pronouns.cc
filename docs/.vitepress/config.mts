@@ -33,6 +33,7 @@ export default defineConfig({
           { text: "Object reference", link: "/api/endpoints/" },
           { text: "Users", link: "/api/endpoints/users" },
           { text: "Members", link: "/api/endpoints/members" },
+          { text: "Other", link: "/api/endpoints/other" },
         ],
       },
     ],

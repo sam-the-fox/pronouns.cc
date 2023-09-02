@@ -68,7 +68,7 @@ If authenticated and the authenticated user is the requested user, also returns 
 #### `GET /users/@me`
 
 **Requires authentication.** Gets the currently authenticated [user](./users#user-object),
-with all [additional user fields](./users/#additional-user-fields).
+with all [additional user fields](./users#additional-user-fields).
 
 ### Update current user
 
