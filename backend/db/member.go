@@ -88,7 +88,8 @@ func (db *DB) MemberBySnowflake(ctx context.Context, id common.MemberID) (m Memb
 
 // UserMember returns a member scoped by user.
 func (db *DB) UserMember(ctx context.Context, userID xid.ID, memberRef string) (m Member, err error) {
-	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).Where("(id = ? or name = ? or snowflake_id = ?)", memberRef, memberRef, memberRef).ToSql()
+	sf, _ := common.ParseSnowflake(memberRef) // error can be ignored as the zero value will never be used as an ID
+	sql, args, err := sq.Select("*").From("members").Where("user_id = ?", userID).Where("(id = ? or snowflake_id = ? or name = ?)", memberRef, sf, memberRef).ToSql()
 	if err != nil {
 		return m, errors.Wrap(err, "building sql")
 	}

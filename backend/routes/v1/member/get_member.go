@@ -6,6 +6,7 @@ import (
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
@@ -75,20 +76,30 @@ type PartialUser struct {
 	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
 }
 
-func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) getMember(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 
-	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
-	if err != nil {
-		return server.APIError{
-			Code: server.ErrMemberNotFound,
+	var m db.Member
+	if id, err := xid.FromString(chi.URLParam(r, "memberRef")); err == nil {
+		m, err = s.DB.Member(ctx, id)
+		if err != nil {
+			log.Errorf("getting member by xid: %v", err)
 		}
 	}
+	// xid was not valid
+	if !m.SnowflakeID.IsValid() {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "memberRef"))
+		if err != nil {
+			return server.APIError{
+				Code: server.ErrMemberNotFound,
+			}
+		}
 
-	m, err := s.DB.Member(ctx, id)
-	if err != nil {
-		return server.APIError{
-			Code: server.ErrMemberNotFound,
+		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
+		if err != nil {
+			return server.APIError{
+				Code: server.ErrMemberNotFound,
+			}
 		}
 	}
 
