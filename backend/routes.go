@@ -1,8 +1,6 @@
 package backend
 
 import (
-	"net/http"
-
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/auth"
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/bot"
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/member"
@@ -12,13 +10,9 @@ import (
 	user2 "codeberg.org/pronounscc/pronouns.cc/backend/routes/v2/user"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 
 	_ "embed"
 )
-
-//go:embed openapi.html
-var openapi string
 
 // mountRoutes mounts all API routes on the server's router.
 // they are all mounted under /v1/
@@ -34,10 +28,5 @@ func mountRoutes(s *server.Server) {
 
 	s.Router.Route("/v2", func(r chi.Router) {
 		user2.Mount(s, r)
-	})
-
-	// API docs
-	s.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		render.HTML(w, r, openapi)
 	})
 }

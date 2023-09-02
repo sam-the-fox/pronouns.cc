@@ -50,7 +50,7 @@
   <ButtonGroup>
     <Button color="success" on:click={() => createToken(false)}>New API token</Button>
     <Button color="success" on:click={() => createToken(true)}>New read-only API token</Button>
-    <Button color="secondary" href="/api" target="_blank">API docs</Button>
+    <Button color="secondary" href="https://docs.pronouns.cc/api/" target="_blank">API docs</Button>
   </ButtonGroup>
 </h1>
 
