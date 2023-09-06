@@ -1,0 +1,12 @@
+{
+  "name": "pronouns",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"air\" \"make dev\""
+  },
+  "author": "sam <sam@sleepycat.moe>",
+  "license": "AGPL-3.0-only",
+  "devDependencies": {
+    "concurrently": "^8.2.1"
+  }
+}

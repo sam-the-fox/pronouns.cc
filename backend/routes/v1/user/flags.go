@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -121,6 +122,24 @@ type patchUserFlagRequest struct {
 	Description *string `json:"description"`
 }
 
+func (s *Server) parseFlag(ctx context.Context, flags []db.PrideFlag, flagRef string) (db.PrideFlag, bool) {
+	if id, err := xid.FromString(flagRef); err == nil {
+		for _, f := range flags {
+			if f.ID == id {
+				return f, true
+			}
+		}
+	}
+	if id, err := common.ParseSnowflake(flagRef); err == nil {
+		for _, f := range flags {
+			if f.SnowflakeID == common.FlagID(id) {
+				return f, true
+			}
+		}
+	}
+	return db.PrideFlag{}, false
+}
+
 func (s *Server) patchUserFlag(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
@@ -129,28 +148,13 @@ func (s *Server) patchUserFlag(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	flagID, err := xid.FromString(chi.URLParam(r, "flagID"))
-	if err != nil {
-		return server.APIError{Code: server.ErrNotFound, Details: "Invalid flag ID"}
-	}
-
 	flags, err := s.DB.AccountFlags(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting current user flags")
 	}
-	if len(flags) >= db.MaxPrideFlags {
-		return server.APIError{
-			Code: server.ErrFlagLimitReached,
-		}
-	}
-	var found bool
-	for _, flag := range flags {
-		if flag.ID == flagID {
-			found = true
-			break
-		}
-	}
-	if !found {
+
+	flag, ok := s.parseFlag(ctx, flags, chi.URLParam(r, "flagID"))
+	if !ok {
 		return server.APIError{Code: server.ErrNotFound, Details: "No flag with that ID found"}
 	}
 
@@ -190,7 +194,7 @@ func (s *Server) patchUserFlag(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	flag, err := s.DB.EditFlag(ctx, tx, flagID, req.Name, req.Description, nil)
+	flag, err = s.DB.EditFlag(ctx, tx, flag.ID, req.Name, req.Description, nil)
 	if err != nil {
 		return errors.Wrap(err, "updating flag")
 	}
@@ -212,19 +216,16 @@ func (s *Server) deleteUserFlag(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	flagID, err := xid.FromString(chi.URLParam(r, "flagID"))
+	flags, err := s.DB.AccountFlags(ctx, claims.UserID)
 	if err != nil {
-		return server.APIError{Code: server.ErrNotFound, Details: "Invalid flag ID"}
+		return errors.Wrap(err, "getting current user flags")
 	}
 
-	flag, err := s.DB.UserFlag(ctx, flagID)
-	if err != nil {
-		if err == db.ErrFlagNotFound {
-			return server.APIError{Code: server.ErrNotFound, Details: "Flag not found"}
-		}
-
-		return errors.Wrap(err, "getting flag object")
+	flag, ok := s.parseFlag(ctx, flags, chi.URLParam(r, "flagID"))
+	if !ok {
+		return server.APIError{Code: server.ErrNotFound, Details: "No flag with that ID found"}
 	}
+
 	if flag.UserID != claims.UserID {
 		return server.APIError{Code: server.ErrNotFound, Details: "Flag not found"}
 	}
