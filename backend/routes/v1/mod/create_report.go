@@ -3,6 +3,7 @@ package mod
 import (
 	"net/http"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
@@ -18,7 +19,7 @@ type CreateReportRequest struct {
 	Reason string `json:"reason"`
 }
 
-func (s *Server) createUserReport(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) createUserReport(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 	claims, _ := server.ClaimsFromContext(ctx)
 
@@ -26,19 +27,32 @@ func (s *Server) createUserReport(w http.ResponseWriter, r *http.Request) error 
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	userID, err := xid.FromString(chi.URLParam(r, "id"))
-	if err != nil {
-		return server.APIError{Code: server.ErrBadRequest, Details: "Invalid user ID"}
-	}
+	var u db.User
+	if id, err := xid.FromString(chi.URLParam(r, "id")); err == nil {
+		u, err = s.DB.User(ctx, id)
+		if err != nil {
+			if err == db.ErrUserNotFound {
+				return server.APIError{Code: server.ErrUserNotFound}
+			}
 
-	u, err := s.DB.User(ctx, userID)
-	if err != nil {
-		if err == db.ErrUserNotFound {
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
+	} else {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "id"))
+		if err != nil {
 			return server.APIError{Code: server.ErrUserNotFound}
 		}
 
-		log.Errorf("getting user %v: %v", userID, err)
-		return errors.Wrap(err, "getting user")
+		u, err = s.DB.UserBySnowflake(ctx, common.UserID(id))
+		if err != nil {
+			if err == db.ErrUserNotFound {
+				return server.APIError{Code: server.ErrUserNotFound}
+			}
+
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
 	}
 
 	if u.DeletedAt != nil {
@@ -73,19 +87,32 @@ func (s *Server) createMemberReport(w http.ResponseWriter, r *http.Request) erro
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	memberID, err := xid.FromString(chi.URLParam(r, "id"))
-	if err != nil {
-		return server.APIError{Code: server.ErrBadRequest, Details: "Invalid member ID"}
-	}
+	var m db.Member
+	if id, err := xid.FromString(chi.URLParam(r, "id")); err == nil {
+		m, err = s.DB.Member(ctx, id)
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
 
-	m, err := s.DB.Member(ctx, memberID)
-	if err != nil {
-		if err == db.ErrMemberNotFound {
-			return server.APIError{Code: server.ErrMemberNotFound}
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
+	} else {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "id"))
+		if err != nil {
+			return server.APIError{Code: server.ErrUserNotFound}
 		}
 
-		log.Errorf("getting member %v: %v", memberID, err)
-		return errors.Wrap(err, "getting member")
+		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
 	}
 
 	u, err := s.DB.User(ctx, m.UserID)
