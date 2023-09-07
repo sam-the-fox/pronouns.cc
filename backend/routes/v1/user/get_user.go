@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
@@ -14,6 +15,7 @@ import (
 
 type GetUserResponse struct {
 	ID                xid.ID               `json:"id"`
+	SnowflakeID       common.UserID        `json:"id_new"`
 	SID               string               `json:"sid"`
 	Username          string               `json:"name"`
 	DisplayName       *string              `json:"display_name"`
@@ -58,6 +60,7 @@ type GetMeResponse struct {
 
 type PartialMember struct {
 	ID          xid.ID            `json:"id"`
+	SnowflakeID common.MemberID   `json:"id_new"`
 	SID         string            `json:"sid"`
 	Name        string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
@@ -71,6 +74,7 @@ type PartialMember struct {
 func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags []db.UserFlag) GetUserResponse {
 	resp := GetUserResponse{
 		ID:                u.ID,
+		SnowflakeID:       u.SnowflakeID,
 		SID:               u.SID,
 		Username:          u.Username,
 		DisplayName:       u.DisplayName,
@@ -97,6 +101,7 @@ func dbUserToResponse(u db.User, fields []db.Field, members []db.Member, flags [
 	for i := range members {
 		resp.Members[i] = PartialMember{
 			ID:          members[i].ID,
+			SnowflakeID: members[i].SnowflakeID,
 			SID:         members[i].SID,
 			Name:        members[i].Name,
 			DisplayName: members[i].DisplayName,
@@ -121,6 +126,15 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) (err error) {
 		u, err = s.DB.User(ctx, id)
 		if err != nil {
 			log.Errorf("getting user by ID: %v", err)
+		}
+	}
+
+	if u.ID.IsNil() {
+		if id, err := common.ParseSnowflake(userRef); err == nil {
+			u, err = s.DB.UserBySnowflake(ctx, common.UserID(id))
+			if err != nil {
+				log.Errorf("getting user by snowflake: %v", err)
+			}
 		}
 	}
 

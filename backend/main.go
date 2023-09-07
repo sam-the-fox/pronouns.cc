@@ -62,9 +62,8 @@ func run(c *cli.Context) error {
 		return nil
 	case err := <-e:
 		log.Fatalf("Error running server: %v", err)
+		return err
 	}
-
-	return nil
 }
 
 const MaxContentLength = 2 * 1024 * 1024

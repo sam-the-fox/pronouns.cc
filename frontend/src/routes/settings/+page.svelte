@@ -194,7 +194,11 @@
         <tbody>
           <tr>
             <th scope="row">ID</th>
-            <td><code>{data.user.id}</code></td>
+            <td><code>{data.user.id_new}</code></td>
+          </tr>
+          <tr>
+            <th scope="row">xid <em>(deprecated)</em></th>
+            <td><del><code>{data.user.id}</code></del></td>
           </tr>
           <tr>
             <th scope="row">Account created at</th>

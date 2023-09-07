@@ -22,6 +22,7 @@ import (
 
 type User struct {
 	ID          xid.ID
+	SnowflakeID common.UserID
 	SID         string `db:"sid"`
 	Username    string
 	DisplayName *string
@@ -206,7 +207,7 @@ func (db *DB) CreateUser(ctx context.Context, tx pgx.Tx, username string) (u Use
 		return u, err
 	}
 
-	sql, args, err := sq.Insert("users").Columns("id", "username", "sid").Values(xid.New(), username, squirrel.Expr("find_free_user_sid()")).Suffix("RETURNING *").ToSql()
+	sql, args, err := sq.Insert("users").Columns("id", "snowflake_id", "username", "sid").Values(xid.New(), common.GenerateID(), username, squirrel.Expr("find_free_user_sid()")).Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}
@@ -478,6 +479,26 @@ func (u *User) UnlinkGoogle(ctx context.Context, ex Execer) error {
 func (db *DB) User(ctx context.Context, id xid.ID) (u User, err error) {
 	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
 		From("users").Where("id = ?", id).ToSql()
+	if err != nil {
+		return u, errors.Wrap(err, "building sql")
+	}
+
+	err = pgxscan.Get(ctx, db, &u, sql, args...)
+	if err != nil {
+		if errors.Cause(err) == pgx.ErrNoRows {
+			return u, ErrUserNotFound
+		}
+
+		return u, errors.Wrap(err, "getting user from db")
+	}
+
+	return u, nil
+}
+
+// UserBySnowflake gets a user by their snowflake ID.
+func (db *DB) UserBySnowflake(ctx context.Context, id common.UserID) (u User, err error) {
+	sql, args, err := sq.Select("*", "(SELECT instance FROM fediverse_apps WHERE id = users.fediverse_app_id) AS fediverse_instance").
+		From("users").Where("snowflake_id = ?", id).ToSql()
 	if err != nil {
 		return u, errors.Wrap(err, "building sql")
 	}

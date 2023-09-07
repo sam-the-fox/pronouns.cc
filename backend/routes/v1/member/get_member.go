@@ -4,7 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
@@ -13,13 +15,14 @@ import (
 )
 
 type GetMemberResponse struct {
-	ID          xid.ID   `json:"id"`
-	SID         string   `json:"sid"`
-	Name        string   `json:"name"`
-	DisplayName *string  `json:"display_name"`
-	Bio         *string  `json:"bio"`
-	Avatar      *string  `json:"avatar"`
-	Links       []string `json:"links"`
+	ID          xid.ID          `json:"id"`
+	SnowflakeID common.MemberID `json:"id_new"`
+	SID         string          `json:"sid"`
+	Name        string          `json:"name"`
+	DisplayName *string         `json:"display_name"`
+	Bio         *string         `json:"bio"`
+	Avatar      *string         `json:"avatar"`
+	Links       []string        `json:"links"`
 
 	Names    []db.FieldEntry   `json:"names"`
 	Pronouns []db.PronounEntry `json:"pronouns"`
@@ -34,6 +37,7 @@ type GetMemberResponse struct {
 func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.MemberFlag, isOwnMember bool) GetMemberResponse {
 	r := GetMemberResponse{
 		ID:          m.ID,
+		SnowflakeID: m.SnowflakeID,
 		SID:         m.SID,
 		Name:        m.Name,
 		DisplayName: m.DisplayName,
@@ -48,6 +52,7 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.Memb
 
 		User: PartialUser{
 			ID:                u.ID,
+			SnowflakeID:       u.SnowflakeID,
 			Username:          u.Username,
 			DisplayName:       u.DisplayName,
 			Avatar:            u.Avatar,
@@ -64,26 +69,37 @@ func dbMemberToMember(u db.User, m db.Member, fields []db.Field, flags []db.Memb
 
 type PartialUser struct {
 	ID                xid.ID               `json:"id"`
+	SnowflakeID       common.UserID        `json:"id_new"`
 	Username          string               `json:"name"`
 	DisplayName       *string              `json:"display_name"`
 	Avatar            *string              `json:"avatar"`
 	CustomPreferences db.CustomPreferences `json:"custom_preferences"`
 }
 
-func (s *Server) getMember(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) getMember(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 
-	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
-	if err != nil {
-		return server.APIError{
-			Code: server.ErrMemberNotFound,
+	var m db.Member
+	if id, err := xid.FromString(chi.URLParam(r, "memberRef")); err == nil {
+		m, err = s.DB.Member(ctx, id)
+		if err != nil {
+			log.Errorf("getting member by xid: %v", err)
 		}
 	}
+	// xid was not valid
+	if !m.SnowflakeID.IsValid() {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "memberRef"))
+		if err != nil {
+			return server.APIError{
+				Code: server.ErrMemberNotFound,
+			}
+		}
 
-	m, err := s.DB.Member(ctx, id)
-	if err != nil {
-		return server.APIError{
-			Code: server.ErrMemberNotFound,
+		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
+		if err != nil {
+			return server.APIError{
+				Code: server.ErrMemberNotFound,
+			}
 		}
 	}
 
@@ -186,12 +202,22 @@ func (s *Server) getMeMember(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Server) parseUser(ctx context.Context, userRef string) (u db.User, err error) {
-	if id, err := xid.FromString(userRef); err != nil {
+	// check xid first
+	if id, err := xid.FromString(userRef); err == nil {
 		u, err := s.DB.User(ctx, id)
 		if err == nil {
 			return u, nil
 		}
 	}
 
+	// if not an xid, check by snowflake
+	if id, err := common.ParseSnowflake(userRef); err == nil {
+		u, err := s.DB.UserBySnowflake(ctx, common.UserID(id))
+		if err == nil {
+			return u, nil
+		}
+	}
+
+	// else, use username
 	return s.DB.Username(ctx, userRef)
 }

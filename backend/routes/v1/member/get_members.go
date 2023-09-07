@@ -3,6 +3,7 @@ package member
 import (
 	"net/http"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"github.com/go-chi/chi/v5"
@@ -12,6 +13,7 @@ import (
 
 type memberListResponse struct {
 	ID          xid.ID            `json:"id"`
+	SnowflakeID common.MemberID   `json:"id_new"`
 	SID         string            `json:"sid"`
 	Name        string            `json:"name"`
 	DisplayName *string           `json:"display_name"`
@@ -28,6 +30,7 @@ func membersToMemberList(ms []db.Member, isSelf bool) []memberListResponse {
 	for i := range ms {
 		resps[i] = memberListResponse{
 			ID:          ms[i].ID,
+			SnowflakeID: ms[i].SnowflakeID,
 			SID:         ms[i].SID,
 			Name:        ms[i].Name,
 			DisplayName: ms[i].DisplayName,

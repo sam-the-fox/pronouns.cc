@@ -9,6 +9,7 @@ import (
 	"io"
 	"strings"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/davidbyttow/govips/v2/vips"
@@ -20,11 +21,12 @@ import (
 )
 
 type PrideFlag struct {
-	ID          xid.ID  `json:"id"`
-	UserID      xid.ID  `json:"-"`
-	Hash        string  `json:"hash"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
+	ID          xid.ID        `json:"id"`
+	SnowflakeID common.FlagID `json:"id_new"`
+	UserID      xid.ID        `json:"-"`
+	Hash        string        `json:"hash"`
+	Name        string        `json:"name"`
+	Description *string       `json:"description"`
 }
 
 type UserFlag struct {
@@ -194,11 +196,12 @@ func (db *DB) CreateFlag(ctx context.Context, tx pgx.Tx, userID xid.ID, name, de
 
 	sql, args, err := sq.Insert("pride_flags").
 		SetMap(map[string]any{
-			"id":          xid.New(),
-			"hash":        "",
-			"user_id":     userID.String(),
-			"name":        name,
-			"description": description,
+			"id":           xid.New(),
+			"snowflake_id": common.GenerateID(),
+			"hash":         "",
+			"user_id":      userID.String(),
+			"name":         name,
+			"description":  description,
 		}).Suffix("RETURNING *").ToSql()
 	if err != nil {
 		return f, errors.Wrap(err, "building query")

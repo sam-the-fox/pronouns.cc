@@ -92,7 +92,7 @@
       error = null;
 
       addToast({ header: "Deleted flag", body: "Successfully deleted flag!" });
-      data.flags = data.flags.filter((entry) => entry.id !== id);
+      data.flags = data.flags.filter((entry) => entry.id_new !== id);
     } catch (e) {
       error = e as APIError;
     }

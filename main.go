@@ -13,6 +13,7 @@ import (
 	"codeberg.org/pronounscc/pronouns.cc/scripts/genkey"
 	"codeberg.org/pronounscc/pronouns.cc/scripts/migrate"
 	"codeberg.org/pronounscc/pronouns.cc/scripts/seeddb"
+	"codeberg.org/pronounscc/pronouns.cc/scripts/snowflakes"
 	"github.com/urfave/cli/v2"
 )
 
@@ -32,6 +33,7 @@ var app = &cli.App{
 				migrate.Command,
 				seeddb.Command,
 				cleandb.Command,
+				snowflakes.Command,
 			},
 		},
 		{

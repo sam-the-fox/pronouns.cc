@@ -25,7 +25,7 @@
 
   const rerollSid = async () => {
     try {
-      const resp = await apiFetchClient<Member>(`/members/${data.member.id}/reroll`);
+      const resp = await apiFetchClient<Member>(`/members/${data.member.id_new}/reroll`);
       addToast({ header: "Success", body: "Rerolled short ID!" });
       error = null;
       $member.sid = resp.sid;

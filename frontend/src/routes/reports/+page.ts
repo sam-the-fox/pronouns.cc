@@ -1,6 +1,5 @@
-import { ErrorCode, type APIError, type Report } from "$lib/api/entities";
+import type { Report } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
-import { error } from "@sveltejs/kit";
 
 export const load = async ({ url }) => {
   const { searchParams } = url;

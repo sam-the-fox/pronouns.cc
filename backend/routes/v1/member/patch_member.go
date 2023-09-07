@@ -38,23 +38,41 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
-	if err != nil {
-		return server.APIError{Code: server.ErrMemberNotFound}
-	}
-
 	u, err := s.DB.User(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting user")
 	}
 
-	m, err := s.DB.Member(ctx, id)
-	if err != nil {
-		if err == db.ErrMemberNotFound {
+	var m db.Member
+	if id, err := xid.FromString(chi.URLParam(r, "memberRef")); err == nil {
+		log.Debugf("%v/%v is xid", chi.URLParam(r, "memberRef"), id)
+
+		m, err = s.DB.Member(ctx, id)
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			return errors.Wrap(err, "getting member")
+		}
+	} else {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "memberRef"))
+		if err != nil {
+			log.Debugf("%v/%v is not valid snowflake", chi.URLParam(r, "memberRef"), id)
+
 			return server.APIError{Code: server.ErrMemberNotFound}
 		}
 
-		return errors.Wrap(err, "getting member")
+		log.Debugf("%v/%v is valid snowflake", chi.URLParam(r, "memberRef"), id)
+
+		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			return errors.Wrap(err, "getting member")
+		}
 	}
 
 	if m.UserID != claims.UserID {
@@ -234,7 +252,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback(ctx)
 
-	m, err = s.DB.UpdateMember(ctx, tx, id, req.Name, req.DisplayName, req.Bio, req.Unlisted, req.Links, avatarHash)
+	m, err = s.DB.UpdateMember(ctx, tx, m.ID, req.Name, req.DisplayName, req.Bio, req.Unlisted, req.Links, avatarHash)
 	if err != nil {
 		switch errors.Cause(err) {
 		case db.ErrNothingToUpdate:
@@ -258,9 +276,9 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 			pronouns = *req.Pronouns
 		}
 
-		err = s.DB.SetMemberNamesPronouns(ctx, tx, id, names, pronouns)
+		err = s.DB.SetMemberNamesPronouns(ctx, tx, m.ID, names, pronouns)
 		if err != nil {
-			log.Errorf("setting names for member %v: %v", id, err)
+			log.Errorf("setting names for member %v: %v", m.ID, err)
 			return err
 		}
 		m.Names = names
@@ -269,16 +287,16 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 
 	var fields []db.Field
 	if req.Fields != nil {
-		err = s.DB.SetMemberFields(ctx, tx, id, *req.Fields)
+		err = s.DB.SetMemberFields(ctx, tx, m.ID, *req.Fields)
 		if err != nil {
-			log.Errorf("setting fields for member %v: %v", id, err)
+			log.Errorf("setting fields for member %v: %v", m.ID, err)
 			return err
 		}
 		fields = *req.Fields
 	} else {
-		fields, err = s.DB.MemberFields(ctx, id)
+		fields, err = s.DB.MemberFields(ctx, m.ID)
 		if err != nil {
-			log.Errorf("getting fields for member %v: %v", id, err)
+			log.Errorf("getting fields for member %v: %v", m.ID, err)
 			return err
 		}
 	}
@@ -321,7 +339,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 
 	claims, _ := server.ClaimsFromContext(ctx)
@@ -330,23 +348,37 @@ func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
-	if err != nil {
-		return server.APIError{Code: server.ErrMemberNotFound}
+	var m db.Member
+	if id, err := xid.FromString(chi.URLParam(r, "memberRef")); err == nil {
+		m, err = s.DB.Member(ctx, id)
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
+	} else {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "memberRef"))
+		if err != nil {
+			return server.APIError{Code: server.ErrMemberNotFound}
+		}
+
+		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
 	}
 
 	u, err := s.DB.User(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting user")
-	}
-
-	m, err := s.DB.Member(ctx, id)
-	if err != nil {
-		if err == db.ErrMemberNotFound {
-			return server.APIError{Code: server.ErrMemberNotFound}
-		}
-
-		return errors.Wrap(err, "getting member")
 	}
 
 	if m.UserID != claims.UserID {
