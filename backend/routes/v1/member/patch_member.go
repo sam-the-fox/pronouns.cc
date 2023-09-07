@@ -339,7 +339,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 
 	claims, _ := server.ClaimsFromContext(ctx)
@@ -348,23 +348,37 @@ func (s *Server) rerollMemberSID(w http.ResponseWriter, r *http.Request) error {
 		return server.APIError{Code: server.ErrMissingPermissions, Details: "This token is read-only"}
 	}
 
-	id, err := xid.FromString(chi.URLParam(r, "memberRef"))
-	if err != nil {
-		return server.APIError{Code: server.ErrMemberNotFound}
+	var m db.Member
+	if id, err := xid.FromString(chi.URLParam(r, "memberRef")); err == nil {
+		m, err = s.DB.Member(ctx, id)
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
+	} else {
+		id, err := common.ParseSnowflake(chi.URLParam(r, "memberRef"))
+		if err != nil {
+			return server.APIError{Code: server.ErrMemberNotFound}
+		}
+
+		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
+		if err != nil {
+			if err == db.ErrMemberNotFound {
+				return server.APIError{Code: server.ErrMemberNotFound}
+			}
+
+			log.Errorf("getting user %v: %v", id, err)
+			return errors.Wrap(err, "getting user")
+		}
 	}
 
 	u, err := s.DB.User(ctx, claims.UserID)
 	if err != nil {
 		return errors.Wrap(err, "getting user")
-	}
-
-	m, err := s.DB.Member(ctx, id)
-	if err != nil {
-		if err == db.ErrMemberNotFound {
-			return server.APIError{Code: server.ErrMemberNotFound}
-		}
-
-		return errors.Wrap(err, "getting member")
 	}
 
 	if m.UserID != claims.UserID {
