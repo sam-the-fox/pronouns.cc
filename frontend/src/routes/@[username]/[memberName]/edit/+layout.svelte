@@ -34,7 +34,7 @@
 
   const deleteMember = async () => {
     try {
-      await fastFetchClient(`/members/${data.member.id}`, "DELETE");
+      await fastFetchClient(`/members/${data.member.id_new}`, "DELETE");
 
       toggleDeleteOpen();
       addToast({
@@ -68,7 +68,7 @@
     });
 
     try {
-      const resp = await apiFetchClient<Member>(`/members/${data.member.id}`, "PATCH", {
+      const resp = await apiFetchClient<Member>(`/members/${data.member.id_new}`, "PATCH", {
         name: $member.name,
         display_name: $member.display_name,
         avatar: $member.avatar,

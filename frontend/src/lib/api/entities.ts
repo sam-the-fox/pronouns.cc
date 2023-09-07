@@ -7,6 +7,7 @@ export const MAX_FLAGS = 500;
 
 export interface User {
   id: string;
+  id_new: string;
   sid: string;
   name: string;
   display_name: string | null;
@@ -79,6 +80,7 @@ export interface Pronoun {
 
 export interface PartialMember {
   id: string;
+  id_new: string;
   sid: string;
   name: string;
   display_name: string | null;
@@ -99,6 +101,7 @@ export interface Member extends PartialMember {
 
 export interface MemberPartialUser {
   id: string;
+  id_new: string;
   name: string;
   display_name: string | null;
   avatar: string | null;
@@ -107,6 +110,7 @@ export interface MemberPartialUser {
 
 export interface PrideFlag {
   id: string;
+  id_new: string;
   hash: string;
   name: string;
   description: string | null;

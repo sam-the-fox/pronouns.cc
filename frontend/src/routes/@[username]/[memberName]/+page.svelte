@@ -170,7 +170,7 @@
             />
           {/if}
           {#if $userStore && $userStore.id !== data.user.id}
-            <ReportButton subject="member" reportUrl="/members/{data.id}/reports" />
+            <ReportButton subject="member" reportUrl="/members/{data.id_new}/reports" />
           {/if}
         </InputGroup>
       </div>

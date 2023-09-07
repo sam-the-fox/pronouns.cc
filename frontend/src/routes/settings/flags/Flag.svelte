@@ -20,7 +20,7 @@
 
   const updateFlag = async () => {
     try {
-      const resp = await apiFetchClient<PrideFlag>(`/users/@me/flags/${flag.id}`, "PATCH", {
+      const resp = await apiFetchClient<PrideFlag>(`/users/@me/flags/${flag.id_new}`, "PATCH", {
         name,
         description: description || null,
       });
@@ -65,7 +65,7 @@
     Are you sure you want to delete the {flag.name} flag? <strong>This cannot be undone!</strong>
   </ModalBody>
   <ModalFooter>
-    <Button color="danger" on:click={() => deleteFlag(flag.id)}>Delete flag</Button>
+    <Button color="danger" on:click={() => deleteFlag(flag.id_new)}>Delete flag</Button>
     <Button color="secondary" on:click={toggleDeleteModal}>Cancel</Button>
   </ModalFooter>
 </Modal>
