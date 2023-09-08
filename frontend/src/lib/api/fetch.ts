@@ -11,9 +11,16 @@ export async function apiFetch<T>(
     body,
     token,
     headers,
-  }: { method?: string; body?: any; token?: string; headers?: Record<string, string> },
+    version,
+  }: {
+    method?: string;
+    body?: any;
+    token?: string;
+    headers?: Record<string, string>;
+    version?: number;
+  },
 ) {
-  const resp = await fetch(`${PUBLIC_BASE_URL}/api/v1${path}`, {
+  const resp = await fetch(`${PUBLIC_BASE_URL}/api/v${version || 1}${path}`, {
     method: method || "GET",
     headers: {
       ...(token ? { Authorization: token } : {}),
@@ -28,12 +35,18 @@ export async function apiFetch<T>(
   return data as T;
 }
 
-export const apiFetchClient = async <T>(path: string, method = "GET", body: any = null) => {
+export const apiFetchClient = async <T>(
+  path: string,
+  method = "GET",
+  body: any = null,
+  version = 1,
+) => {
   try {
     const data = await apiFetch<T>(path, {
       method,
       body,
       token: localStorage.getItem("pronouns-token") || undefined,
+      version,
     });
     return data;
   } catch (e) {
@@ -55,9 +68,16 @@ export async function fastFetch(
     body,
     token,
     headers,
-  }: { method?: string; body?: any; token?: string; headers?: Record<string, string> },
+    version,
+  }: {
+    method?: string;
+    body?: any;
+    token?: string;
+    headers?: Record<string, string>;
+    version?: number;
+  },
 ) {
-  const resp = await fetch(`${PUBLIC_BASE_URL}/api/v1${path}`, {
+  const resp = await fetch(`${PUBLIC_BASE_URL}/api/v${version || 1}${path}`, {
     method: method || "GET",
     headers: {
       ...(token ? { Authorization: token } : {}),
@@ -71,12 +91,18 @@ export async function fastFetch(
 }
 
 /** Fetches the specified path without parsing the response body. */
-export const fastFetchClient = async (path: string, method = "GET", body: any = null) => {
+export const fastFetchClient = async (
+  path: string,
+  method = "GET",
+  body: any = null,
+  version = 1,
+) => {
   try {
     await fastFetch(path, {
       method,
       body,
       token: localStorage.getItem("pronouns-token") || undefined,
+      version,
     });
   } catch (e) {
     if ((e as APIError).code === ErrorCode.InvalidToken) {

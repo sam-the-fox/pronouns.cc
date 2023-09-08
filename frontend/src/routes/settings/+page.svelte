@@ -6,12 +6,13 @@
     type APIError,
     MAX_MEMBERS,
     MAX_FIELDS,
+    type Settings,
   } from "$lib/api/entities";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
   import { usernameRegex } from "$lib/api/regex";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
-  import { userStore } from "$lib/store";
+  import { settingsStore, userStore } from "$lib/store";
   import { addToast } from "$lib/toast";
   import {
     Alert,
@@ -91,21 +92,36 @@
     }
   };
 
-  const DONATE_ALERT_STORE = "alert-1681976313";
-  let donateAlertOpen = false;
-  const closeDonateAlert = () => {
-    donateAlertOpen = false;
-    localStorage.setItem(DONATE_ALERT_STORE, "dismissed");
-  };
+  const CURRENT_ALERT = "1681976313";
+  const closeDonateAlert = async () => {
+    try {
+      const settings = await apiFetchClient<Settings>(
+        "/users/@me/settings",
+        "PATCH",
+        {
+          read_settings_notice: CURRENT_ALERT,
+        },
+        2,
+      );
 
-  onMount(() => {
-    if (!localStorage.getItem(DONATE_ALERT_STORE)) {
-      donateAlertOpen = true;
+      settingsStore.set({ current: true, settings });
+      error = null;
+    } catch (e) {
+      error = e as APIError;
     }
-  });
+  };
 </script>
 
-<Alert color="secondary" fade={false} isOpen={donateAlertOpen} toggle={closeDonateAlert}>
+{#if error}
+  <ErrorAlert {error} />
+{/if}
+
+<Alert
+  color="secondary"
+  fade={false}
+  isOpen={$settingsStore.current && $settingsStore.settings.read_settings_notice < CURRENT_ALERT}
+  toggle={closeDonateAlert}
+>
   If you find pronouns.cc useful and have the means, I would really appreciate a <a
     href="https://liberapay.com/u1f320/"
     target="_blank">donation</a
@@ -149,9 +165,6 @@
             >
           {/if}
         </p>
-      {/if}
-      {#if error}
-        <ErrorAlert {error} />
       {/if}
     </div>
     <div class="col-lg-4">
