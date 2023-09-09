@@ -58,12 +58,8 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	} else {
 		id, err := common.ParseSnowflake(chi.URLParam(r, "memberRef"))
 		if err != nil {
-			log.Debugf("%v/%v is not valid snowflake", chi.URLParam(r, "memberRef"), id)
-
 			return server.APIError{Code: server.ErrMemberNotFound}
 		}
-
-		log.Debugf("%v/%v is valid snowflake", chi.URLParam(r, "memberRef"), id)
 
 		m, err = s.DB.MemberBySnowflake(ctx, common.MemberID(id))
 		if err != nil {
