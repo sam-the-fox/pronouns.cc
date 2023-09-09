@@ -17,13 +17,14 @@
   } from "sveltestrap";
 
   import Logo from "./Logo.svelte";
-  import { userStore, themeStore, CURRENT_CHANGELOG } from "$lib/store";
+  import { userStore, themeStore, CURRENT_CHANGELOG, settingsStore } from "$lib/store";
   import {
     ErrorCode,
     type APIError,
     type MeUser,
     type Report,
     type Warning,
+    type Settings,
   } from "$lib/api/entities";
   import { apiFetch, apiFetchClient } from "$lib/api/fetch";
   import { addToast } from "$lib/toast";
@@ -37,14 +38,11 @@
   let isAdmin = false;
   let numReports = 0;
   let numWarnings = 0;
-  let changelogRead = "99.99.99";
 
   $: currentUser = $userStore;
   $: theme = $themeStore;
 
   onMount(() => {
-    changelogRead = localStorage.getItem("changelog-read") || "0.0.0";
-
     const localUser = localStorage.getItem("pronouns-user");
     userStore.set(localUser ? JSON.parse(localUser) : null);
 
@@ -75,6 +73,38 @@
           })
           .catch((e) => {
             console.log("getting reports:", e);
+          });
+      }
+
+      apiFetchClient<Settings>("/users/@me/settings", "GET", null, 2)
+        .then((data) => {
+          settingsStore.set({ current: true, settings: data });
+        })
+        .catch((e) => {
+          console.log("getting user settings:", e);
+        });
+
+      // TODO: is there a cleaner way to do this? also, remove this eventually
+      const oldChangelogRead = localStorage.getItem("changelog-read");
+      const oldSettingsNotice = localStorage.getItem("alert-1681976313");
+      if (oldChangelogRead || oldSettingsNotice) {
+        localStorage.removeItem("changelog-read");
+        localStorage.removeItem("alert-1681976313");
+
+        apiFetchClient<Settings>(
+          "/users/@me/settings",
+          "PATCH",
+          {
+            read_changelog: oldChangelogRead ? oldChangelogRead : undefined,
+            read_settings_notice: oldSettingsNotice ? "1681976313" : undefined,
+          },
+          2,
+        )
+          .then((data) => {
+            settingsStore.set({ current: true, settings: data });
+          })
+          .catch((e) => {
+            console.log("updating user settings:", e);
           });
       }
 
@@ -157,7 +187,7 @@
             </NavLink>
           </NavItem>
         {/if}
-        {#if changelogRead < CURRENT_CHANGELOG}
+        {#if $settingsStore.current && $settingsStore.settings.read_changelog < CURRENT_CHANGELOG}
           <NavItem>
             <NavLink href="/page/changelog" active={$page.url.pathname === "/page/changelog"}>
               Changelog <Badge color="secondary">v{CURRENT_CHANGELOG}</Badge>

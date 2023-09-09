@@ -12,6 +12,7 @@ import (
 type PatchSettingsRequest struct {
 	ReadChangelog      omitnull.Val[string] `json:"read_changelog"`
 	ReadSettingsNotice omitnull.Val[string] `json:"read_settings_notice"`
+	ReadGlobalNotice   omitnull.Val[int]    `json:"read_global_notice"`
 }
 
 func (s *Server) PatchSettings(w http.ResponseWriter, r *http.Request) (err error) {
@@ -33,6 +34,9 @@ func (s *Server) PatchSettings(w http.ResponseWriter, r *http.Request) (err erro
 	}
 	if !req.ReadSettingsNotice.IsUnset() {
 		u.Settings.ReadSettingsNotice = req.ReadSettingsNotice.GetOrZero()
+	}
+	if !req.ReadGlobalNotice.IsUnset() {
+		u.Settings.ReadGlobalNotice = req.ReadGlobalNotice.GetOrZero()
 	}
 
 	err = s.DB.UpdateUserSettings(ctx, u.ID, u.Settings)

@@ -62,6 +62,12 @@ export interface MeUser extends User {
   timezone: string | null;
 }
 
+export interface Settings {
+  read_changelog: string;
+  read_settings_notice: string;
+  read_global_notice: number;
+}
+
 export interface Field {
   name: string;
   entries: FieldEntry[];

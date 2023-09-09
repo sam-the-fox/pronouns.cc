@@ -22,7 +22,8 @@ export const load = (async () => {
         },
         members: 0,
         require_invite: false,
-      };
+        notice: null,
+      } as MetaResponse;
     } else {
       throw e;
     }

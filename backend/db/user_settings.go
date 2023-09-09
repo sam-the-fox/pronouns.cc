@@ -10,6 +10,7 @@ import (
 type UserSettings struct {
 	ReadChangelog      string `json:"read_changelog"`
 	ReadSettingsNotice string `json:"read_settings_notice"`
+	ReadGlobalNotice   int    `json:"read_global_notice"`
 }
 
 func (db *DB) UpdateUserSettings(ctx context.Context, id xid.ID, us UserSettings) error {

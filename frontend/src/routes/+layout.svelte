@@ -10,9 +10,13 @@
   import Navigation from "./nav/Navigation.svelte";
   import type { LayoutData } from "./$types";
   import { version } from "$app/environment";
+  import { settingsStore } from "$lib/store";
   import { toastStore } from "$lib/toast";
   import Toast from "$lib/components/Toast.svelte";
-  import { Icon } from "sveltestrap";
+  import { Alert, Icon } from "sveltestrap";
+  import { apiFetchClient } from "$lib/api/fetch";
+  import type { Settings } from "$lib/api/entities";
+  import { renderUnsafeMarkdown } from "$lib/utils";
 
   export let data: LayoutData;
 
@@ -21,6 +25,20 @@
   if (versionParts.length >= 3) commit = versionParts[2].slice(1);
 
   const versionMismatch = data.git_commit !== commit && data.git_commit !== "[unknown]";
+
+  const readNotice = async () => {
+    try {
+      const resp = await apiFetchClient<Settings>(
+        "/users/@me/settings",
+        "PATCH",
+        { read_global_notice: data.notice!.id },
+        2,
+      );
+      settingsStore.set({ current: true, settings: resp });
+    } catch (e) {
+      console.log("updating settings:", e);
+    }
+  };
 </script>
 
 <svelte:head>
@@ -34,6 +52,12 @@
   <div class="flex-grow-1">
     <Navigation commit={data.git_commit} />
     <div class="container">
+      {#if data.notice && $settingsStore.current && data.notice.id > $settingsStore.settings.read_global_notice}
+        <Alert color="secondary" isOpen={true} toggle={() => readNotice()}>
+          {@html renderUnsafeMarkdown(data.notice.notice)}
+        </Alert>
+      {/if}
+
       <slot />
       <div class="position-absolute top-0 start-50 translate-middle-x">
         {#each $toastStore as toast}
