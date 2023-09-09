@@ -21,7 +21,7 @@
 </script>
 
 {#if isLink}
-  <a href={link} class="text-decoration-none">
+  <a href={link} class="text-decoration-none" rel="me nofollow noreferrer" target="_blank">
     <li class="py-2 py-lg-0">
       <Icon name="globe" aria-hidden class="text-body" />
       <span class="text-decoration-underline">{displayLink}</span>
