@@ -65,6 +65,7 @@ export interface MeUser extends User {
 export interface Settings {
   read_changelog: string;
   read_settings_notice: string;
+  read_global_notice: number;
 }
 
 export interface Field {

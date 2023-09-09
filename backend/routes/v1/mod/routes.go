@@ -22,6 +22,8 @@ func Mount(srv *server.Server, r chi.Router) {
 		r.Get("/reports/by-reporter/{id}", server.WrapHandler(s.getReportsByReporter))
 
 		r.Patch("/reports/{id}", server.WrapHandler(s.resolveReport))
+
+		r.Post("/notices", server.WrapHandler(s.createNotice))
 	})
 
 	r.With(MustAdmin).Handle("/metrics", promhttp.Handler())

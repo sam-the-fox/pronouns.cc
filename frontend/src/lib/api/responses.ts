@@ -11,6 +11,7 @@ export interface MetaResponse {
   users: MetaUsers;
   members: number;
   require_invite: boolean;
+  notice: { id: number; notice: string } | null;
 }
 
 export interface MetaUsers {
