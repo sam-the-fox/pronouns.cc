@@ -825,3 +825,24 @@ func (db *DB) CleanUser(ctx context.Context, id xid.ID) error {
 	}
 	return nil
 }
+
+const inactiveUsersSQL = `select id, snowflake_id from users
+where last_active < now() - '30 days'::interval
+and display_name is null and bio is null and timezone is null
+and links is null and avatar is null and member_title is null
+and names = '[]' and pronouns = '[]'
+and (select count(m.id) from members m where user_id = users.id) = 0
+and (select count(f.id) from user_fields f where user_id = users.id) = 0;`
+
+// InactiveUsers gets the list of inactive users from the database.
+// "Inactive" is defined as:
+// - not logged in for 30 days or more
+// - no display name, bio, avatar, names, pronouns, profile links, or profile fields
+// - no members
+func (db *DB) InactiveUsers(ctx context.Context, tx pgx.Tx) (us []User, err error) {
+	err = pgxscan.Select(ctx, tx, &us, inactiveUsersSQL)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing query")
+	}
+	return us, nil
+}

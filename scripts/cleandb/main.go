@@ -3,6 +3,7 @@ package cleandb
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	dbpkg "codeberg.org/pronounscc/pronouns.cc/backend/db"
@@ -24,6 +25,8 @@ func run(c *cli.Context) error {
 		fmt.Println("error loading .env file:", err)
 		return err
 	}
+
+	changeUnusedUsernames := os.Getenv("DB_CLEAN_CHANGE_UNUSED_USERNAMES") == "true"
 
 	ctx := context.Background()
 
@@ -66,6 +69,41 @@ func run(c *cli.Context) error {
 
 	fmt.Printf("deleted %v expired exports\n", len(exports))
 
+	if changeUnusedUsernames {
+		fmt.Println("cleaning unused usernames")
+
+		tx, err := db.Begin(ctx)
+		if err != nil {
+			fmt.Printf("error starting transaction: %v\n", err)
+			return err
+		}
+		defer tx.Rollback(ctx)
+
+		inactiveUsers, err := db.InactiveUsers(ctx, tx)
+		if err != nil {
+			fmt.Printf("getting inactive users: %v\n", err)
+			return err
+		}
+
+		for _, u := range inactiveUsers {
+			err = db.UpdateUsername(ctx, tx, u.ID, fmt.Sprintf("inactive-user-%v", u.SnowflakeID))
+			if err != nil {
+				fmt.Printf("changing username for user %v: %v\n", u.SnowflakeID, err)
+				return err
+			}
+		}
+
+		err = tx.Commit(ctx)
+		if err != nil {
+			fmt.Printf("committing transaction: %v\n", err)
+			return err
+		}
+
+		fmt.Printf("changed usernames for %v inactive users\n", len(inactiveUsers))
+	} else {
+		fmt.Println("not cleaning unused usernames")
+	}
+
 	var users []dbpkg.User
 	err = pgxscan.Select(ctx, db, &users, `SELECT * FROM users WHERE
 	deleted_at IS NOT NULL AND
@@ -78,7 +116,7 @@ func run(c *cli.Context) error {
 	}
 
 	if len(users) == 0 {
-		fmt.Println("there are no users pending deletion")
+		fmt.Println("there are no users pending deletion\nfinished cleaning database!")
 		return nil
 	}
 
@@ -132,5 +170,6 @@ func run(c *cli.Context) error {
 	}
 
 	fmt.Printf("deleted %v users!\n", ct.RowsAffected())
+	fmt.Println("finished cleaning database!")
 	return nil
 }
