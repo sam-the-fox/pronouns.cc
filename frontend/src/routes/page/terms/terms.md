@@ -18,6 +18,9 @@ We reserve the right to modify these Terms and the Privacy Policy at any time. W
 You must be at least 13 years old and meet the minimum age required by the laws in your country to use the service.
 If you are under 16 years old, you need consent from your parents or legal guardian to use the service.
 
+Accounts with empty profiles, no members, and no activity within the last 30 days
+will have their usernames changed to the account's ID, to free up unused usernames.
+
 ## Content
 
 You are responsible for the content you post on the service.
