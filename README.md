@@ -26,18 +26,23 @@ Requirements:
 - Redis 6.0 or later
 - Node.js (latest version)
 - MinIO **if using avatars, flags, or data exports** (_not_ required otherwise)
+- [Air](https://github.com/cosmtrek/air) for live reloading the backend
 
 ### Setup
 
-1. Create a PostgreSQL user and database (the user should own the database).  
+1. Create a PostgreSQL user and database (the user should own the database).
    For example: `create user pronouns with password 'password'; create database pronouns with owner pronouns;`
 2. Copy `.env.example` in the repository root to a new file named `.env` and fill out the required options.
 3. Run `go run -v . database migrate` to initialize the database, then optionally `go run -v . database seed` to insert a test user.
-4. Run `go run -v . web` to run the backend.
-5. Copy `frontend/.env.example` into `frontend/.env` and tweak as necessary.
-6. cd into the `frontend` directory and run `pnpm dev` to run the frontend.
+4. Run `pnpm dev`. Alternatively, if you don't want the backend to live reload, run `go run -v . web`,
+   then change to the `frontend/` directory and run `pnpm dev`.
 
 See [`docs/production.md`](/docs/production.md#configuration) for more information about keys in the backend and frontend `.env` files.
+
+### Seeding
+
+To seed the database with some data, create a `seed.yaml` file, then use `go run -v . database seed`.
+For the file format, refer to the `Seed` struct in `scripts/seeddb`.
 
 ## License
 

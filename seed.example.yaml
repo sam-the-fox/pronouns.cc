@@ -1,0 +1,43 @@
+users:
+- username: test1
+  displayName: "Test 1 :3"
+  bio: |
+    *Hiiiiii*
+    I'm a user!
+  links: [https://pronouns.cc, https://codeberg.org/pronounscc/pronouns.cc]
+  names:
+    - value: Test
+      status: favourite
+    - value: Tester
+      status: okay
+    - value: Testington
+      status: avoid
+  pronouns:
+    - pronouns: they/them/their/theirs/themself
+      status: favourite
+    - pronouns: it/it/its/its/itself
+      displayText: it/its
+      status: okay
+  fields:
+    - name: Field 1
+      entries:
+        - value: Entry 1
+          status: favourite
+        - value: Entry 2
+          status: favourite
+        - value: Entry 3
+          status: friends_only
+    - name: Field 2
+      entries:
+        - value: Entry 4
+          status: avoid
+        - value: Entry 4
+          status: okay
+  members:
+    - name: member 1
+    - name: member 2
+    - name: member 3
+    - name: member 4
+    - name: member 5
+    - name: member 6
+    - name: member 7

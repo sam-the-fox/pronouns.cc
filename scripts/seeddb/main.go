@@ -1,14 +1,41 @@
 package seeddb
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v3"
 )
+
+type Seed struct {
+	Users []SeedUser `yaml:"users"`
+}
+
+type SeedUser struct {
+	Username    string            `yaml:"username"`
+	DisplayName *string           `yaml:"displayName"`
+	Bio         *string           `yaml:"bio"`
+	Links       []string          `yaml:"links"`
+	Names       []db.FieldEntry   `yaml:"names"`
+	Pronouns    []db.PronounEntry `yaml:"pronouns"`
+	Fields      []db.Field        `yaml:"fields"`
+	Members     []SeedMember      `yaml:"members"`
+}
+
+type SeedMember struct {
+	Name        string            `yaml:"name"`
+	DisplayName *string           `yaml:"displayName"`
+	Bio         string            `yaml:"bio"`
+	Links       []string          `yaml:"links"`
+	Names       []db.FieldEntry   `yaml:"names"`
+	Pronouns    []db.PronounEntry `yaml:"pronouns"`
+	Fields      []db.Field        `yaml:"fields"`
+	Members     []SeedMember      `yaml:"members"`
+}
 
 var Command = &cli.Command{
 	Name:   "seed",
@@ -19,7 +46,7 @@ var Command = &cli.Command{
 func run(c *cli.Context) error {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("error loading .env file:", err)
+		log.Println("error loading .env file:", err)
 		return err
 	}
 
@@ -27,112 +54,94 @@ func run(c *cli.Context) error {
 
 	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
-		fmt.Println("error opening database:", err)
+		log.Println("error opening database:", err)
 		return err
 	}
 	defer pool.Close()
 
-	fmt.Println("opened database")
+	log.Println("opened database")
 
 	pg := &db.DB{Pool: pool}
 
+	// read seed file
+	seedFile, err := os.ReadFile("seed.yaml")
+	if err != nil {
+		log.Println("error opening seed.yaml:", err)
+		return err
+	}
+
+	var seed Seed
+	err = yaml.Unmarshal(seedFile, &seed)
+	if err != nil {
+		log.Println("error reading seed.yaml:", err)
+		return err
+	}
+
 	tx, err := pg.Begin(ctx)
 	if err != nil {
-		fmt.Println("error beginning transaction:", err)
+		log.Println("error beginning transaction:", err)
 		return err
 	}
+	defer tx.Rollback(ctx)
 
-	u, err := pg.CreateUser(ctx, tx, "test")
-	if err != nil {
-		fmt.Println("error creating user:", err)
-		return err
-	}
+	for i, su := range seed.Users {
+		u, err := pg.CreateUser(ctx, tx, su.Username)
+		if err != nil {
+			log.Printf("error creating user #%v/%s: %v", i+1, su.Username, err)
+			return err
+		}
 
-	_, err = pg.UpdateUser(ctx, tx, u.ID, ptr("testing"), ptr("This is a bio!"), nil, ptr(false), &[]string{"https://pronouns.cc"}, nil, nil, nil)
-	if err != nil {
-		fmt.Println("error setting user info:", err)
-		return err
-	}
+		_, err = pg.UpdateUser(ctx, tx, u.ID, su.DisplayName, su.Bio, nil, nil, &su.Links, nil, nil, nil)
+		if err != nil {
+			log.Printf("updating user %s: %v", su.Username, err)
+			return err
+		}
 
-	err = pg.SetUserNamesPronouns(ctx, tx, u.ID, []db.FieldEntry{
-		{Value: "testing 1", Status: "favourite"},
-		{Value: "testing 2", Status: "okay"},
-	}, []db.PronounEntry{
-		{Pronouns: "it/it/its/its/itself", DisplayText: ptr("it/its"), Status: "favourite"},
-		{Pronouns: "they/them/their/theirs/themself", Status: "okay"},
-	})
-	if err != nil {
-		fmt.Println("error setting pronouns:", err)
-		return err
-	}
+		err = pg.SetUserNamesPronouns(ctx, tx, u.ID, db.NotNull(su.Names), db.NotNull(su.Pronouns))
+		if err != nil {
+			log.Printf("setting names/pronouns for user %s: %v", su.Username, err)
+			return err
+		}
 
-	err = pg.SetUserFields(ctx, tx, u.ID, []db.Field{
-		{
-			Name: "Field 1",
-			Entries: []db.FieldEntry{
-				{Value: "Favourite 1", Status: "favourite"},
-				{Value: "Okay 1", Status: "okay"},
-				{Value: "Jokingly 1", Status: "jokingly"},
-				{Value: "Friends only 1", Status: "friends_only"},
-				{Value: "Avoid 1", Status: "avoid"},
-			},
-		},
-		{
-			Name: "Field 2",
-			Entries: []db.FieldEntry{
-				{Value: "Favourite 2", Status: "favourite"},
-				{Value: "Okay 2", Status: "okay"},
-				{Value: "Jokingly 2", Status: "jokingly"},
-				{Value: "Friends only 2", Status: "friends_only"},
-				{Value: "Avoid 2", Status: "avoid"},
-			},
-		},
-		{
-			Name: "Field 3",
-			Entries: []db.FieldEntry{
-				{Value: "Favourite 3", Status: "favourite"},
-				{Value: "Okay 3", Status: "okay"},
-				{Value: "Jokingly 3", Status: "jokingly"},
-				{Value: "Friends only 3", Status: "friends_only"},
-				{Value: "Avoid 3", Status: "avoid"},
-			},
-		},
-		{
-			Name: "Field 4",
-			Entries: []db.FieldEntry{
-				{Value: "Favourite 4", Status: "favourite"},
-				{Value: "Okay 4", Status: "okay"},
-				{Value: "Jokingly 4", Status: "jokingly"},
-				{Value: "Friends only 4", Status: "friends_only"},
-				{Value: "Avoid 4", Status: "avoid"},
-			},
-		},
-		{
-			Name: "Field 5",
-			Entries: []db.FieldEntry{
-				{Value: "Favourite 5", Status: "favourite"},
-				{Value: "Okay 5", Status: "okay"},
-				{Value: "Jokingly 5", Status: "jokingly"},
-				{Value: "Friends only 5", Status: "friends_only"},
-				{Value: "Avoid 5", Status: "avoid"},
-			},
-		},
-	})
-	if err != nil {
-		fmt.Println("error setting fields:", err)
-		return err
+		err = pg.SetUserFields(ctx, tx, u.ID, db.NotNull(su.Fields))
+		if err != nil {
+			log.Printf("setting fields for user %s: %v", su.Username, err)
+			return err
+		}
+
+		log.Printf("creating members for user %s", su.Username)
+
+		for _, sm := range su.Members {
+			m, err := pg.CreateMember(ctx, tx, u.ID, sm.Name, sm.DisplayName, sm.Bio, db.NotNull(sm.Links))
+			if err != nil {
+				log.Printf("creating member %s: %v", sm.Name, err)
+				return err
+			}
+
+			err = pg.SetMemberNamesPronouns(ctx, tx, m.ID, db.NotNull(sm.Names), db.NotNull(sm.Pronouns))
+			if err != nil {
+				log.Printf("setting names/pronouns for member %s: %v", sm.Name, err)
+				return err
+			}
+
+			err = pg.SetMemberFields(ctx, tx, m.ID, db.NotNull(sm.Fields))
+			if err != nil {
+				log.Printf("setting fields for member %s: %v", sm.Name, err)
+				return err
+			}
+
+			log.Printf("created member %s", sm.Name)
+		}
+
+		log.Printf("created user %s", su.Username)
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		fmt.Println("error committing transaction:", err)
+		log.Println("error committing transaction:", err)
 		return err
 	}
 
-	fmt.Println("Created testing user with ID", u.ID, "and name", u.Username)
+	log.Printf("seeded database with %d users", len(seed.Users))
 	return nil
-}
-
-func ptr[T any](v T) *T {
-	return &v
 }
