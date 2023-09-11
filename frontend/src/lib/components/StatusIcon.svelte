@@ -18,7 +18,6 @@
   let iconElement: HTMLElement;
 </script>
 
-<span bind:this={iconElement} tabindex={0}
-  ><Icon name={currentPreference.icon} class={className} /></span
->
-<Tooltip target={iconElement} placement="top">{currentPreference.tooltip}</Tooltip>
+<Icon aria-hidden name={currentPreference.icon} class={className} />
+<span class="visually-hidden">{currentPreference.tooltip}:</span>
+<Tooltip aria-hidden target={iconElement} placement="top">{currentPreference.tooltip}</Tooltip>
