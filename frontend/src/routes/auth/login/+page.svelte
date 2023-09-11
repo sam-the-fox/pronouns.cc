@@ -34,7 +34,9 @@
     }
   });
 
-  const fediLogin = async () => {
+  const fediLogin = async (e: Event) => {
+    e.preventDefault();
+
     fediDisabled = true;
     try {
       const resp = await apiFetch<{ url: string }>(
@@ -71,26 +73,28 @@
         {/if}
       </ListGroup>
       <Modal header="Pick an instance" isOpen={modalOpen} toggle={toggleModal}>
-        <ModalBody>
-          <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
-          <p class="text-muted mt-2">
-            <Icon name="info-circle-fill" aria-label="Info" /> This should be the domain you use to access
-            posts. For example, if your username is <code>@timmie@mastodon.example</code>, but your
-            user <em>page</em> is at
-            <code>social.mastodon.example/timmie</code>, you should fill in
-            <code>social.mastodon.example</code>.
-          </p>
-          {#if error}
-            <div class="mt-2">
-              <ErrorAlert {error} />
-            </div>
-          {/if}
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" disabled={fediDisabled || instance === ""} on:click={fediLogin}
-            >Log in</Button
-          >
-        </ModalFooter>
+        <form on:submit={(e) => fediLogin(e)}>
+          <ModalBody>
+            <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
+            <p class="text-muted mt-2">
+              <Icon name="info-circle-fill" aria-label="Info" /> This should be the domain you use to
+              access posts. For example, if your username is <code>@timmie@mastodon.example</code>,
+              but your user <em>page</em> is at
+              <code>social.mastodon.example/timmie</code>, you should fill in
+              <code>social.mastodon.example</code>.
+            </p>
+            {#if error}
+              <div class="mt-2">
+                <ErrorAlert {error} />
+              </div>
+            {/if}
+          </ModalBody>
+          <ModalFooter>
+            <Button type="submit" color="primary" disabled={fediDisabled || instance === ""}
+              >Log in</Button
+            >
+          </ModalFooter>
+        </form>
       </Modal>
       <p class="text-muted mt-2 mx-1">
         <Icon name="info-circle-fill" aria-hidden /> By signing in, you consent to pronouns.cc storing

@@ -44,7 +44,9 @@
   let googleUnlinkModalOpen = false;
   let toggleGoogleUnlinkModal = () => (googleUnlinkModalOpen = !googleUnlinkModalOpen);
 
-  const fediLogin = async () => {
+  const fediLogin = async (e: Event) => {
+    e.preventDefault();
+
     fediDisabled = true;
     try {
       const resp = await apiFetch<{ url: string }>(
@@ -205,19 +207,21 @@
       </div>
     {/if}
     <Modal header="Pick an instance" isOpen={fediLinkModalOpen} toggle={toggleFediLinkModal}>
-      <ModalBody>
-        <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
-        {#if error}
-          <div class="mt-2">
-            <ErrorAlert {error} />
-          </div>
-        {/if}
-      </ModalBody>
-      <ModalFooter>
-        <Button color="primary" disabled={fediDisabled || instance === ""} on:click={fediLogin}
-          >Log in</Button
-        >
-      </ModalFooter>
+      <form on:submit={(e) => fediLogin(e)}>
+        <ModalBody>
+          <Input placeholder="Instance (e.g. mastodon.social)" bind:value={instance} />
+          {#if error}
+            <div class="mt-2">
+              <ErrorAlert {error} />
+            </div>
+          {/if}
+        </ModalBody>
+        <ModalFooter>
+          <Button type="submit" color="primary" disabled={fediDisabled || instance === ""}
+            >Log in</Button
+          >
+        </ModalFooter>
+      </form>
     </Modal>
 
     <Modal
