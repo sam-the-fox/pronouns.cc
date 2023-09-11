@@ -49,7 +49,7 @@ func (s *Server) meta(w http.ResponseWriter, r *http.Request) error {
 
 	var notice *MetaNotice
 	if n, err := s.DB.CurrentNotice(ctx); err != nil {
-		if err == db.ErrNoNotice {
+		if err != db.ErrNoNotice {
 			log.Errorf("getting notice: %v", err)
 		}
 	} else {
