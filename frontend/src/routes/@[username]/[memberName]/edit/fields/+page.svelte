@@ -46,7 +46,7 @@
 </div>
 <div>
   <Button
-    on:click={() => ($member.fields = [...$member.fields, { name: "New field", entries: [] }])}
+    on:click={() => ($member.fields = [...$member.fields, { name: null, entries: [] }])}
   >
     <Icon name="plus" aria-hidden /> Add new field
   </Button>
