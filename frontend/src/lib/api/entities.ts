@@ -69,7 +69,7 @@ export interface Settings {
 }
 
 export interface Field {
-  name: string;
+  name: string | null;
   entries: FieldEntry[];
 }
 
