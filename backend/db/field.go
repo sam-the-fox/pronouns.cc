@@ -43,7 +43,10 @@ func (f Field) Validate(custom CustomPreferences) string {
 		}
 
 		if !entry.Status.Valid(custom) {
-			return fmt.Sprintf("entries.%d: status is invalid", i)
+            if entry.Status == "missing" {
+                return fmt.Sprintf("didn't select a status for entries.%d. make sure to select it to the right of the field", i)
+            }
+            return fmt.Sprintf("entries.%d status: '%s' is invalid", i, entry.Status)
 		}
 	}
 

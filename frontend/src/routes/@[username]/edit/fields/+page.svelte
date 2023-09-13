@@ -45,7 +45,7 @@
   </div>
 </div>
 <div>
-  <Button on:click={() => ($user.fields = [...$user.fields, { name: "New field", entries: [] }])}>
+  <Button on:click={() => ($user.fields = [...$user.fields, { name: null, entries: [] }])}>
     <Icon name="plus" aria-hidden /> Add new field
   </Button>
 </div>
