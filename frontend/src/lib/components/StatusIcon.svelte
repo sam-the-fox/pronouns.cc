@@ -15,9 +15,11 @@
   $: currentPreference =
     status in mergedPreferences ? mergedPreferences[status] : defaultPreferences.missing;
 
-  let iconElement: HTMLElement;
+  let iconElement: HTMLSpanElement;
 </script>
 
-<Icon aria-hidden name={currentPreference.icon} class={className} />
+<span bind:this={iconElement} aria-hidden>
+  <Icon name={currentPreference.icon} class={className} />
+</span>
 <span class="visually-hidden">{currentPreference.tooltip}:</span>
 <Tooltip aria-hidden target={iconElement} placement="top">{currentPreference.tooltip}</Tooltip>
