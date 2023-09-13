@@ -65,6 +65,9 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 	}
 
 	switch softwareName {
+	case "iceshrimp":
+		softwareName = "firefish"
+		fallthrough
 	case "misskey", "foundkey", "calckey", "firefish":
 		return s.noAppMisskeyURL(ctx, w, r, softwareName, instance)
 	case "mastodon", "pleroma", "akkoma", "pixelfed", "gotosocial":

@@ -36,7 +36,7 @@
 </script>
 
 <div class="p-3">
-  <h5>{field.name ? field.name : "New Field"}</h5>
+  <h5>{field.name ? field.name : "New field"}</h5>
   <InputGroup class="m-1">
     <IconButton
       color="secondary"
@@ -50,7 +50,7 @@
       tooltip="Move field right"
       click={() => moveField(false)}
     />
-    <Input placeholder="New Field" bind:value={field.name} />
+    <Input placeholder="New field" bind:value={field.name} />
     <Button color="danger" on:click={() => deleteField()}>Delete field</Button>
   </InputGroup>
   <hr />
