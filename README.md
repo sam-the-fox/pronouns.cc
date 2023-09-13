@@ -33,8 +33,7 @@ Requirements:
 1. Create a PostgreSQL user and database (the user should own the database).
    For example: `create user pronouns with password 'password'; create database pronouns with owner pronouns;`
 2. Copy `.env.example` in the repository root to a new file named `.env` and fill out the required options.
-3. Copy `./frontend/.env.example` to `./frontend/env` and fill out the required options (`PUBLIC_BASE_URL`),
-   instead of using `localhost` use `127.0.0.1`.
+3. Copy `frontend/.env.example` to `frontend/env` and fill out the required options.
 4. Run `go run -v . database migrate` to initialize the database, then optionally `go run -v . database seed` to insert a test user.
 5. Run `pnpm dev`. Alternatively, if you don't want the backend to live reload, run `go run -v . web`,
    then change to the `frontend/` directory and run `pnpm dev`.
