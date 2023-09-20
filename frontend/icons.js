@@ -16,26 +16,22 @@ writeFileSync("src/icons.ts", `const icons = ${output};\nexport default icons;`)
 const goCode1 = `// Generated code. DO NOT EDIT
 package icons
 
-var icons = [...]string{
+var icons = map[string]struct{}{
 `;
 
 const goCode2 = `}
 
 // IsValid returns true if the input is the name of a Bootstrap icon.
 func IsValid(name string) bool {
-	for i := range icons {
-		if icons[i] == name {
-			return true
-		}
-	}
-	return false
+	_, ok := icons[name]
+	return ok
 }
 `;
 
 let goOutput = goCode1;
 
 keys.forEach((element) => {
-  goOutput += `	"${element}",\n`;
+  goOutput += `	"${element}": {},\n`;
 });
 
 goOutput += goCode2;

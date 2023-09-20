@@ -2,7 +2,6 @@ package backend
 
 import (
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/auth"
-	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/bot"
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/member"
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/meta"
 	"codeberg.org/pronounscc/pronouns.cc/backend/routes/v1/mod"
@@ -21,7 +20,6 @@ func mountRoutes(s *server.Server) {
 		auth.Mount(s, r)
 		user.Mount(s, r)
 		member.Mount(s, r)
-		bot.Mount(s, r)
 		meta.Mount(s, r)
 		mod.Mount(s, r)
 	})
