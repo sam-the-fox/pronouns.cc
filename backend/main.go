@@ -30,7 +30,7 @@ func run(c *cli.Context) error {
 			Dsn:                dsn,
 			Debug:              os.Getenv("DEBUG") == "true",
 			Release:            server.Tag,
-			EnableTracing:      true,
+			EnableTracing:      os.Getenv("SENTRY_TRACING") == "true",
 			TracesSampleRate:   0.05,
 			ProfilesSampleRate: 0.05,
 		})
