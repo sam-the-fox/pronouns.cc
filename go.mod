@@ -9,6 +9,7 @@ require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/davidbyttow/govips/v2 v2.13.0
 	github.com/georgysavva/scany/v2 v2.0.0
+	github.com/getsentry/sentry-go v0.24.1
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httprate v0.7.1

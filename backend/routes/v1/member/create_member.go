@@ -127,14 +127,14 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 			return server.APIError{Code: server.ErrMemberNameInUse}
 		}
 
-		return err
+		return errors.Wrap(err, "creating member")
 	}
 
 	// set names, pronouns, fields
 	err = s.DB.SetMemberNamesPronouns(ctx, tx, m.ID, db.NotNull(cmr.Names), db.NotNull(cmr.Pronouns))
 	if err != nil {
 		log.Errorf("setting names and pronouns for member %v: %v", m.ID, err)
-		return err
+		return errors.Wrap(err, "setting names/pronouns")
 	}
 	m.Names = cmr.Names
 	m.Pronouns = cmr.Pronouns
@@ -142,7 +142,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	err = s.DB.SetMemberFields(ctx, tx, m.ID, cmr.Fields)
 	if err != nil {
 		log.Errorf("setting fields for member %v: %v", m.ID, err)
-		return err
+		return errors.Wrap(err, "setting fields")
 	}
 
 	if cmr.Avatar != "" {
@@ -161,13 +161,13 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 			}
 
 			log.Errorf("converting member avatar: %v", err)
-			return err
+			return errors.Wrap(err, "converting avatar")
 		}
 
 		hash, err := s.DB.WriteMemberAvatar(ctx, m.ID, webp, jpg)
 		if err != nil {
 			log.Errorf("uploading member avatar: %v", err)
-			return err
+			return errors.Wrap(err, "uploading avatar")
 		}
 
 		err = tx.QueryRow(ctx, "UPDATE members SET avatar = $1 WHERE id = $2", hash, m.ID).Scan(&m.Avatar)
@@ -180,7 +180,7 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
 	if err != nil {
 		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
-		return err
+		return errors.Wrap(err, "updating last active time")
 	}
 
 	err = tx.Commit(ctx)

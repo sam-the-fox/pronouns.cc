@@ -66,7 +66,7 @@ func (s *Server) deleteMember(w http.ResponseWriter, r *http.Request) (err error
 	err = s.DB.UpdateActiveTime(ctx, s.DB, claims.UserID)
 	if err != nil {
 		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
-		return err
+		return errors.Wrap(err, "updating last active time")
 	}
 
 	render.NoContent(w, r)

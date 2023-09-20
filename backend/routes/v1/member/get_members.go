@@ -6,6 +6,7 @@ import (
 	"codeberg.org/pronounscc/pronouns.cc/backend/common"
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
+	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/rs/xid"
@@ -74,7 +75,7 @@ func (s *Server) getUserMembers(w http.ResponseWriter, r *http.Request) error {
 
 	ms, err := s.DB.UserMembers(ctx, u.ID, isSelf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting members")
 	}
 
 	render.JSON(w, r, membersToMemberList(ms, isSelf))
@@ -87,7 +88,7 @@ func (s *Server) getMeMembers(w http.ResponseWriter, r *http.Request) error {
 
 	ms, err := s.DB.UserMembers(ctx, claims.UserID, true)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting members")
 	}
 
 	render.JSON(w, r, membersToMemberList(ms, true))

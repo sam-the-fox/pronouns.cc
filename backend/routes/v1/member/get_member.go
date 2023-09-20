@@ -105,7 +105,7 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) (err error) {
 
 	u, err := s.DB.User(ctx, m.UserID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting user")
 	}
 
 	if u.DeletedAt != nil {
@@ -119,12 +119,12 @@ func (s *Server) getMember(w http.ResponseWriter, r *http.Request) (err error) {
 
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting member fields")
 	}
 
 	flags, err := s.DB.MemberFlags(ctx, m.ID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting member flags")
 	}
 
 	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, isOwnMember))
@@ -159,12 +159,12 @@ func (s *Server) getUserMember(w http.ResponseWriter, r *http.Request) error {
 
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting member fields")
 	}
 
 	flags, err := s.DB.MemberFlags(ctx, m.ID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting member flags")
 	}
 
 	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, isOwnMember))
@@ -189,12 +189,12 @@ func (s *Server) getMeMember(w http.ResponseWriter, r *http.Request) error {
 
 	fields, err := s.DB.MemberFields(ctx, m.ID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting member fields")
 	}
 
 	flags, err := s.DB.MemberFlags(ctx, m.ID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting member flags")
 	}
 
 	render.JSON(w, r, dbMemberToMember(u, m, fields, flags, true))

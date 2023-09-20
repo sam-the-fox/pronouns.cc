@@ -8,6 +8,7 @@ import (
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
+	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/rs/xid"
@@ -146,7 +147,7 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) (err error) {
 			}
 		} else if err != nil {
 			log.Errorf("Error getting user by username: %v", err)
-			return err
+			return errors.Wrap(err, "getting user")
 		}
 	}
 
@@ -162,13 +163,13 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) (err error) {
 	fields, err := s.DB.UserFields(ctx, u.ID)
 	if err != nil {
 		log.Errorf("Error getting user fields: %v", err)
-		return err
+		return errors.Wrap(err, "getting fields")
 	}
 
 	flags, err := s.DB.UserFlags(ctx, u.ID)
 	if err != nil {
 		log.Errorf("getting user flags: %v", err)
-		return err
+		return errors.Wrap(err, "getting flags")
 	}
 
 	var members []db.Member
@@ -176,7 +177,7 @@ func (s *Server) getUser(w http.ResponseWriter, r *http.Request) (err error) {
 		members, err = s.DB.UserMembers(ctx, u.ID, isSelf)
 		if err != nil {
 			log.Errorf("Error getting user members: %v", err)
-			return err
+			return errors.Wrap(err, "getting user members")
 		}
 	}
 
@@ -191,25 +192,25 @@ func (s *Server) getMeUser(w http.ResponseWriter, r *http.Request) error {
 	u, err := s.DB.User(ctx, claims.UserID)
 	if err != nil {
 		log.Errorf("Error getting user: %v", err)
-		return err
+		return errors.Wrap(err, "getting users")
 	}
 
 	fields, err := s.DB.UserFields(ctx, u.ID)
 	if err != nil {
 		log.Errorf("Error getting user fields: %v", err)
-		return err
+		return errors.Wrap(err, "getting fields")
 	}
 
 	members, err := s.DB.UserMembers(ctx, u.ID, true)
 	if err != nil {
 		log.Errorf("Error getting user members: %v", err)
-		return err
+		return errors.Wrap(err, "getting members")
 	}
 
 	flags, err := s.DB.UserFlags(ctx, u.ID)
 	if err != nil {
 		log.Errorf("getting user flags: %v", err)
-		return err
+		return errors.Wrap(err, "getting flags")
 	}
 
 	render.JSON(w, r, GetMeResponse{

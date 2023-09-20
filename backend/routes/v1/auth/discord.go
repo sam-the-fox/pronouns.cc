@@ -61,7 +61,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	// if the state can't be validated, return
 	if valid, err := s.validateCSRFState(ctx, decoded.State); !valid {
 		if err != nil {
-			return err
+			return errors.Wrap(err, "validating state")
 		}
 
 		return server.APIError{Code: server.ErrInvalidState}
@@ -79,7 +79,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	dg, _ := discordgo.New(token.Type() + " " + token.AccessToken)
 	du, err := dg.User("@me")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "getting discord user")
 	}
 
 	u, err := s.DB.DiscordUser(ctx, du.ID)
@@ -90,7 +90,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 			err = s.saveUndeleteToken(ctx, u.ID, token)
 			if err != nil {
 				log.Errorf("saving undelete token: %v", err)
-				return err
+				return errors.Wrap(err, "saving undelete token")
 			}
 
 			render.JSON(w, r, discordCallbackResponse{
@@ -114,7 +114,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		tokenID := xid.New()
 		token, err := s.Auth.CreateToken(u.ID, tokenID, u.IsAdmin, false, true)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "creating token")
 		}
 
 		// save token to database
@@ -137,7 +137,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 		return nil
 
 	} else if err != db.ErrUserNotFound { // internal error
-		return err
+		return errors.Wrap(err, "getting user")
 	}
 
 	// no user found, so save a ticket + save their Discord info in Redis
@@ -145,7 +145,7 @@ func (s *Server) discordCallback(w http.ResponseWriter, r *http.Request) error {
 	err = s.DB.SetJSON(ctx, "discord:"+ticket, du, "EX", "600")
 	if err != nil {
 		log.Errorf("setting Discord user for ticket %q: %v", ticket, err)
-		return err
+		return errors.Wrap(err, "caching discord user for ticket")
 	}
 
 	render.JSON(w, r, discordCallbackResponse{
@@ -278,7 +278,7 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 
 	valid, taken, err := s.DB.UsernameTaken(ctx, req.Username)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "checking if username is taken")
 	}
 	if !valid {
 		return server.APIError{Code: server.ErrInvalidUsername}

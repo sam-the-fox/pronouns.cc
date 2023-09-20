@@ -11,6 +11,7 @@ import (
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 
 	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/getsentry/sentry-go"
 	"github.com/go-chi/render"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli/v2"
@@ -23,6 +24,14 @@ var Command = &cli.Command{
 }
 
 func run(c *cli.Context) error {
+	// initialize sentry
+	if dsn := os.Getenv("SENTRY_DSN"); dsn != "" {
+		sentry.Init(sentry.ClientOptions{
+			Dsn:     dsn,
+			Release: server.Tag,
+		})
+	}
+
 	// set vips log level to WARN, else it will spam logs on info level
 	vips.LoggingSettings(nil, vips.LogLevelWarning)
 

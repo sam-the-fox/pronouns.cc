@@ -7,6 +7,7 @@ import (
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
+	"emperror.dev/errors"
 	"github.com/go-chi/render"
 )
 
@@ -71,7 +72,7 @@ func (s *Server) getExport(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		log.Errorf("getting export for user %v: %v", claims.UserID, err)
-		return err
+		return errors.Wrap(err, "getting export")
 	}
 
 	render.JSON(w, r, dataExportResponse{

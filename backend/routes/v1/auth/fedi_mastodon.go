@@ -54,7 +54,7 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 	// if the state can't be validated, return
 	if valid, err := s.validateCSRFState(ctx, decoded.State); !valid {
 		if err != nil {
-			return err
+			return errors.Wrap(err, "validating state")
 		}
 
 		return server.APIError{Code: server.ErrInvalidState}
@@ -111,7 +111,7 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 			err = s.saveUndeleteToken(ctx, u.ID, token)
 			if err != nil {
 				log.Errorf("saving undelete token: %v", err)
-				return err
+				return errors.Wrap(err, "saving undelete token")
 			}
 
 			render.JSON(w, r, fediCallbackResponse{
@@ -135,7 +135,7 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 		tokenID := xid.New()
 		token, err := s.Auth.CreateToken(u.ID, tokenID, u.IsAdmin, false, true)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "creating token")
 		}
 
 		// save token to database
@@ -158,7 +158,7 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 		return nil
 
 	} else if err != db.ErrUserNotFound { // internal error
-		return err
+		return errors.Wrap(err, "getting user")
 	}
 
 	// no user found, so save a ticket + save their Mastodon info in Redis
@@ -166,7 +166,7 @@ func (s *Server) mastodonCallback(w http.ResponseWriter, r *http.Request) error 
 	err = s.DB.SetJSON(ctx, "mastodon:"+ticket, mu, "EX", "600")
 	if err != nil {
 		log.Errorf("setting mastoAPI user for ticket %q: %v", ticket, err)
-		return err
+		return errors.Wrap(err, "setting user for ticket")
 	}
 
 	render.JSON(w, r, fediCallbackResponse{
@@ -306,7 +306,7 @@ func (s *Server) mastodonSignup(w http.ResponseWriter, r *http.Request) error {
 
 	valid, taken, err := s.DB.UsernameTaken(ctx, req.Username)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "checking if username is taken")
 	}
 	if !valid {
 		return server.APIError{Code: server.ErrInvalidUsername}

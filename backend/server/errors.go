@@ -1,10 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"github.com/getsentry/sentry-go"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
 
@@ -12,6 +15,17 @@ import (
 // The inner HandlerFunc additionally returns an error.
 func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		hub := sentry.CurrentHub().Clone()
+
+		defer func(hub *sentry.Hub, r *http.Request) {
+			if err := recover(); err != nil {
+				hub.RecoverWithContext(
+					context.WithValue(r.Context(), sentry.RequestContextKey, r),
+					err,
+				)
+			}
+		}(hub, r)
+
 		err := hn(w, r)
 		if err != nil {
 			// if the function returned an API error, just render that verbatim
@@ -24,10 +38,16 @@ func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.Han
 				return
 			}
 
-			// otherwise, we log the error and return an internal server error message
-			log.Errorf("error in http handler: %v", err)
+			rctx := chi.RouteContext(r.Context())
+			hub.ConfigureScope(func(scope *sentry.Scope) {
+				scope.SetTag("method", rctx.RouteMethod)
+				scope.SetTag("path", rctx.RoutePattern())
+			})
 
-			apiErr := APIError{Code: ErrInternalServerError}
+			log.Errorf("error in handler for %v %v: %v", rctx.RouteMethod, rctx.RoutePattern(), err)
+
+			eventID := hub.CaptureException(err)
+			apiErr := APIError{ID: eventID, Code: ErrInternalServerError}
 			apiErr.prepare()
 
 			render.Status(r, apiErr.Status)
@@ -39,9 +59,10 @@ func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.Han
 // APIError is an object returned by the API when an error occurs.
 // It implements the error interface and can be returned by handlers.
 type APIError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message,omitempty"`
-	Details string `json:"details,omitempty"`
+	Code    int             `json:"code"`
+	ID      *sentry.EventID `json:"id,omitempty"`
+	Message string          `json:"message,omitempty"`
+	Details string          `json:"details,omitempty"`
 
 	RatelimitReset *int `json:"ratelimit_reset,omitempty"`
 

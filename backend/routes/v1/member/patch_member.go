@@ -220,13 +220,13 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 				}
 
 				log.Errorf("converting member avatar: %v", err)
-				return err
+				return errors.Wrap(err, "converting member avatar")
 			}
 
 			hash, err := s.DB.WriteMemberAvatar(ctx, m.ID, webp, jpg)
 			if err != nil {
 				log.Errorf("uploading member avatar: %v", err)
-				return err
+				return errors.Wrap(err, "writing member avatar")
 			}
 			avatarHash = &hash
 
@@ -244,7 +244,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		log.Errorf("creating transaction: %v", err)
-		return err
+		return errors.Wrap(err, "creating transaction")
 	}
 	defer tx.Rollback(ctx)
 
@@ -275,7 +275,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		err = s.DB.SetMemberNamesPronouns(ctx, tx, m.ID, names, pronouns)
 		if err != nil {
 			log.Errorf("setting names for member %v: %v", m.ID, err)
-			return err
+			return errors.Wrap(err, "setting names/pronouns")
 		}
 		m.Names = names
 		m.Pronouns = pronouns
@@ -286,14 +286,14 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		err = s.DB.SetMemberFields(ctx, tx, m.ID, *req.Fields)
 		if err != nil {
 			log.Errorf("setting fields for member %v: %v", m.ID, err)
-			return err
+			return errors.Wrap(err, "setting fields")
 		}
 		fields = *req.Fields
 	} else {
 		fields, err = s.DB.MemberFields(ctx, m.ID)
 		if err != nil {
 			log.Errorf("getting fields for member %v: %v", m.ID, err)
-			return err
+			return errors.Wrap(err, "getting fields")
 		}
 	}
 
@@ -306,7 +306,7 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 			}
 
 			log.Errorf("updating flags for member %v: %v", m.ID, err)
-			return err
+			return errors.Wrap(err, "updating flags")
 		}
 	}
 
@@ -314,20 +314,20 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
 	if err != nil {
 		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
-		return err
+		return errors.Wrap(err, "updating last active time")
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		log.Errorf("committing transaction: %v", err)
-		return err
+		return errors.Wrap(err, "committing transaction")
 	}
 
 	// get flags to return (we need to return full flag objects, not the array of IDs in the request body)
 	flags, err := s.DB.MemberFlags(ctx, m.ID)
 	if err != nil {
 		log.Errorf("getting user flags: %v", err)
-		return err
+		return errors.Wrap(err, "getting flags")
 	}
 
 	// echo the updated member back on success

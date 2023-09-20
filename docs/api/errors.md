@@ -2,12 +2,13 @@
 
 If there is an error in your request, or the server encounters an error while processing it, an error object will be returned.
 
-| Field           | Type    | Description                                                     |
-| --------------- | ------- | --------------------------------------------------------------- |
-| code            | int     | an [error code](./errors#error-codes)                           |
-| message         | ?string | a human-readable description of the error                       |
-| details         | ?string | more details about the error, most often for bad request errors |
-| ratelimit_reset | ?int    | the unix time when an expired rate limit will reset             |
+| Field           | Type    | Description                                                         |
+| --------------- | ------- | ------------------------------------------------------------------- |
+| code            | int     | an [error code](./errors#error-codes)                               |
+| id              | ?string | an opaque Sentry event ID, only returned for internal server errors |
+| message         | ?string | a human-readable description of the error                           |
+| details         | ?string | more details about the error, most often for bad request errors     |
+| ratelimit_reset | ?int    | the unix time when an expired rate limit will reset                 |
 
 ### Error codes
 

@@ -195,13 +195,13 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 				}
 
 				log.Errorf("converting user avatar: %v", err)
-				return err
+				return errors.Wrap(err, "converting avatar")
 			}
 
 			hash, err := s.DB.WriteUserAvatar(ctx, claims.UserID, webp, jpg)
 			if err != nil {
 				log.Errorf("uploading user avatar: %v", err)
-				return err
+				return errors.Wrap(err, "uploading avatar")
 			}
 			avatarHash = &hash
 
@@ -219,7 +219,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	tx, err := s.DB.Begin(ctx)
 	if err != nil {
 		log.Errorf("creating transaction: %v", err)
-		return err
+		return errors.Wrap(err, "creating transaction")
 	}
 	defer tx.Rollback(ctx)
 
@@ -243,7 +243,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	u, err = s.DB.UpdateUser(ctx, tx, claims.UserID, req.DisplayName, req.Bio, req.MemberTitle, req.ListPrivate, req.Links, avatarHash, req.Timezone, req.CustomPreferences)
 	if err != nil && errors.Cause(err) != db.ErrNothingToUpdate {
 		log.Errorf("updating user: %v", err)
-		return err
+		return errors.Wrap(err, "updating user")
 	}
 
 	if req.Names != nil || req.Pronouns != nil {
@@ -260,7 +260,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		err = s.DB.SetUserNamesPronouns(ctx, tx, claims.UserID, names, pronouns)
 		if err != nil {
 			log.Errorf("setting names for member %v: %v", claims.UserID, err)
-			return err
+			return errors.Wrap(err, "setting names/pronouns")
 		}
 		u.Names = names
 		u.Pronouns = pronouns
@@ -271,14 +271,14 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		err = s.DB.SetUserFields(ctx, tx, claims.UserID, *req.Fields)
 		if err != nil {
 			log.Errorf("setting fields for user %v: %v", claims.UserID, err)
-			return err
+			return errors.Wrap(err, "setting fields")
 		}
 		fields = *req.Fields
 	} else {
 		fields, err = s.DB.UserFields(ctx, claims.UserID)
 		if err != nil {
 			log.Errorf("getting fields for user %v: %v", claims.UserID, err)
-			return err
+			return errors.Wrap(err, "getting fields")
 		}
 	}
 
@@ -291,7 +291,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 			}
 
 			log.Errorf("updating flags for user %v: %v", claims.UserID, err)
-			return err
+			return errors.Wrap(err, "updating flags")
 		}
 	}
 
@@ -299,13 +299,13 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	err = s.DB.UpdateActiveTime(ctx, tx, claims.UserID)
 	if err != nil {
 		log.Errorf("updating last active time for user %v: %v", claims.UserID, err)
-		return err
+		return errors.Wrap(err, "updating last active time")
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		log.Errorf("committing transaction: %v", err)
-		return err
+		return errors.Wrap(err, "committing transaction")
 	}
 
 	// get fedi instance name if the user has a linked fedi account
@@ -321,7 +321,7 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 	flags, err := s.DB.UserFlags(ctx, u.ID)
 	if err != nil {
 		log.Errorf("getting user flags: %v", err)
-		return err
+		return errors.Wrap(err, "getting flags")
 	}
 
 	// echo the updated user back on success
