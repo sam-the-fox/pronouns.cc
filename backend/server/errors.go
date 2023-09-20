@@ -1,10 +1,12 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
+	"emperror.dev/errors"
 	"github.com/getsentry/sentry-go"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -37,9 +39,13 @@ func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.Han
 				scope.SetTag("path", rctx.RoutePattern())
 			})
 
-			log.Errorf("error in handler for %v %v: %v", rctx.RouteMethod, rctx.RoutePattern(), err)
-
-			eventID := hub.CaptureException(err)
+			var eventID *sentry.EventID = nil
+			if isExpectedError(err) {
+				log.Infof("expected error in handler for %v %v, ignoring", rctx.RouteMethod, rctx.RoutePattern())
+			} else {
+				log.Errorf("error in handler for %v %v: %v", rctx.RouteMethod, rctx.RoutePattern(), err)
+				eventID = hub.CaptureException(err)
+			}
 			apiErr := APIError{ID: eventID, Code: ErrInternalServerError}
 			apiErr.prepare()
 
@@ -47,6 +53,10 @@ func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.Han
 			render.JSON(w, r, apiErr)
 		}
 	}
+}
+
+func isExpectedError(err error) bool {
+	return errors.Is(err, context.Canceled)
 }
 
 // APIError is an object returned by the API when an error occurs.
