@@ -31,8 +31,8 @@ func run(c *cli.Context) error {
 			Debug:              os.Getenv("DEBUG") == "true",
 			Release:            server.Tag,
 			EnableTracing:      true,
-			TracesSampleRate:   1.0,
-			ProfilesSampleRate: 1.0,
+			TracesSampleRate:   0.05,
+			ProfilesSampleRate: 0.05,
 		})
 	}
 
