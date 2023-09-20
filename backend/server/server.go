@@ -50,6 +50,9 @@ func New() (*Server, error) {
 		s.Router.Use(middleware.Logger)
 	}
 	s.Router.Use(middleware.Recoverer)
+	// add Sentry tracing handler
+	s.Router.Use(s.sentry)
+
 	// add CORS
 	s.Router.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"https://*", "http://*"},

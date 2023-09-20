@@ -27,8 +27,12 @@ func run(c *cli.Context) error {
 	// initialize sentry
 	if dsn := os.Getenv("SENTRY_DSN"); dsn != "" {
 		sentry.Init(sentry.ClientOptions{
-			Dsn:     dsn,
-			Release: server.Tag,
+			Dsn:                dsn,
+			Debug:              true,
+			Release:            server.Tag,
+			EnableTracing:      true,
+			TracesSampleRate:   1.0,
+			ProfilesSampleRate: 1.0,
 		})
 	}
 

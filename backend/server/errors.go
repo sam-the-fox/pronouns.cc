@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -15,16 +14,10 @@ import (
 // The inner HandlerFunc additionally returns an error.
 func WrapHandler(hn func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		hub := sentry.CurrentHub().Clone()
-
-		defer func(hub *sentry.Hub, r *http.Request) {
-			if err := recover(); err != nil {
-				hub.RecoverWithContext(
-					context.WithValue(r.Context(), sentry.RequestContextKey, r),
-					err,
-				)
-			}
-		}(hub, r)
+		hub := sentry.GetHubFromContext(r.Context())
+		if hub == nil {
+			hub = sentry.CurrentHub().Clone()
+		}
 
 		err := hn(w, r)
 		if err != nil {
