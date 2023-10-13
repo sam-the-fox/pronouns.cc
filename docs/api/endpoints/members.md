@@ -5,6 +5,7 @@
 | Field        | Type                                                 | Description                                                                       |
 | ------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
 | id           | string                                               | the member's unique ID                                                            |
+| id_new       | snowflake                                            | the member's unique snowflake ID                                                  |
 | sid          | string                                               | the member's 6-letter short ID                                                    |
 | name         | string                                               | the member's name                                                                 |
 | display_name | string?                                              | the member's display name or nickname                                             |
@@ -23,6 +24,7 @@
 | Field              | Type                                                 | Description                            |
 | ------------------ | ---------------------------------------------------- | -------------------------------------- |
 | id                 | string                                               | the user's unique ID                   |
+| id_new             | snowflake                                            | the user's unique snowflake ID         |
 | name               | string                                               | the user's username                    |
 | display_name       | string?                                              | the user's display name or nickname    |
 | avatar             | string?                                              | the user's [avatar hash](/api/#images) |
@@ -95,18 +97,18 @@ Returns the updated [member](./members#member-object) on success.
 
 #### Request body parameters
 
-| Field              | Type                 | Description                                                                                         |
-| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------- |
-| name               | string               | the member's new name. Must be unique per user, and be between 1 and 100 characters.                |
-| display_name       | string               | the member's new display name. Must be between 1 and 100 characters                                 |
-| bio                | string               | the member's new bio. Must be between 1 and 1000 characters                                         |
-| links              | string[]             | the member's new profile links. Maximum 25 links, and links must be between 1 and 256 characters    |
-| names              | field_entry[]        | the member's new preferred names                                                                    |
-| pronouns           | pronoun_entry[]      | the member's new preferred pronouns                                                                 |
-| fields             | field[]              | the member's new profile fields                                                                     |
-| flags              | string[]             | the member's new flags. This must be an array of [pride flag](./#pride-flag) IDs.                   |
-| avatar             | string               | the member's new avatar. This must be a PNG, JPEG, or WebP image, encoded in base64 data URI format |
-| unlisted           | bool                 | whether or not the member should be hidden from the member list                                     |
+| Field        | Type            | Description                                                                                            |
+| ------------ | --------------- | ------------------------------------------------------------------------------------------------------ |
+| name         | string          | the member's new name. Must be unique per user, and be between 1 and 100 characters.                   |
+| display_name | string          | the member's new display name. Must be between 1 and 100 characters                                    |
+| bio          | string          | the member's new bio. Must be between 1 and 1000 characters                                            |
+| links        | string[]        | the member's new profile links. Maximum 25 links, and links must be between 1 and 256 characters       |
+| names        | field_entry[]   | the member's new preferred names                                                                       |
+| pronouns     | pronoun_entry[] | the member's new preferred pronouns                                                                    |
+| fields       | field[]         | the member's new profile fields                                                                        |
+| flags        | string[]        | the member's new flags. This must be an array of [pride flag](./#pride-flag) IDs, _not_ snowflake IDs. |
+| avatar       | string          | the member's new avatar. This must be a PNG, JPEG, or WebP image, encoded in base64 data URI format    |
+| unlisted     | bool            | whether or not the member should be hidden from the member list                                        |
 
 ### Delete member
 

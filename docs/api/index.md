@@ -62,19 +62,23 @@ The "type" column in tables is formatted as follows:
 
 ## IDs
 
-::: info
-pronouns.cc is [planning a transition](https://codeberg.org/pronounscc/pronouns.cc/issues/89)
-to [Snowflake IDs](https://en.wikipedia.org/wiki/Snowflake_ID).
-The information below pertains to the current ID format.
-:::
+### Snowflake IDs
 
-The API uses [xid](https://github.com/rs/xid) for unique IDs. These are always serialized as strings.
+For [multiple reasons](https://codeberg.org/pronounscc/pronouns.cc/issues/89),
+pronouns.cc is transitioning to using snowflakes for unique IDs. These will become the default in the next API version,
+but are already returned as `id_new` in the relevant objects (users, members, and flags).
+
+### xids
+
+[xid](https://github.com/rs/xid) is the previous unique ID format. These are always serialized as strings.
 Although xids have timestamp information embedded in them, this is non-trivial to extract.
 xids are unique across _all_ resources, they are never shared (for example, a user and a member cannot share the same ID).
 
+### prns.cc IDs
+
 Users and members also have an additional ID type, `sid`.
 These are randomly generated 5 or 6 letter strings, and are used for the prns.cc URL shortener.
-They can be rerolled once per hour.
+**These can change at any time**, as short IDs can be rerolled once per hour.
 
 ## Images
 

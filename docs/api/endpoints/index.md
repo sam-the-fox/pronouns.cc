@@ -45,9 +45,10 @@ A user can set custom word preferences, which can have custom icons and tooltips
 
 ## Pride flag
 
-| Field       | Type    | Description                           |
-| ----------- | ------- | ------------------------------------- |
-| id          | string  | the flag's unique ID                  |
-| hash        | string  | the flag's [image hash](/api/#images) |
-| name        | string  | the flag's name                       |
-| description | string? | the flag's description or alt text    |
+| Field       | Type      | Description                           |
+| ----------- | --------- | ------------------------------------- |
+| id          | string    | the flag's unique ID                  |
+| id_new      | snowflake | the flag's unique snowflake ID        |
+| hash        | string    | the flag's [image hash](/api/#images) |
+| name        | string    | the flag's name                       |
+| description | string?   | the flag's description or alt text    |

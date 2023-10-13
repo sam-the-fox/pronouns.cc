@@ -5,6 +5,7 @@
 | Field              | Type                                                 | Description                                                                 |
 | ------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------- |
 | id                 | string                                               | the user's unique ID                                                        |
+| id_new             | snowflake                                            | the user's unique snowflake ID                                              |
 | sid                | string                                               | the user's 5 letter short ID                                                |
 | name               | string                                               | the user's username                                                         |
 | display_name       | string?                                              | the user's display name or nickname                                         |
@@ -45,6 +46,7 @@
 | Field        | Type                                | Description                              |
 | ------------ | ----------------------------------- | ---------------------------------------- |
 | id           | string                              | the member's unique ID                   |
+| id_new       | snowflake                           | the member's unique snowflake ID         |
 | sid          | string                              | the member's 6-letter short ID           |
 | name         | string                              | the member's name                        |
 | display_name | string?                             | the member's display name or nickname    |
@@ -89,7 +91,7 @@ Returns the updated [user](./users#user-object) object on success.
 | names              | field_entry[]        | the user's new preferred names                                                                                |
 | pronouns           | pronoun_entry[]      | the user's new preferred pronouns                                                                             |
 | fields             | field[]              | the user's new profile fields                                                                                 |
-| flags              | string[]             | the user's new flags. This must be an array of [pride flag](./#pride-flag) IDs.                               |
+| flags              | string[]             | the user's new flags. This must be an array of [pride flag](./#pride-flag) IDs, _not_ snowflake IDs.          |
 | avatar             | string               | the user's new avatar. This must be a PNG, JPEG, or WebP image, encoded in base64 data URI format             |
 | timezone           | string               | the user's new timezone. Must be in IANA timezone database format                                             |
 | list_private       | bool                 | whether or not the user's member list should be hidden                                                        |
