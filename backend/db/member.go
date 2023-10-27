@@ -41,12 +41,14 @@ const (
 )
 
 // member names must match this regex
-var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"\\{\\}'$%&()+<=>^|~`,]{1,100}$")
+var memberNameRegex = regexp.MustCompile("^[^@\\?!#/\\\\[\\]\"\\{\\}'$%&()+<=>^|~`,\\*]{1,100}$")
 
 // List of member names that cannot be used because they would break routing or be inaccessible due to page conflicts.
 var invalidMemberNames = []string{
+	// these break routing outright
 	".",
 	"..",
+	// the user edit page lives at `/@{username}/edit`, so a member named "edit" would be inaccessible
 	"edit",
 }
 
