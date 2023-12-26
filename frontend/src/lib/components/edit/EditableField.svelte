@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Field, CustomPreferences } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
-  import { Button, Input, InputGroup } from "sveltestrap";
+  import { Button, Input, InputGroup } from "@sveltestrap/sveltestrap";
   import FieldEntry from "./FieldEntry.svelte";
 
   export let field: Field;

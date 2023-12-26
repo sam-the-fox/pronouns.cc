@@ -13,7 +13,7 @@ export const load = async ({ params }) => {
     const flags = await apiFetchClient<PrideFlag[]>("/users/@me/flags");
 
     if (params.username !== user.name) {
-      throw redirect(303, `/@${user.name}/edit`);
+      redirect(303, `/@${user.name}/edit`);
     }
 
     return {
@@ -22,7 +22,7 @@ export const load = async ({ params }) => {
       flags,
     };
   } catch (e) {
-    if ("code" in e) throw error(500, e as APIError);
+    if ("code" in e) error(500, e as APIError);
     throw e;
   }
 };

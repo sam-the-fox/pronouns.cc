@@ -12,7 +12,7 @@
     ModalBody,
     ModalFooter,
     ModalHeader,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
 
   interface Token {

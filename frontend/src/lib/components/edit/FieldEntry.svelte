@@ -9,7 +9,7 @@
     DropdownToggle,
     Icon,
     Tooltip,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
 
   export let value: string;
   export let status: string;

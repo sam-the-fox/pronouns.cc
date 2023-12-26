@@ -13,7 +13,7 @@
   import { settingsStore } from "$lib/store";
   import { toastStore } from "$lib/toast";
   import Toast from "$lib/components/Toast.svelte";
-  import { Alert, Icon } from "sveltestrap";
+  import { Alert, Icon } from "@sveltestrap/sveltestrap";
   import { apiFetchClient } from "$lib/api/fetch";
   import type { Settings } from "$lib/api/entities";
   import { renderUnsafeMarkdown } from "$lib/utils";

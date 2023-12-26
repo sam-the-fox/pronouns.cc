@@ -4,7 +4,7 @@
 
   import { PreferenceSize, type APIError, type MeUser } from "$lib/api/entities";
   import IconButton from "$lib/components/IconButton.svelte";
-  import { Button, ButtonGroup, FormGroup, Icon, Input, InputGroup } from "sveltestrap";
+  import { Button, ButtonGroup, FormGroup, Icon, Input, InputGroup } from "@sveltestrap/sveltestrap";
   import { PUBLIC_SHORT_BASE } from "$env/static/public";
   import CustomPreference from "./CustomPreference.svelte";
   import { DateTime, FixedOffsetZone } from "luxon";

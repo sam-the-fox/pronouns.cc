@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
   import type { MeUser } from "$lib/api/entities";
-  import { Button, Icon, Popover } from "sveltestrap";
+  import { Button, Icon, Popover } from "@sveltestrap/sveltestrap";
   import EditablePronouns from "$lib/components/edit/EditablePronouns.svelte";
   import IconButton from "$lib/components/IconButton.svelte";
   import type { PageData } from "./$types";

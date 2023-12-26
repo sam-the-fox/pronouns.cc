@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Icon } from "sveltestrap";
+  import { Icon } from "@sveltestrap/sveltestrap";
 
   export let link: string;
 

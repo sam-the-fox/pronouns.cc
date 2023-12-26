@@ -4,7 +4,7 @@
   import type { PageData } from "./$types";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
-  import { Alert, Button, Icon, InputGroup } from "sveltestrap";
+  import { Alert, Button, Icon, InputGroup } from "@sveltestrap/sveltestrap";
   import {
     memberAvatars,
     pronounDisplay,

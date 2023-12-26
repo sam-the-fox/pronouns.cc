@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
-  import { Button, Icon } from "sveltestrap";
+  import { Button, Icon } from "@sveltestrap/sveltestrap";
 
   import type { MeUser } from "$lib/api/entities";
   import EditableField from "$lib/components/edit/EditableField.svelte";

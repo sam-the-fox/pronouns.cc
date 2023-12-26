@@ -16,14 +16,14 @@ export const load = async ({ params }) => {
       } as APIError;
     }
 
-    throw redirect(303, `/@${user.name}/${member.name}/edit`);
+    redirect(303, `/@${user.name}/${member.name}/edit`);
   } catch (e) {
     if (
       (e as APIError).code === ErrorCode.Forbidden ||
       (e as APIError).code === ErrorCode.InvalidToken ||
       (e as APIError).code === ErrorCode.NotOwnMember
     ) {
-      throw error(403, e as APIError);
+      error(403, e as APIError);
     }
 
     throw e;

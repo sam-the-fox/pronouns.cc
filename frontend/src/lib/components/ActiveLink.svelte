@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { NavLink } from "sveltestrap";
+  import { NavLink } from "@sveltestrap/sveltestrap";
   import { page } from "$app/stores";
 
   export let href: string;

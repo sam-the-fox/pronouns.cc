@@ -4,7 +4,7 @@
   import { MAX_DESCRIPTION_LENGTH, type MeUser } from "$lib/api/entities";
   import { charCount, renderMarkdown } from "$lib/utils";
   import MarkdownHelp from "$lib/components/edit/MarkdownHelp.svelte";
-  import { Card, CardBody, CardHeader } from "sveltestrap";
+  import { Card, CardBody, CardHeader } from "@sveltestrap/sveltestrap";
 
   const user = getContext<Writable<MeUser>>("user");
 </script>

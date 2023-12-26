@@ -1,15 +1,15 @@
 // See https://kit.svelte.dev/docs/types#app
 
-import type { ErrorCode } from "$lib/api/entities";
+import type { APIError, ErrorCode } from "$lib/api/entities";
 
 // for information about these interfaces
 declare global {
   namespace App {
-    interface Error {
+    type Error = {
       code: ErrorCode;
       message?: string | undefined;
       details?: string | undefined;
-    }
+    } | APIError
     // interface Locals {}
     // interface PageData {}
     // interface Platform {}

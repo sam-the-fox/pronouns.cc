@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import { DateTime, Duration } from "luxon";
-  import { Alert, Button } from "sveltestrap";
+  import { Alert, Button } from "@sveltestrap/sveltestrap";
   import { PUBLIC_MEDIA_URL } from "$env/static/public";
   import { fastFetchClient } from "$lib/api/fetch";
   import type { APIError } from "$lib/api/entities";

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
-  import { Alert, ButtonGroup, Input } from "sveltestrap";
+  import { Alert, ButtonGroup, Input } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
 
   import type { MeUser, PrideFlag } from "$lib/api/entities";

@@ -5,7 +5,7 @@
   import type { LayoutData } from "./$types";
   import { addToast, delToast } from "$lib/toast";
   import { apiFetchClient, fastFetchClient } from "$lib/api/fetch";
-  import { Button, ButtonGroup, Modal, ModalBody, ModalFooter, Nav, NavItem } from "sveltestrap";
+  import { Button, ButtonGroup, Modal, ModalBody, ModalFooter, Nav, NavItem } from "@sveltestrap/sveltestrap";
   import { goto } from "$app/navigation";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import IconButton from "$lib/components/IconButton.svelte";

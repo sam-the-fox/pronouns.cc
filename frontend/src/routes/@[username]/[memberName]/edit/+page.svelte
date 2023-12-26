@@ -3,7 +3,7 @@
   import type { Writable } from "svelte/store";
   import prettyBytes from "pretty-bytes";
   import { encode } from "base64-arraybuffer";
-  import { FormGroup, Icon, Input } from "sveltestrap";
+  import { FormGroup, Icon, Input } from "@sveltestrap/sveltestrap";
   import { memberAvatars, type Member } from "$lib/api/entities";
   import FallbackImage from "$lib/components/FallbackImage.svelte";
   import EditableName from "$lib/components/edit/EditableName.svelte";

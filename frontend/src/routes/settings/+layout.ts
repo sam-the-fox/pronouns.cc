@@ -40,7 +40,7 @@ export const load = (async ({ parent }) => {
     };
   } catch (e) {
     if ((e as APIError).code !== ErrorCode.InternalServerError) {
-      throw redirect(303, "/auth/login");
+      redirect(303, "/auth/login");
     }
     throw e;
   }

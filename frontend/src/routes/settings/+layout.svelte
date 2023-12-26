@@ -9,7 +9,7 @@
     Modal,
     ModalBody,
     ModalFooter,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
   import { userStore } from "$lib/store";
   import { goto } from "$app/navigation";
   import { addToast } from "$lib/toast";

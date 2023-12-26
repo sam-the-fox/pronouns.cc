@@ -14,7 +14,7 @@
     ModalBody,
     ModalFooter,
     Tooltip,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
   import { DateTime, Duration, FixedOffsetZone, Zone } from "luxon";
   import FieldCard from "$lib/components/FieldCard.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";

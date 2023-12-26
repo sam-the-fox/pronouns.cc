@@ -19,7 +19,7 @@
     Modal,
     ModalBody,
     ModalFooter,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
 
   export let authType: string;
   export let remoteName: string | undefined;

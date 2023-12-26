@@ -2,7 +2,7 @@
   import { flagURL, type APIError, type PrideFlag } from "$lib/api/entities";
   import { apiFetchClient } from "$lib/api/fetch";
   import { addToast } from "$lib/toast";
-  import { Button, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "sveltestrap";
+  import { Button, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "@sveltestrap/sveltestrap";
 
   export let flag: PrideFlag;
   export let deleteFlag: (id: string) => Promise<void>;

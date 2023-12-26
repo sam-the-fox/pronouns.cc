@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Report } from "$lib/api/entities";
   import { DateTime } from "luxon";
-  import { Card, CardBody, CardFooter, CardHeader } from "sveltestrap";
+  import { Card, CardBody, CardFooter, CardHeader } from "@sveltestrap/sveltestrap";
 
   export let report: Report;
 </script>

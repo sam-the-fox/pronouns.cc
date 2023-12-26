@@ -8,10 +8,10 @@ export const load = async ({ params }) => {
       method: "GET",
     });
 
-    throw redirect(303, `/@${resp.name}`);
+    redirect(303, `/@${resp.name}`);
   } catch (e) {
     if ((e as APIError).code === ErrorCode.UserNotFound) {
-      throw error(404, e as APIError);
+      error(404, e as APIError);
     }
 
     throw e;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Member } from "$lib/api/entities";
-  import { Alert, ListGroup, ListGroupItem } from "sveltestrap";
+  import { Alert, ListGroup, ListGroupItem } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
 
   export let data: PageData;

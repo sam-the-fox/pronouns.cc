@@ -10,7 +10,7 @@ export const load = (async ({ params }) => {
 
   const arr = param.split("/");
   if (arr.length === 0 || params.pronouns === "") {
-    throw error(404, { code: ErrorCode.NotFound, message: "Pronouns not found" });
+    error(404, { code: ErrorCode.NotFound, message: "Pronouns not found" });
   }
 
   if (arr.length === 5) {
@@ -46,5 +46,5 @@ export const load = (async ({ params }) => {
     };
   }
 
-  throw error(404, { code: ErrorCode.NotFound, message: "Pronouns not found" });
+  error(404, { code: ErrorCode.NotFound, message: "Pronouns not found" });
 }) satisfies PageLoad;

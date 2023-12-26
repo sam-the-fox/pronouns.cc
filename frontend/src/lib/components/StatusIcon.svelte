@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Icon, Tooltip } from "sveltestrap";
+  import { Icon, Tooltip } from "@sveltestrap/sveltestrap";
 
   import type { CustomPreference, CustomPreferences } from "$lib/api/entities";
   import defaultPreferences from "$lib/api/default_preferences";

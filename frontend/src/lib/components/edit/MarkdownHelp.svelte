@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Icon, Modal } from "sveltestrap";
+  import { Icon, Modal } from "@sveltestrap/sveltestrap";
 
   let isOpen = false;
   const toggle = () => (isOpen = !isOpen);

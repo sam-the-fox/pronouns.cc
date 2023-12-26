@@ -23,7 +23,7 @@
     ModalFooter,
     ModalHeader,
     Table,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
   import { onMount } from "svelte";
   import { DateTime } from "luxon";

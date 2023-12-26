@@ -3,7 +3,7 @@
   import { apiFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { DateTime } from "luxon";
-  import { Button, Modal, Table } from "sveltestrap";
+  import { Button, Modal, Table } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
 
   export let data: PageData;

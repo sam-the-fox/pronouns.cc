@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Icon, Tooltip } from "sveltestrap";
+  import { Button, Icon, Tooltip } from "@sveltestrap/sveltestrap";
 
   export let icon: string;
   export let color: "primary" | "secondary" | "success" | "danger";

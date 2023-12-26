@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PUBLIC_BASE_URL } from "$env/static/public";
-  import { Button } from "sveltestrap";
+  import { Button } from "@sveltestrap/sveltestrap";
   import { userStore } from "$lib/store";
 </script>
 

@@ -32,7 +32,7 @@ export const load = (async ({ params }) => {
       member.user.name !== params.username ||
       member.name !== params.memberName
     ) {
-      throw redirect(303, `/@${user.name}/${member.name}`);
+      redirect(303, `/@${user.name}/${member.name}`);
     }
 
     return {
@@ -42,7 +42,7 @@ export const load = (async ({ params }) => {
       flags,
     };
   } catch (e) {
-    if ("code" in e) throw error(500, e as APIError);
+    if ("code" in e) error(500, e as APIError);
     throw e;
   }
 }) satisfies LayoutLoad;

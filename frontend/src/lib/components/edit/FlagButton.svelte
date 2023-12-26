@@ -1,6 +1,6 @@
 <script lang="ts">
   import { flagURL, type PrideFlag } from "$lib/api/entities";
-  import { Button, Tooltip } from "sveltestrap";
+  import { Button, Tooltip } from "@sveltestrap/sveltestrap";
 
   export let flag: PrideFlag;
   export let tooltip: string;

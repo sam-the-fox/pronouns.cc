@@ -2,7 +2,7 @@
   import { setContext } from "svelte";
   import { writable } from "svelte/store";
   import type { LayoutData } from "./$types";
-  import { Button, ButtonGroup, Icon, Nav, NavItem } from "sveltestrap";
+  import { Button, ButtonGroup, Icon, Nav, NavItem } from "@sveltestrap/sveltestrap";
   import type { MeUser, APIError } from "$lib/api/entities";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast, delToast } from "$lib/toast";

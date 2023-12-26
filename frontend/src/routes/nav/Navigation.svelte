@@ -14,7 +14,7 @@
     NavbarToggler,
     NavItem,
     NavLink,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
 
   import Logo from "./Logo.svelte";
   import { userStore, themeStore, CURRENT_CHANGELOG, settingsStore } from "$lib/store";

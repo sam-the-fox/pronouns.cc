@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import type { Writable } from "svelte/store";
   import { DateTime } from "luxon";
-  import { Button, ButtonGroup, Icon } from "sveltestrap";
+  import { Button, ButtonGroup, Icon } from "@sveltestrap/sveltestrap";
 
   import type { APIError, Member } from "$lib/api/entities";
   import { PUBLIC_SHORT_BASE } from "$env/static/public";

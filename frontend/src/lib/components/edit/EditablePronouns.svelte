@@ -12,7 +12,7 @@
     InputGroupText,
     Popover,
     Tooltip,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
 
   export let pronoun: Pronoun;
   export let preferences: CustomPreferences;

@@ -6,7 +6,7 @@
     type User,
     type CustomPreferences,
   } from "$lib/api/entities";
-    import { Icon, Tooltip } from "sveltestrap";
+    import { Icon, Tooltip } from "@sveltestrap/sveltestrap";
   import FallbackImage from "./FallbackImage.svelte";
 
   export let user: User;

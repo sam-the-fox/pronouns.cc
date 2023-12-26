@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Toast } from "sveltestrap";
+  import { Toast } from "@sveltestrap/sveltestrap";
 
   export let header: string | undefined = undefined;
   export let body: string;

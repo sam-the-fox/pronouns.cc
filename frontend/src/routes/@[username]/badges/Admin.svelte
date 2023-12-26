@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tooltip } from "sveltestrap";
+  import { Tooltip } from "@sveltestrap/sveltestrap";
 
   let icon: HTMLElement;
 </script>

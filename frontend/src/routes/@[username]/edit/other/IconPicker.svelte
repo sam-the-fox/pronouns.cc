@@ -7,7 +7,7 @@
     Icon,
     Input,
     Tooltip,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
   import icons from "../../../../icons";
   import IconButton from "$lib/components/IconButton.svelte";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { APIError } from "$lib/api/entities";
-  import { Alert } from "sveltestrap";
+  import { Alert } from "@sveltestrap/sveltestrap";
 
   export let error: APIError;
 </script>

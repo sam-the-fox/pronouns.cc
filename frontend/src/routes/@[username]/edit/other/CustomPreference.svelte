@@ -9,7 +9,7 @@
     Icon,
     InputGroup,
     Tooltip,
-  } from "sveltestrap";
+  } from "@sveltestrap/sveltestrap";
   import IconPicker from "./IconPicker.svelte";
 
   export let preference: CustomPreference;

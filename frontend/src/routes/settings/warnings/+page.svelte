@@ -4,7 +4,7 @@
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast } from "$lib/toast";
   import { DateTime } from "luxon";
-  import { Button, Card, CardBody, CardFooter, CardHeader } from "sveltestrap";
+  import { Button, Card, CardBody, CardFooter, CardHeader } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
 
   export let data: PageData;
