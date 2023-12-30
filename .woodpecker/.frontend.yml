@@ -1,5 +1,5 @@
 steps:
-  frontend:
+  check:
     image: node
     directory: frontend
     environment: # SvelteKit expects these in the environment during build time.

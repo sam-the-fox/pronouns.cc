@@ -1,0 +1,9 @@
+steps:
+  check:
+    image: golang:alpine
+    commands:
+      - apk update && apk add curl vips-dev build-base
+      - make backend
+      # Install golangci-lint
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+      - golangci-lint run
