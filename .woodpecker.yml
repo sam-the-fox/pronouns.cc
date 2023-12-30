@@ -1,0 +1,16 @@
+steps:
+  frontend:
+    image: node
+    directory: frontend
+    environment: # SvelteKit expects these in the environment during build time.
+      - PRIVATE_SENTRY_DSN=non_existent_dsn
+      - PUBLIC_BASE_URL=http://pronouns.localhost
+      - PUBLIC_MEDIA_URL=http://pronouns.localhost/media
+      - PUBLIC_SHORT_BASE=http://prns.localhost
+      - PUBLIC_HCAPTCHA_SITEKEY=non_existent_sitekey
+    commands:
+      - corepack enable
+      - pnpm install
+      - pnpm check
+      - pnpm lint
+      - pnpm build

@@ -11,7 +11,7 @@ const config = {
   kit: {
     adapter: adapter(),
     version: {
-      name: child_process.execSync("git describe --tags --long").toString().trim(),
+      name: child_process.execSync("git describe --tags --long --always").toString().trim(),
     },
   },
 };
