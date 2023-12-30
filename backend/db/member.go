@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/common"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -287,7 +288,12 @@ func (db *DB) RerollMemberSID(ctx context.Context, userID, memberID xid.ID) (new
 	if err != nil {
 		return "", errors.Wrap(err, "beginning transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	sql, args, err := sq.Update("members").
 		Set("sid", squirrel.Expr("find_free_member_sid()")).

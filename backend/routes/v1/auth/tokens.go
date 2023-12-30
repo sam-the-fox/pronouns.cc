@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/xid"
 )
 
@@ -63,7 +65,12 @@ func (s *Server) deleteToken(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "beginning transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	err = s.DB.InvalidateAllTokens(ctx, tx, claims.UserID)
 	if err != nil {

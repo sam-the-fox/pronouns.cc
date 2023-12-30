@@ -10,6 +10,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v5"
 )
 
 type resolveReportRequest struct {
@@ -43,7 +44,12 @@ func (s *Server) resolveReport(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("creating transaction: %v", err)
 		return errors.Wrap(err, "creating transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	report, err := s.DB.Report(ctx, tx, id)
 	if err != nil {

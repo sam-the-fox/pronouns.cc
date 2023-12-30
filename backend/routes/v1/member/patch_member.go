@@ -13,6 +13,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/xid"
 )
 
@@ -246,7 +247,12 @@ func (s *Server) patchMember(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("creating transaction: %v", err)
 		return errors.Wrap(err, "creating transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	m, err = s.DB.UpdateMember(ctx, tx, m.ID, req.Name, req.DisplayName, req.Bio, req.Unlisted, req.Links, avatarHash)
 	if err != nil {

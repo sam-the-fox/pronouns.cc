@@ -100,23 +100,23 @@ func New() (*Server, error) {
 
 	// set scopes
 	// users
-	rateLimiter.Scope("GET", "/users/*", 60)
-	rateLimiter.Scope("PATCH", "/users/@me", 10)
+	_ = rateLimiter.Scope("GET", "/users/*", 60)
+	_ = rateLimiter.Scope("PATCH", "/users/@me", 10)
 
 	// members
-	rateLimiter.Scope("GET", "/users/*/members", 60)
-	rateLimiter.Scope("GET", "/users/*/members/*", 60)
+	_ = rateLimiter.Scope("GET", "/users/*/members", 60)
+	_ = rateLimiter.Scope("GET", "/users/*/members/*", 60)
 
-	rateLimiter.Scope("POST", "/members", 10)
-	rateLimiter.Scope("GET", "/members/*", 60)
-	rateLimiter.Scope("PATCH", "/members/*", 20)
-	rateLimiter.Scope("DELETE", "/members/*", 5)
+	_ = rateLimiter.Scope("POST", "/members", 10)
+	_ = rateLimiter.Scope("GET", "/members/*", 60)
+	_ = rateLimiter.Scope("PATCH", "/members/*", 20)
+	_ = rateLimiter.Scope("DELETE", "/members/*", 5)
 
 	// auth
-	rateLimiter.Scope("*", "/auth/*", 20)
-	rateLimiter.Scope("*", "/auth/tokens", 10)
-	rateLimiter.Scope("*", "/auth/invites", 10)
-	rateLimiter.Scope("POST", "/auth/discord/*", 10)
+	_ = rateLimiter.Scope("*", "/auth/*", 20)
+	_ = rateLimiter.Scope("*", "/auth/tokens", 10)
+	_ = rateLimiter.Scope("*", "/auth/invites", 10)
+	_ = rateLimiter.Scope("POST", "/auth/discord/*", 10)
 
 	s.Router.Use(rateLimiter.Handler())
 

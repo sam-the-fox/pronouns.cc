@@ -12,6 +12,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/xid"
 )
 
@@ -221,7 +222,12 @@ func (s *Server) patchUser(w http.ResponseWriter, r *http.Request) error {
 		log.Errorf("creating transaction: %v", err)
 		return errors.Wrap(err, "creating transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	// update username
 	if req.Username != nil && *req.Username != u.Username {

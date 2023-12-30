@@ -1,10 +1,12 @@
 package seeddb
 
 import (
+	"errors"
 	"log"
 	"os"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -82,7 +84,12 @@ func run(c *cli.Context) error {
 		log.Println("error beginning transaction:", err)
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Println("error rolling back transaction:", err)
+		}
+	}()
 
 	for i, su := range seed.Users {
 		u, err := pg.CreateUser(ctx, tx, su.Username)

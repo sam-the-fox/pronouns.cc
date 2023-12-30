@@ -1,6 +1,7 @@
 package snowflakes
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -39,7 +40,12 @@ func run(c *cli.Context) error {
 		log.Error("creating transaction:", err)
 		return err
 	}
-	defer tx.Rollback(c.Context)
+	defer func() {
+		err := tx.Rollback(c.Context)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	var userIDs []xid.ID
 	err = pgxscan.Select(c.Context, conn, &userIDs, "SELECT id FROM users WHERE snowflake_id IS NULL")

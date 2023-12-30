@@ -26,7 +26,8 @@ var Command = &cli.Command{
 func run(c *cli.Context) error {
 	// initialize sentry
 	if dsn := os.Getenv("SENTRY_DSN"); dsn != "" {
-		sentry.Init(sentry.ClientOptions{
+		// We don't need to check the error here--it's fine if no DSN is set.
+		_ = sentry.Init(sentry.ClientOptions{
 			Dsn:                dsn,
 			Debug:              os.Getenv("DEBUG") == "true",
 			Release:            server.Tag,

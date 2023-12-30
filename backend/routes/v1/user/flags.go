@@ -13,6 +13,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/xid"
 )
 
@@ -80,7 +81,12 @@ func (s *Server) postUserFlag(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "starting transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	flag, err := s.DB.CreateFlag(ctx, tx, claims.UserID, req.Name, req.Description)
 	if err != nil {
@@ -192,7 +198,12 @@ func (s *Server) patchUserFlag(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "beginning transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	flag, err = s.DB.EditFlag(ctx, tx, flag.ID, req.Name, req.Description, nil)
 	if err != nil {

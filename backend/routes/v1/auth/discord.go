@@ -11,6 +11,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v5"
 	"github.com/mediocregopher/radix/v4"
 	"github.com/rs/xid"
 	"golang.org/x/oauth2"
@@ -291,7 +292,12 @@ func (s *Server) discordSignup(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return errors.Wrap(err, "beginning transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	du := new(discordgo.User)
 	err = s.DB.GetJSON(ctx, "discord:"+req.Ticket, &du)

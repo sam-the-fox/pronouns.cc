@@ -2,12 +2,15 @@ package cleandb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	dbpkg "codeberg.org/pronounscc/pronouns.cc/backend/db"
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"github.com/rs/xid"
 	"github.com/urfave/cli/v2"
@@ -77,7 +80,12 @@ func run(c *cli.Context) error {
 			fmt.Printf("error starting transaction: %v\n", err)
 			return err
 		}
-		defer tx.Rollback(ctx)
+		defer func() {
+			err := tx.Rollback(ctx)
+			if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+				log.Error("rolling back transaction:", err)
+			}
+		}()
 
 		inactiveUsers, err := db.InactiveUsers(ctx, tx)
 		if err != nil {

@@ -79,7 +79,7 @@ func (db *DB) CreateExport(ctx context.Context, userID xid.ID, filename string, 
 		return de, errors.Wrap(err, "building query")
 	}
 
-	pgxscan.Get(ctx, db, &de, sql, args...)
+	err = pgxscan.Get(ctx, db, &de, sql, args...)
 	if err != nil {
 		return de, errors.Wrap(err, "executing sql")
 	}

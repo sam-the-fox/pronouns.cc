@@ -11,6 +11,7 @@ import (
 	"codeberg.org/pronounscc/pronouns.cc/backend/server"
 	"emperror.dev/errors"
 	"github.com/go-chi/render"
+	"github.com/jackc/pgx/v5"
 )
 
 type CreateMemberRequest struct {
@@ -119,7 +120,12 @@ func (s *Server) createMember(w http.ResponseWriter, r *http.Request) (err error
 	if err != nil {
 		return errors.Wrap(err, "starting transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	m, err := s.DB.CreateMember(ctx, tx, claims.UserID, cmr.Name, cmr.DisplayName, cmr.Bio, cmr.Links)
 	if err != nil {

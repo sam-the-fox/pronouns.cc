@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"time"
 
+	"codeberg.org/pronounscc/pronouns.cc/backend/log"
 	"emperror.dev/errors"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -43,7 +44,12 @@ func (db *DB) CreateInvite(ctx context.Context, userID xid.ID) (i Invite, err er
 	if err != nil {
 		return i, errors.Wrap(err, "beginning transaction")
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		err := tx.Rollback(ctx)
+		if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Error("rolling back transaction:", err)
+		}
+	}()
 
 	var maxInvites, inviteCount int
 	err = tx.QueryRow(ctx, "SELECT max_invites FROM users WHERE id = $1", userID).Scan(&maxInvites)
