@@ -185,7 +185,7 @@ func (s *Server) oauthURLs(w http.ResponseWriter, r *http.Request) error {
 	if googleOAuthConfig.ClientID != "" {
 		googleCfg := googleOAuthConfig
 		googleCfg.RedirectURL = req.CallbackDomain + "/auth/login/google"
-		resp.Google = googleCfg.AuthCodeURL(state)
+		resp.Google = googleCfg.AuthCodeURL(state) + "&prompt=select_account"
 	}
 
 	render.JSON(w, r, resp)
