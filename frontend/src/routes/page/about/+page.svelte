@@ -1,4 +1,6 @@
 <script lang="ts">
+  // Ignoring the TS error here, because this file imports fine, typescript just chokes on markdown files
+  // eslint-disable-next-line
   //@ts-ignore
   import { html } from "./about.md";
 </script>

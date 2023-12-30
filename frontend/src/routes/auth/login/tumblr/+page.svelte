@@ -10,7 +10,7 @@
 
   export let data: PageData;
 
-  let callbackPage: any;
+  let callbackPage: CallbackPage;
 
   const signupForm = async (username: string, invite: string, captchaToken: string) => {
     try {

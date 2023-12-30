@@ -64,8 +64,10 @@
   ) => Promise<void>;
 
   let captchaToken = "";
+  // svelte-hcaptcha doesn't have types, so we can't use anything except `any` here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let captcha: any;
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const captchaSuccess = (token: any) => {
     captchaToken = token.detail.token;
   };
@@ -88,6 +90,8 @@
       await fastFetch("/auth/force-delete", {
         method: "GET",
         headers: {
+          // We know for sure this value is non-null if this function is run at all
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           "X-Delete-Token": token!,
         },
       });
@@ -105,6 +109,8 @@
       await fastFetch("/auth/cancel-delete", {
         method: "GET",
         headers: {
+          // We know for sure this value is non-null if this function is run at all
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           "X-Delete-Token": token!,
         },
       });

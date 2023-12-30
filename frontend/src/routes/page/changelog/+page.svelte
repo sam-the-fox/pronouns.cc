@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  // Ignoring the TS error here, because this file imports fine, typescript just chokes on markdown files
+  // eslint-disable-next-line
   //@ts-ignore
   import { html } from "./changelog.md";
   import { CURRENT_CHANGELOG } from "$lib/store";

@@ -1,6 +1,6 @@
-import type { PrideFlag, APIError, MeUser, PronounsJson } from "$lib/api/entities";
+import type { PrideFlag, MeUser, PronounsJson } from "$lib/api/entities";
 import { apiFetchClient } from "$lib/api/fetch";
-import { error, redirect, type Redirect } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 
 import pronounsRaw from "$lib/pronouns.json";
 const pronouns = pronounsRaw as PronounsJson;

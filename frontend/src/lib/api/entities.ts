@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { PUBLIC_BASE_URL, PUBLIC_MEDIA_URL } from "$env/static/public";
 
 export const MAX_MEMBERS = 500;

@@ -31,6 +31,8 @@
       const resp = await apiFetchClient<Settings>(
         "/users/@me/settings",
         "PATCH",
+        // If this function is run, notice will always be non-null
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         { read_global_notice: data.notice!.id },
         2,
       );

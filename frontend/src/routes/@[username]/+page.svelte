@@ -4,7 +4,6 @@
 
   import {
     Alert,
-    Badge,
     Button,
     ButtonGroup,
     Icon,
@@ -15,7 +14,7 @@
     ModalFooter,
     Tooltip,
   } from "@sveltestrap/sveltestrap";
-  import { DateTime, Duration, FixedOffsetZone, Zone } from "luxon";
+  import { DateTime, FixedOffsetZone } from "luxon";
   import FieldCard from "$lib/components/FieldCard.svelte";
   import PronounLink from "$lib/components/PronounLink.svelte";
   import PartialMemberCard from "$lib/components/PartialMemberCard.svelte";
