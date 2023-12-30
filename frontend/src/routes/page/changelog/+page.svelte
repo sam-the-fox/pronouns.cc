@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  //@ts-ignore
   import { html } from "./changelog.md";
   import { CURRENT_CHANGELOG } from "$lib/store";
 

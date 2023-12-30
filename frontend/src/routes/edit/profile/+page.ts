@@ -14,7 +14,7 @@ export const load = async () => {
       (e as APIError).code === ErrorCode.Forbidden ||
       (e as APIError).code === ErrorCode.InvalidToken
     ) {
-      error(403, e as APIError);
+      error(403, e as App.Error);
     }
 
     throw e;

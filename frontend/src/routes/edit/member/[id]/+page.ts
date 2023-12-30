@@ -23,7 +23,7 @@ export const load = async ({ params }) => {
       (e as APIError).code === ErrorCode.InvalidToken ||
       (e as APIError).code === ErrorCode.NotOwnMember
     ) {
-      error(403, e as APIError);
+      error(403, e as App.Error);
     }
 
     throw e;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PUBLIC_BASE_URL } from "$env/static/public";
-  import type { PageData } from "../../$types";
+  import type { PageData } from "./$types";
 
   export let data: PageData;
 

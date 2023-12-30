@@ -1,4 +1,5 @@
 <script lang="ts">
+  //@ts-ignore
   import { html } from "./privacy.md";
 </script>
 

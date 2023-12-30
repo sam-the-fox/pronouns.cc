@@ -14,9 +14,9 @@ export const load = async ({ params }) => {
       (e as APIError).code === ErrorCode.UserNotFound ||
       (e as APIError).code === ErrorCode.MemberNotFound
     ) {
-      error(404, e as APIError);
+      error(404, e as App.Error);
     }
 
-    error(500, e as APIError);
+    error(500, e as App.Error);
   }
 };
