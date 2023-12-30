@@ -21,7 +21,7 @@ export const load = async ({ params }) => {
       pronouns: pronouns.autocomplete,
       flags,
     };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     if ("code" in e) error(500, e as App.Error);
     throw e;

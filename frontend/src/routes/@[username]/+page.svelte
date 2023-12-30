@@ -190,14 +190,15 @@
         {/if}
         {#if data.utc_offset}
           <Tooltip target="user-clock" placement="top">Current time</Tooltip>
-          <Icon id="user-clock" name="clock" aria-label="This user's current time" /> {currentTime} <span class="text-body-secondary">(UTC{timezone})</span>
+          <Icon id="user-clock" name="clock" aria-label="This user's current time" />
+          {currentTime} <span class="text-body-secondary">(UTC{timezone})</span>
         {/if}
         {#if profileEmpty && $userStore?.id === data.id}
           <hr />
           <p>
             <em>
-              Your profile is empty! You can customize it by going to the <a href="/@{data.name}/edit"
-                >edit profile</a
+              Your profile is empty! You can customize it by going to the <a
+                href="/@{data.name}/edit">edit profile</a
               > page.</em
             > <span class="text-muted">(only you can see this)</span>
           </p>

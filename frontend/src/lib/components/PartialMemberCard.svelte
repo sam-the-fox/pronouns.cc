@@ -6,12 +6,12 @@
     type User,
     type CustomPreferences,
   } from "$lib/api/entities";
-    import { Icon, Tooltip } from "@sveltestrap/sveltestrap";
+  import { Icon, Tooltip } from "@sveltestrap/sveltestrap";
   import FallbackImage from "./FallbackImage.svelte";
 
   export let user: User;
   export let member: PartialMember & {
-    unlisted?: boolean
+    unlisted?: boolean;
   };
 
   let pronouns: string | undefined;
@@ -52,7 +52,7 @@
     <a class="text-reset fs-5 text-break" href="/@{user.name}/{member.name}">
       {member.display_name ?? member.name}
       {#if member.unlisted === true}
-        <span bind:this={iconElement} tabindex={0}><Icon name="lock"/></span>
+        <span bind:this={iconElement} tabindex={0}><Icon name="lock" /></span>
         <Tooltip target={iconElement} placement="top">This member is hidden</Tooltip>
       {/if}
     </a>

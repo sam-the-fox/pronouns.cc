@@ -1,6 +1,14 @@
 <script lang="ts">
   import { MAX_FLAGS, type APIError, type PrideFlag } from "$lib/api/entities";
-  import { Button, Icon, Input, Modal, ModalBody, ModalFooter, ModalHeader } from "@sveltestrap/sveltestrap";
+  import {
+    Button,
+    Icon,
+    Input,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+  } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
   import Flag from "./Flag.svelte";
   import prettyBytes from "pretty-bytes";

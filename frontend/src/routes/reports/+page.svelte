@@ -3,7 +3,14 @@
   import { fastFetchClient } from "$lib/api/fetch";
   import ErrorAlert from "$lib/components/ErrorAlert.svelte";
   import { addToast } from "$lib/toast";
-  import { Button, ButtonGroup, FormGroup, Modal, ModalBody, ModalFooter } from "@sveltestrap/sveltestrap";
+  import {
+    Button,
+    ButtonGroup,
+    FormGroup,
+    Modal,
+    ModalBody,
+    ModalFooter,
+  } from "@sveltestrap/sveltestrap";
   import type { PageData } from "./$types";
   import ReportCard from "./ReportCard.svelte";
 
