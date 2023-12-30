@@ -2,7 +2,9 @@ import { PRIVATE_SENTRY_DSN } from "$env/static/private";
 import * as Sentry from "@sentry/node";
 import type { HandleServerError } from "@sveltejs/kit";
 
-Sentry.init({ dsn: PRIVATE_SENTRY_DSN });
+if (PRIVATE_SENTRY_DSN) {
+  Sentry.init({ dsn: PRIVATE_SENTRY_DSN });
+}
 
 export const handleError = (({ error, event }) => {
   console.log(error);
