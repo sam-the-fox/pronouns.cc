@@ -45,6 +45,7 @@
   import ProfileFlag from "./ProfileFlag.svelte";
   import IconButton from "$lib/components/IconButton.svelte";
   import Badges from "./badges/Badges.svelte";
+  import PreferencesCheatsheet from "./PreferencesCheatsheet.svelte";
 
   export let data: PageData;
 
@@ -258,6 +259,12 @@
         </div>
       {/each}
     </div>
+    <PreferencesCheatsheet
+      preferences={data.custom_preferences}
+      names={data.names}
+      pronouns={data.pronouns}
+      fields={data.fields}
+    />
     <div class="row">
       <div class="col-md-6">
         <InputGroup>
