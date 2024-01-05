@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CustomPreferences, Field, FieldEntry, Pronoun } from "$lib/api/entities";
+  import type { CustomPreferences, CustomPreference, Field, FieldEntry, Pronoun } from "$lib/api/entities";
   import defaultPreferences from "$lib/api/default_preferences";
   import StatusIcon from "$lib/components/StatusIcon.svelte";
 
