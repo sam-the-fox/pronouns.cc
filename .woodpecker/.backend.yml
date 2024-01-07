@@ -1,5 +1,6 @@
 when:
-  branch: main
+  branch:
+    exclude: stable
 
 steps:
   check:
