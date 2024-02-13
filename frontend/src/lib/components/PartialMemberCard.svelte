@@ -46,7 +46,12 @@
 
 <div>
   <a href="/@{user.name}/{member.name}">
-    <FallbackImage urls={memberAvatars(member)} width={200} alt="Avatar for {member.name}" />
+    <FallbackImage
+      urls={memberAvatars(member)}
+      width={200}
+      lazyLoad
+      alt="Avatar for {member.name}"
+    />
   </a>
   <p class="m-2">
     <a class="text-reset fs-5 text-break" href="/@{user.name}/{member.name}">

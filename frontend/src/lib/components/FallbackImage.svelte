@@ -4,6 +4,7 @@
   export let urls: string[];
   export let alt: string;
   export let width = 300;
+  export let lazyLoad = false;
 
   const contentTypeFor = (url: string) => {
     if (url.endsWith(".webp")) {
@@ -31,6 +32,7 @@
       src={urls[0] || defaultAvatars[0]}
       {alt}
       class="rounded-circle img-fluid"
+      loading={lazyLoad ? "lazy" : "eager"}
     />
   </picture>
 {:else}
