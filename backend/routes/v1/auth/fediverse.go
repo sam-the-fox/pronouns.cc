@@ -71,10 +71,13 @@ func (s *Server) noAppFediverseURL(ctx context.Context, w http.ResponseWriter, r
 	case "misskey", "foundkey", "calckey", "firefish", "sharkey":
 		return s.noAppMisskeyURL(ctx, w, r, softwareName, instance)
 	case "mastodon", "pleroma", "akkoma", "pixelfed", "gotosocial":
-	case "glitchcafe", "hometown":
+	case "glitchcafe", "hometown", "Iceshrimp.NET":
 		// plural.cafe (potentially other instances too?) runs Mastodon but changes the software name
 		// Hometown is a lightweight fork of Mastodon so we can just treat it the same
 		// changing it back to mastodon here for consistency
+
+		// Iceshrimp.NET is *definitely* not a mastodon fork
+		// but i don't want to add yet another case that the rewrite will eventually have to contend with
 		softwareName = "mastodon"
 	default:
 		return server.APIError{Code: server.ErrUnsupportedInstance}
