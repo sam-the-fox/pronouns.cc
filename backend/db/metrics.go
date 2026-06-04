@@ -145,6 +145,15 @@ func (db *DB) Counts(ctx context.Context) (numUsers, numMembers, usersDay, users
 	usersDay, _ = db.ActiveUsers(ctx, ActiveDay)
 	usersWeek, _ = db.ActiveUsers(ctx, ActiveWeek)
 	usersMonth, _ = db.ActiveUsers(ctx, ActiveMonth)
+
+	db.countMu.Lock()
+	db.usersTotal = numUsers
+	db.membersTotal = numMembers
+	db.activeUsersDay = usersDay
+	db.activeUsersWeek = usersWeek
+	db.activeUsersMonth = usersMonth
+	db.countMu.Unlock()
+
 	return numUsers, numMembers, usersDay, usersWeek, usersMonth
 }
 
