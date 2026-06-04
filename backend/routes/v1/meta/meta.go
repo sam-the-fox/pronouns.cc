@@ -1,8 +1,10 @@
 package meta
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"time"
 
 	"codeberg.org/pronounscc/pronouns.cc/backend/db"
 	"codeberg.org/pronounscc/pronouns.cc/backend/log"
@@ -45,7 +47,11 @@ type MetaUsers struct {
 func (s *Server) meta(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
-	numUsers, numMembers, activeDay, activeWeek, activeMonth := s.DB.Counts(ctx)
+	// just in case, bail from counting users/members after 5 seconds.
+	// we would rather return incorrect numbers than hang for minutes at a time.
+	metricsCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	numUsers, numMembers, activeDay, activeWeek, activeMonth := s.DB.Counts(metricsCtx)
 
 	var notice *MetaNotice
 	if n, err := s.DB.CurrentNotice(ctx); err != nil {
