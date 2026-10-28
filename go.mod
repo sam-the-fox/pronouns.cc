@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	emperror.dev/errors v0.8.1
+	github.com/BurntSushi/toml v1.3.2
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/aarondl/opt v0.0.0-20230313190023-85d93d668fec
 	github.com/bwmarrin/discordgo v0.27.1

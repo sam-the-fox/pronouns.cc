@@ -66,7 +66,7 @@ func (db *DB) CreateExport(ctx context.Context, userID xid.ID, filename string, 
 		Filename: filename,
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, de.Path(), file, int64(file.Len()), minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, de.Path(), file, int64(file.Len()), minio.PutObjectOptions{
 		ContentType:    "application/zip",
 		SendContentMd5: true,
 	})
@@ -92,7 +92,7 @@ func (db *DB) DeleteExport(ctx context.Context, de DataExport) (err error) {
 		return errors.Wrap(err, "building query")
 	}
 
-	err = db.minio.RemoveObject(ctx, db.minioBucket, de.Path(), minio.RemoveObjectOptions{})
+	err = db.minio.RemoveObject(ctx, de.Path(), minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting export zip")
 	}

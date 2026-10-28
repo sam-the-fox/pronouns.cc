@@ -251,7 +251,7 @@ func (db *DB) WriteFlag(ctx context.Context, flagID xid.ID, flag *bytes.Buffer) 
 	}
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "flags/"+hash+".webp", flag, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, "flags/"+hash+".webp", flag, -1, minio.PutObjectOptions{
 		ContentType:    "image/webp",
 		SendContentMd5: true,
 	})
@@ -276,7 +276,7 @@ func (db *DB) DeleteFlag(ctx context.Context, flagID xid.ID, hash string) error 
 }
 
 func (db *DB) FlagObject(ctx context.Context, flagID xid.ID, hash string) (io.ReadCloser, error) {
-	obj, err := db.minio.GetObject(ctx, db.minioBucket, "/flags/"+flagID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	obj, err := db.minio.GetObject(ctx, "/flags/"+flagID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting object")
 	}

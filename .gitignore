@@ -14,3 +14,4 @@ vite.config.ts.timestamp-*
 target
 tmp
 seed.yaml
+minio-clients.toml

@@ -81,7 +81,7 @@ func (db *DB) WriteUserAvatar(ctx context.Context,
 	}
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, "users/"+userID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
 		ContentType:    "image/webp",
 		SendContentMd5: true,
 	})
@@ -89,7 +89,7 @@ func (db *DB) WriteUserAvatar(ctx context.Context,
 		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, "users/"+userID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
 		ContentType:    "image/jpeg",
 		SendContentMd5: true,
 	})
@@ -112,7 +112,7 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 	}
 	hash = hex.EncodeToString(hasher.Sum(nil))
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, "members/"+memberID.String()+"/"+hash+".webp", webp, -1, minio.PutObjectOptions{
 		ContentType:    "image/webp",
 		SendContentMd5: true,
 	})
@@ -120,7 +120,7 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 		return "", errors.Wrap(err, "uploading webp avatar")
 	}
 
-	_, err = db.minio.PutObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
+	_, err = db.minio.PutObject(ctx, "members/"+memberID.String()+"/"+hash+".jpg", jpeg, -1, minio.PutObjectOptions{
 		ContentType:    "image/jpeg",
 		SendContentMd5: true,
 	})
@@ -132,12 +132,12 @@ func (db *DB) WriteMemberAvatar(ctx context.Context,
 }
 
 func (db *DB) DeleteUserAvatar(ctx context.Context, userID xid.ID, hash string) error {
-	err := db.minio.RemoveObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
+	err := db.minio.RemoveObject(ctx, "users/"+userID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting webp avatar")
 	}
 
-	err = db.minio.RemoveObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
+	err = db.minio.RemoveObject(ctx, "users/"+userID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting jpeg avatar")
 	}
@@ -146,12 +146,12 @@ func (db *DB) DeleteUserAvatar(ctx context.Context, userID xid.ID, hash string) 
 }
 
 func (db *DB) DeleteMemberAvatar(ctx context.Context, memberID xid.ID, hash string) error {
-	err := db.minio.RemoveObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
+	err := db.minio.RemoveObject(ctx, "members/"+memberID.String()+"/"+hash+".webp", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting webp avatar")
 	}
 
-	err = db.minio.RemoveObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
+	err = db.minio.RemoveObject(ctx, "members/"+memberID.String()+"/"+hash+".jpg", minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "deleting jpeg avatar")
 	}
@@ -160,7 +160,7 @@ func (db *DB) DeleteMemberAvatar(ctx context.Context, memberID xid.ID, hash stri
 }
 
 func (db *DB) UserAvatar(ctx context.Context, userID xid.ID, hash string) (io.ReadCloser, error) {
-	obj, err := db.minio.GetObject(ctx, db.minioBucket, "users/"+userID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	obj, err := db.minio.GetObject(ctx, "users/"+userID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting object")
 	}
@@ -168,7 +168,7 @@ func (db *DB) UserAvatar(ctx context.Context, userID xid.ID, hash string) (io.Re
 }
 
 func (db *DB) MemberAvatar(ctx context.Context, memberID xid.ID, hash string) (io.ReadCloser, error) {
-	obj, err := db.minio.GetObject(ctx, db.minioBucket, "members/"+memberID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
+	obj, err := db.minio.GetObject(ctx, "members/"+memberID.String()+"/"+hash+".webp", minio.GetObjectOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting object")
 	}
