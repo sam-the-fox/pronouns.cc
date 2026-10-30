@@ -1,0 +1,6 @@
+[[clients]]
+endpoint = "meowstorage.local"
+access_key_id = "1234567890"
+access_key_secret = "abcdef1234567890abcdef"
+ssl = true
+bucket = "pronouns.cc"

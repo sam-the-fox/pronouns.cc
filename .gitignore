@@ -4,6 +4,7 @@ node_modules
 .env
 .env.*
 !.env.example
+minio-clients.toml
 dist
 dump.rdb
 build
@@ -14,3 +15,4 @@ vite.config.ts.timestamp-*
 target
 tmp
 seed.yaml
+minio-clients.toml

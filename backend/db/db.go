@@ -14,8 +14,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mediocregopher/radix/v4"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -37,9 +35,8 @@ type DB struct {
 
 	Redis radix.Client
 
-	minio       *minio.Client
-	minioBucket string
-	baseURL     *url.URL
+	minio   *MinioCluster
+	baseURL *url.URL
 
 	TotalRequests prometheus.Counter
 
@@ -62,12 +59,9 @@ func New() (*DB, error) {
 	}
 
 	log.Debug("creating minio client")
-	minioClient, err := minio.New(os.Getenv("MINIO_ENDPOINT"), &minio.Options{
-		Creds:  credentials.NewStaticV4(os.Getenv("MINIO_ACCESS_KEY_ID"), os.Getenv("MINIO_ACCESS_KEY_SECRET"), ""),
-		Secure: os.Getenv("MINIO_SSL") == "true",
-	})
+	minioCluster, err := NewMinioCluster()
 	if err != nil {
-		return nil, errors.Wrap(err, "creating minio client")
+		return nil, errors.Wrap(err, "creating minio cluster")
 	}
 
 	baseURL, err := url.Parse(os.Getenv("BASE_URL"))
@@ -79,9 +73,8 @@ func New() (*DB, error) {
 		Pool:  pool,
 		Redis: redis,
 
-		minio:       minioClient,
-		minioBucket: os.Getenv("MINIO_BUCKET"),
-		baseURL:     baseURL,
+		minio:   minioCluster,
+		baseURL: baseURL,
 	}
 
 	log.Debug("initializing metrics")
